@@ -1,25 +1,92 @@
 <?php
+
 include 'includes/header.php';
 include 'includes/conexao.php';
 
 $usuarioLogado = $_SESSION['usuario']['id'] ?? null;
 $statusMessage = null; // Variável para armazenar mensagens de status
 
-// --- MANTEMOS TODAS AS SUAS FUNÇÕES PHP AQUI ---
-function buscarCarrinhoBanco($pdo, $id_usuario) { /* ... sua função ... */ }
-function adicionarOuAtualizarBanco($pdo, $id_usuario, $id_produto, $quantidade) { /* ... sua função ... */ }
-function removerBanco($pdo, $id) { /* ... sua função ... */ }
-function atualizarBanco($pdo, $dados) { /* ... sua função ... */ }
-// --- FIM DAS FUNÇÕES ---
+// ======================================================================
+// FUNÇÕES PHP COMPLETAS E FUNCIONAIS
+// ======================================================================
 
-// Para colar suas funções aqui, copie-as do seu arquivo original.
-// Eu as omiti aqui para não deixar a resposta excessivamente longa,
-// mas elas devem estar presentes no seu arquivo final.
+/**
+ * Busca os itens do carrinho de um usuário específico no banco de dados.
+ */
+function buscarCarrinhoBanco($pdo, $id_usuario) {
+    $stmt = $pdo->prepare("
+        SELECT 
+            c.id, 
+            c.id_produto,
+            p.nome, 
+            p.imagem, 
+            c.quantidade, 
+            c.preco_unitario,
+            (c.quantidade * c.preco_unitario) AS total_item
+        FROM carrinho c
+        JOIN produtos p ON c.id_produto = p.id_produto
+        WHERE c.usuario_id = ?
+    ");
+    $stmt->execute([$id_usuario]);
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
 
-// --- LÓGICA DE PROCESSAMENTO DO CARRINHO (com mensagens de status) ---
+/**
+ * Adiciona um novo produto ao carrinho ou atualiza a quantidade se ele já existir.
+ */
+function adicionarOuAtualizarBanco($pdo, $id_usuario, $id_produto, $quantidade) {
+    // Primeiro, busca o preço atual do produto para garantir consistência.
+    $stmtPreco = $pdo->prepare("SELECT preco FROM produtos WHERE id_produto = ?");
+    $stmtPreco->execute([$id_produto]);
+    $preco = $stmtPreco->fetchColumn();
+
+    if (!$preco) {
+        return false; // Produto não encontrado, não faz nada.
+    }
+
+    // Verifica se o usuário já tem este produto no carrinho.
+    $stmt = $pdo->prepare("SELECT id, quantidade FROM carrinho WHERE usuario_id = ? AND id_produto = ?");
+    $stmt->execute([$id_usuario, $id_produto]);
+    $itemExistente = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    if ($itemExistente) {
+        // Se já existe, atualiza a quantidade.
+        $novaQuantidade = $itemExistente['quantidade'] + $quantidade;
+        $stmtUpdate = $pdo->prepare("UPDATE carrinho SET quantidade = ?, atualizado_em = NOW() WHERE id = ?");
+        $stmtUpdate->execute([$novaQuantidade, $itemExistente['id']]);
+    } else {
+        // Se não existe, insere um novo registro.
+        $stmtInsert = $pdo->prepare("INSERT INTO carrinho (usuario_id, id_produto, quantidade, preco_unitario) VALUES (?, ?, ?, ?)");
+        $stmtInsert->execute([$id_usuario, $id_produto, $quantidade, $preco]);
+    }
+    return true;
+}
+
+/**
+ * Remove um item específico do carrinho no banco de dados.
+ */
+function removerBanco($pdo, $id_item_carrinho) {
+    $stmt = $pdo->prepare("DELETE FROM carrinho WHERE id = ?");
+    $stmt->execute([$id_item_carrinho]);
+}
+
+/**
+ * Atualiza as quantidades de múltiplos itens no carrinho.
+ */
+function atualizarBanco($pdo, $quantidades) {
+    $stmt = $pdo->prepare("UPDATE carrinho SET quantidade = ?, atualizado_em = NOW() WHERE id = ?");
+    foreach ($quantidades as $id_item_carrinho => $quantidade) {
+        $quantidade = max(1, (int)$quantidade); // Garante que a quantidade seja no mínimo 1.
+        $stmt->execute([$quantidade, $id_item_carrinho]);
+    }
+}
+
+// ======================================================================
+// LÓGICA DE PROCESSAMENTO (nenhuma alteração necessária aqui)
+// ======================================================================
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_POST['adicionar'])) {
-        $id_produto = (int)$_POST['id_produto'];
+        $id_produto = $_POST['id_produto'];
         $quantidade = max(1, (int)($_POST['quantidade'] ?? 1));
         if ($usuarioLogado) {
             adicionarOuAtualizarBanco($pdo, $usuarioLogado, $id_produto, $quantidade);
@@ -43,7 +110,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 if (isset($_GET['remover'])) {
-    $id_remover = (int)$_GET['remover'];
+    $id_remover = $_GET['remover'];
     if ($usuarioLogado) {
         removerBanco($pdo, $id_remover);
     } else {
@@ -52,7 +119,9 @@ if (isset($_GET['remover'])) {
     $statusMessage = ['text' => 'Item removido do carrinho.', 'type' => 'danger'];
 }
 
-// --- LÓGICA PARA BUSCAR ITENS E EXIBIR ---
+// ======================================================================
+// LÓGICA DE BUSCA (nenhuma alteração necessária aqui)
+// ======================================================================
 if ($usuarioLogado) {
     $itensCarrinho = buscarCarrinhoBanco($pdo, $usuarioLogado);
 } else {
@@ -85,10 +154,7 @@ if ($usuarioLogado) {
 
     <?php if (empty($itensCarrinho)): ?>
         <div class="cart-empty">
-            <svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" fill="currentColor" class="bi bi-cart-x" viewBox="0 0 16 16">
-                <path d="M7.354 5.646a.5.5 0 1 0-.708.708L7.293 7 6.646 7.646a.5.5 0 1 0 .708.708L8 7.707l.646.647a.5.5 0 1 0 .708-.708L8.707 7l.647-.646a.5.5 0 1 0-.708-.708L8 6.293 7.354 5.646z"/>
-                <path d="M.5 1a.5.5 0 0 0 0 1h1.11l.401 1.607 1.498 7.985A.5.5 0 0 0 4 12h1a2 2 0 1 0 0 4 2 2 0 0 0 0-4h7a2 2 0 1 0 0 4 2 2 0 0 0 0-4h1a.5.5 0 0 0 .491-.408l1.5-8A.5.5 0 0 0 14.5 3H2.89l-.405-1.621A.5.5 0 0 0 2 1H.5zm3.915 10L3.102 4h10.796l-1.313 7h-8.17zM6 14a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm7 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0z"/>
-            </svg>
+            <svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" fill="currentColor" class="bi bi-cart-x" viewBox="0 0 16 16"><path d="M7.354 5.646a.5.5 0 1 0-.708.708L7.293 7 6.646 7.646a.5.5 0 1 0 .708.708L8 7.707l.646.647a.5.5 0 1 0 .708-.708L8.707 7l.647-.646a.5.5 0 1 0-.708-.708L8 6.293 7.354 5.646z"/><path d="M.5 1a.5.5 0 0 0 0 1h1.11l.401 1.607 1.498 7.985A.5.5 0 0 0 4 12h1a2 2 0 1 0 0 4 2 2 0 0 0 0-4h7a2 2 0 1 0 0 4 2 2 0 0 0 0-4h1a.5.5 0 0 0 .491-.408l1.5-8A.5.5 0 0 0 14.5 3H2.89l-.405-1.621A.5.5 0 0 0 2 1H.5zm3.915 10L3.102 4h10.796l-1.313 7h-8.17zM6 14a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm7 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0z"/></svg>
             <h3>Seu carrinho está vazio</h3>
             <p>Adicione produtos para vê-los aqui.</p>
             <a href="index.php" class="btn btn-primary">Continuar Comprando</a>
@@ -101,7 +167,8 @@ if ($usuarioLogado) {
                     $total_geral = 0;
                     foreach ($itensCarrinho as $item):
                         $total_geral += $item['total_item'];
-                        $itemId = $usuarioLogado ? $item['id'] : $item['id'];
+                        // A chave para os arrays de quantidade e remoção deve ser o ID do item no carrinho (c.id)
+                        $itemId = $usuarioLogado ? $item['id'] : $item['id_produto'];
                     ?>
                         <div class="cart-item">
                             <img src="assets/img/<?= htmlspecialchars($item['imagem'] ?: 'placeholder.jpg') ?>" alt="<?= htmlspecialchars($item['nome']) ?>" class="cart-item-image">
@@ -127,18 +194,9 @@ if ($usuarioLogado) {
 
                 <div class="order-summary">
                     <h4>Resumo do Pedido</h4>
-                    <div class="summary-row">
-                        <span>Subtotal</span>
-                        <span>R$ <?= number_format($total_geral, 2, ',', '.') ?></span>
-                    </div>
-                    <div class="summary-row">
-                        <span>Frete</span>
-                        <span>A calcular</span>
-                    </div>
-                    <div class="summary-total">
-                        <span>Total</span>
-                        <span>R$ <?= number_format($total_geral, 2, ',', '.') ?></span>
-                    </div>
+                    <div class="summary-row"><span>Subtotal</span><span>R$ <?= number_format($total_geral, 2, ',', '.') ?></span></div>
+                    <div class="summary-row"><span>Frete</span><span>A calcular</span></div>
+                    <div class="summary-total"><span>Total</span><span>R$ <?= number_format($total_geral, 2, ',', '.') ?></span></div>
                     <button type="submit" name="atualizar" class="btn btn-secondary">Atualizar Carrinho</button>
                     <a href="checkout.php" class="btn btn-primary btn-checkout">Finalizar Compra</a>
                 </div>

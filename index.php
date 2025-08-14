@@ -60,7 +60,7 @@ $produtos = $stmtProd->fetchAll(PDO::FETCH_ASSOC);
         ];
 
         // "Todos os Departamentos" primeiro
-        echo '<a class="nav-link categoria-pill active" href="categoria.php?id=0">' . $iconesCategorias['Todos os Departamentos'] . ' Todos os Departamentos</a>';
+        //echo '<a class="nav-link categoria-pill active" href="categoria.php?id=0">' . $iconesCategorias['Todos os Departamentos'] . ' Todos os Departamentos</a>';
 
         foreach ($categorias as $categoria):
             $nome = $categoria['nome'];
