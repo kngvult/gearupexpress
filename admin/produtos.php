@@ -1,39 +1,99 @@
 <?php
-require 'conexao.php';
+// Inclui o cabeçalho, menu e verificador de segurança
+include 'includes/header.php';
 
-// Consulta produtos
-$sql = "SELECT p.id_produto, p.nome, p.descricao, p.preco, p.estoque, p.imagem, c.nome AS categoria
+// Busca todos os produtos, juntando com o nome da categoria para exibição
+try {
+    $stmt = $pdo->query("
+        SELECT 
+            p.id_produto, 
+            p.nome, 
+            p.preco, 
+            p.estoque, 
+            p.imagem, 
+            c.nome AS nome_categoria
         FROM public.produtos p
         LEFT JOIN public.categorias c ON p.id_categoria = c.id_categoria
-        ORDER BY p.nome ASC";
-$stmt = $pdo->query($sql);
-$produtos = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        ORDER BY p.id_produto DESC
+    ");
+    $produtos = $stmt->fetchAll(PDO::FETCH_ASSOC); 
+} catch (PDOException $e) {
+    $produtos = [];
+    error_log("Erro ao buscar produtos: " . $e->getMessage());
+}
+
+// Define os scripts para a biblioteca DataTables
+$scripts_adicionais = "
+<script>
+$(document).ready(function() {
+    $('#tabela-produtos').DataTable({
+        \"language\": {
+            \"url\": \"//cdn.datatables.net/plug-ins/1.13.6/i18n/pt-BR.json\"
+        },
+        \"columnDefs\": [
+            { \"orderable\": false, \"targets\": [0, 6] } // Desabilita ordenação na coluna de imagem e ações
+        ]
+    });
+});
+</script>
+";
 ?>
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-    <meta charset="UTF-8">
-    <title>Lista de Produtos</title>
-    <style>
-        body { font-family: Arial, sans-serif; background: #f2f2f2; }
-        .produto { background: #fff; border-radius: 8px; padding: 16px; margin: 10px; display: inline-block; width: 250px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);}
-        img { max-width: 100%; height: auto; }
-        h3 { margin: 10px 0; }
-        .preco { color: green; font-weight: bold; }
-    </style>
-</head>
-<body>
-    <h1>Produtos Disponíveis</h1>
-    <?php foreach ($produtos as $p): ?>
-        <div class="produto">
-            <img src="imagens/<?php echo htmlspecialchars($p['imagem']); ?>" alt="<?php echo htmlspecialchars($p['nome']); ?>">
-            <h3><?php echo htmlspecialchars($p['nome']); ?></h3>
-            <p><?php echo htmlspecialchars($p['descricao']); ?></p>
-            <p><strong>Categoria:</strong> <?php echo htmlspecialchars($p['categoria']); ?></p>
-            <p class="preco">R$ <?php echo number_format($p['preco'], 2, ',', '.'); ?></p>
-            <p><strong>Estoque:</strong> <?php echo $p['estoque']; ?></p>
+
+<div class="container-fluid">
+    <div class="page-header">
+        <h1 class="page-title">Gerenciar Produtos</h1>
+        <a href="produto_form.php" class="btn-admin">Adicionar Novo Produto</a>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h4>Lista de Produtos</h4>
         </div>
-    <?php endforeach; ?>
-    <a href="carrinho.php?add=<?php echo $p['id_produto']; ?>">Adicionar ao Carrinho</a>
-</body>
-</html>
+        <div class="card-body">
+            <div class="table-wrapper">
+                <table id="tabela-produtos" class="table">
+                    <thead>
+                        <tr>
+                            <th>Imagem</th>
+                            <th>ID</th>
+                            <th>Nome do Produto</th>
+                            <th>Categoria</th>
+                            <th>Preço</th>
+                            <th>Estoque</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php if (empty($produtos)): ?>
+                            <tr>
+                                <td colspan="7" class="text-center">Nenhum produto cadastrado.</td>
+                            </tr>
+                        <?php else: ?>
+                            <?php foreach ($produtos as $produto): ?>
+                                <tr>
+                                    <td>
+                                        <img src="../assets/img/produtos/<?= htmlspecialchars($produto['imagem'] ?: 'placeholder.jpg') ?>" alt="<?= htmlspecialchars($produto['nome']) ?>" class="table-img">
+                                    </td>
+                                    <td><?= htmlspecialchars($produto['id_produto']) ?></td>
+                                    <td><?= htmlspecialchars($produto['nome']) ?></td>
+                                    <td><?= htmlspecialchars($produto['nome_categoria'] ?? 'Sem categoria') ?></td>
+                                    <td>R$ <?= number_format($produto['preco'], 2, ',', '.') ?></td>
+                                    <td><?= htmlspecialchars($produto['estoque']) ?></td>
+                                    <td class="actions">
+                                        <a href="produto_form.php?id=<?= $produto['id_produto'] ?>" class="btn-action btn-edit">Editar</a>
+                                        <a href="javascript:void(0);" class="btn-action btn-delete" onclick="showConfirmModal('Tem certeza que deseja excluir este produto? Esta ação não pode ser desfeita.', () => { window.location.href = 'produto_deletar.php?id=<?= $produto['id_produto'] ?>' })">Excluir</a>
+                                    </td>
+                                </tr>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<?php
+// Inclui o rodapé, que irá carregar os scripts necessários
+include 'includes/footer.php';
+?>

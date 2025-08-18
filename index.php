@@ -1,109 +1,163 @@
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GearUp Express - Sua loja online para peças automotivas</title>
-    <link rel="stylesheet" href="assets/css/style.css">
-    </head>
-    <body>
 <?php
-include 'includes/header.php';
-include 'includes/conexao.php';
-// Buscar categorias
-$stmtCat = $pdo->query("SELECT * FROM categorias ORDER BY nome ASC");
-$categorias = $stmtCat->fetchAll(PDO::FETCH_ASSOC);
-// Buscar produtos em destaque (exemplo: os 6 primeiros)
-$stmtProd = $pdo->query("SELECT id_produto, nome, preco, imagem FROM produtos ORDER BY id_produto LIMIT 6");
-$produtos = $stmtProd->fetchAll(PDO::FETCH_ASSOC);
+// O header.php já inicia o HTML, a sessão e a conexão com o banco.
+include 'includes/header.php'; 
+
+// A conexão $pdo já está disponível a partir do header.
+// Vamos buscar apenas os produtos em destaque para a página inicial.
+try {
+    // Busca 8 produtos mais recentes para um grid mais completo.
+    $stmtProd = $pdo->query("SELECT id_produto, nome, preco, imagem FROM produtos ORDER BY id_produto DESC LIMIT 8");
+    $produtos = $stmtProd->fetchAll(PDO::FETCH_ASSOC);
+} catch (PDOException $e) {
+    $produtos = []; // Em caso de erro, define um array vazio.
+    error_log("Erro ao buscar produtos em destaque: " . $e->getMessage());
+}
 ?>
-<main class="container">
-<div class="hero-banner">
-    <div class="hero-slide active" style="background-image: url('assets/img/promo1.jpg');">
-        <div class="hero-text">
-            <h1>Descontos imperdíveis!</h1>
-            <p>Aproveite até 50% off em autopeças selecionadas.</p>
-        </div>
-    </div>
-    <div class="hero-slide" style="background-image: url('assets/img/promo2.jpg');">
-        <div class="hero-text">
-            <h1>Frete grátis</h1>
-            <p>Para compras acima de R$ 199 em todo o Brasil.</p>
-        </div>
-    </div>
-    <div class="hero-slide" style="background-image: url('assets/img/promo3.jpg');">
-        <div class="hero-text">
-            <h1>Novidades em som automotivo</h1>
-            <p>Confira os lançamentos com qualidade premium.</p>
-        </div>
-    </div>
-</div>
-</div>    
-<section aria-label="Categorias" class="categorias-section">
-    <h2>Categorias</h2>
-    <nav class="nav nav-pills flex-wrap">
-        <?php
-        // Ícones por categoria
-        $iconesCategorias = [
-            'Todos os Departamentos' => '📦',
-            'Pneus' => '🛞',
-            'Autopeças' => '🔧',
-            'Elétrica' => '⚡',
-            'Som e Vídeo' => '🔊',
-            'Acessórios Externos' => '🚗',
-            'Acessórios Internos' => '🪑',
-            'Farol e Iluminação' => '💡',
-            'Alarme e Segurança' => '🔒',
-            'Ferramentas e Equipamentos' => '🧰',
-            'Lubrificantes e Aditivos' => '🛢️',
-            'Itens Promocionais' => '🏷️'
-        ];
 
-        // "Todos os Departamentos" primeiro
-        //echo '<a class="nav-link categoria-pill active" href="categoria.php?id=0">' . $iconesCategorias['Todos os Departamentos'] . ' Todos os Departamentos</a>';
+<main>
 
-        foreach ($categorias as $categoria):
-            $nome = $categoria['nome'];
-            $icone = $iconesCategorias[$nome] ?? '📁';
-        ?>
-            <a class="nav-link categoria-pill" href="categoria.php?id=<?= $categoria['id_categoria'] ?>">
-                <?= $icone ?> <?= htmlspecialchars($nome) ?>
-            </a>
-        <?php endforeach; ?>
-    </nav>
-</section>
+    <section class="hero-banner">
+        <div class="hero-slides-container">
+            <div class="hero-slide active" style="background-image: url('assets/img/banner/banner-freios.avif');">
+                <div class="hero-text">
+                    <h1>Até 30% OFF em Freios</h1>
+                    <p>Garanta a segurança do seu carro com as melhores marcas de discos e pastilhas.</p>
+                    <a href="produtos.php?categoria=2" class="btn btn-primary">Ver Ofertas</a>
+                </div>
+            </div>
+            <div class="hero-slide" style="background-image: url('assets/img/banner/banner-pneus.avif');">
+                <div class="hero-text">
+                    <h1>Pneus Novos, Preços Velhos</h1>
+                    <p>As melhores condições para você trocar os pneus do seu veículo. Confira!</p>
+                    <a href="produtos.php?categoria=6" class="btn btn-primary">Conferir Pneus</a>
+                </div>
+            </div>
+            <div class="hero-slide" style="background-image: url('assets/img/banner/banner-oleo.avif');">
+                <div class="hero-text">
+                    <h1>Troca de Óleo é Aqui!</h1>
+                    <p>Os melhores lubrificantes e aditivos para manter seu motor sempre novo.</p>
+                    <a href="produtos.php?categoria=15" class="btn btn-primary">Ver Lubrificantes</a>
+                </div>
+            </div>
+        </div>
 
-    <section aria-label="Produtos em destaque" style="margin-top: 40px;">
-        <h2>Produtos em Destaque</h2>
-        <div style="display:flex; flex-wrap: wrap; gap: 20px;">
-            <?php foreach($produtos as $produto): ?>
-                <article style="border: 1px solid #ddd; border-radius: 4px; padding: 10px; width: calc(33% - 20px); box-sizing: border-box;">
-                    <a href="produto.php?id=<?= $produto['id_produto'] ?>" style="text-decoration:none; color:inherit;">
-                        <img src="assets/img/<?= htmlspecialchars($produto['imagem']) ?>" alt="<?= htmlspecialchars($produto['nome']) ?>" style="width:100%; height:auto; border-radius:4px;">
-                        <h3 style="margin-top:10px; font-size: 1.1rem;"><?= htmlspecialchars($produto['nome']) ?></h3>
-                        <p style="color:#28a745; font-weight:bold;">R$ <?= number_format($produto['preco'], 2, ',', '.') ?></p>
-                    </a>
-                    <form method="post" action="carrinho.php" style="margin-top:10px;">
-                        <input type="hidden" name="id_produto" value="<?= $produto['id_produto'] ?>">
-                        <label for="qtd_<?= $produto['id_produto'] ?>" class="sr-only">Quantidade</label>
-                        <input id="qtd_<?= $produto['id_produto'] ?>" type="number" name="quantidade" value="1" min="1" style="width:50px;">
-                        <button class="btn" type="submit" name="adicionar">Adicionar</button>
-                    </form>
-                </article>
-            <?php endforeach; ?>
+        <button class="hero-nav prev" aria-label="Slide Anterior">&#10094;</button>
+        <button class="hero-nav next" aria-label="Próximo Slide">&#10095;</button>
+
+        <div class="hero-indicators">
+            <span class="dot active" data-slide-to="0"></span>
+            <span class="dot" data-slide-to="1"></span>
+            <span class="dot" data-slide-to="2"></span>
         </div>
     </section>
-</main>
-<?php include 'includes/footer.php'; ?>
-<script>
-let slides = document.querySelectorAll('.hero-slide');
-let currentSlide = 0;
 
-setInterval(() => {
-    slides[currentSlide].classList.remove('active');
-    currentSlide = (currentSlide + 1) % slides.length;
-    slides[currentSlide].classList.add('active');
-}, 10000); // 10 segundos
+    <div class="container">
+        <section class="featured-products-section">
+            <h2 class="section-title">Produtos em Destaque</h2>
+
+            <?php if (empty($produtos)): ?>
+                <div class="info-box">
+                    <h3>Nenhum produto em destaque no momento.</h3>
+                    <p>Estamos preparando novidades para você. Volte em breve!</p>
+                </div>
+            <?php else: ?>
+                <div class="product-grid">
+                    <?php foreach($produtos as $produto): ?>
+                        <article class="product-card">
+                            <div class="product-image-container">
+                                <a href="detalhes_produto.php?id=<?= $produto['id_produto'] ?>">
+                                    <img src="assets/img/produtos/<?= htmlspecialchars($produto['imagem'] ?: 'placeholder.jpg') ?>" alt="<?= htmlspecialchars($produto['nome']) ?>" class="product-image">
+                                </a>
+                            </div>
+                            <div class="product-info">
+                                <h4 class="product-name">
+                                    <a href="detalhes_produto.php?id=<?= $produto['id_produto'] ?>">
+                                        <?= htmlspecialchars($produto['nome']) ?>
+                                    </a>
+                                </h4>
+                                <p class="product-price">R$ <?= number_format($produto['preco'], 2, ',', '.') ?></p>
+                                
+                                <div class="product-card-actions">
+                                    <a href="detalhes_produto.php?id=<?= $produto['id_produto'] ?>" class="btn btn-secondary">Detalhes</a>
+                                    <form method="post" action="carrinho.php">
+                                        <input type="hidden" name="id_produto" value="<?= $produto['id_produto'] ?>">
+                                        <button type="submit" name="adicionar" class="btn btn-primary">Adicionar</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </article>
+                    <?php endforeach; ?>
+                </div>
+            <?php endif; ?>
+        </section>
+    </div>
+
+</main>
+
+<?php include 'includes/footer.php'; ?>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const slides = document.querySelectorAll('.hero-slide');
+    if (slides.length === 0) return; // Não executa se não houver slides
+
+    const dots = document.querySelectorAll('.dot');
+    const prevBtn = document.querySelector('.hero-nav.prev');
+    const nextBtn = document.querySelector('.hero-nav.next');
+    
+    let currentSlide = 0;
+    let slideInterval;
+
+    function showSlide(n) {
+        if (n >= slides.length) { currentSlide = 0; }
+        if (n < 0) { currentSlide = slides.length - 1; }
+        
+        slides.forEach(slide => slide.classList.remove('active'));
+        dots.forEach(dot => dot.classList.remove('active'));
+
+        slides[currentSlide].classList.add('active');
+        dots[currentSlide].classList.add('active');
+    }
+
+    function nextSlide() {
+        currentSlide++;
+        showSlide(currentSlide);
+    }
+
+    function prevSlide() {
+        currentSlide--;
+        showSlide(currentSlide);
+    }
+    
+    function startSlideShow() {
+        slideInterval = setInterval(nextSlide, 5000); // Troca a cada 5 segundos
+    }
+
+    function resetInterval() {
+        clearInterval(slideInterval);
+        startSlideShow();
+    }
+
+    nextBtn.addEventListener('click', () => {
+        nextSlide();
+        resetInterval();
+    });
+
+    prevBtn.addEventListener('click', () => {
+        prevSlide();
+        resetInterval();
+    });
+
+    dots.forEach(dot => {
+        dot.addEventListener('click', (e) => {
+            const slideIndex = parseInt(e.target.dataset.slideTo);
+            currentSlide = slideIndex;
+            showSlide(currentSlide);
+            resetInterval();
+        });
+    });
+
+    showSlide(currentSlide);
+    startSlideShow();
+});
 </script>
-</body>
-</html>

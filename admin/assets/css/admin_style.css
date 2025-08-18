@@ -1,0 +1,467 @@
+/* ==========================================================================
+   DESIGN SYSTEM DO PAINEL ADMINISTRATIVO GEARUP EXPRESS (VERSÃO FINAL)
+   ========================================================================== */
+
+/* * ÍNDICE:
+ * 1. Variáveis e Estilos Globais
+ * 2. Estrutura Principal do Layout (Sidebar, Top-bar, etc.)
+ * 3. Componentes Reutilizáveis (Cards, Tabelas, Botões, Formulários)
+ * 4. Componentes de Interação (Modal, Toast)
+ * 5. Estilos de Páginas Específicas (Login, Dashboard)
+ * 6. Responsividade
+*/
+
+/* ==========================================================================
+   1. VARIÁVEIS E ESTILOS GLOBAIS
+   ========================================================================== */
+:root {
+    --admin-primary: #007bff;
+    --admin-primary-hover: #0056b3;
+    --admin-dark: #343a40;
+    --admin-light: #f8f9fa;
+    --admin-sidebar-bg: #1e2a38;
+    --admin-sidebar-link: #aeb9c4;
+    --admin-sidebar-link-hover: #ffffff;
+    --admin-sidebar-link-active: #ffffff;
+    --admin-sidebar-active-bg: #007bff;
+    --admin-content-bg: #f4f6f9;
+    --admin-text: #495057;
+    --admin-border: #dee2e6;
+    --admin-white: #ffffff;
+    --admin-success: #28a745;
+    --admin-warning: #ffc107;
+    --admin-danger: #dc3545;
+    --admin-info: #17a2b8;
+    --admin-shadow: 0 4px 15px rgba(0, 0, 0, 0.07);
+}
+
+*, *:before, *:after { 
+    box-sizing: border-box; 
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background-color: var(--admin-content-bg);
+    color: var(--admin-text);
+    margin: 0;
+    font-size: 16px;
+    overflow-x: hidden;
+}
+
+/* ==========================================================================
+   2. ESTRUTURA PRINCIPAL DO LAYOUT
+   ========================================================================== */
+.admin-wrapper { 
+    display: flex; 
+}
+
+.sidebar {
+    width: 250px;
+    background-color: var(--admin-sidebar-bg);
+    height: 100vh;
+    position: fixed;
+    top: 0;
+    left: 0;
+    flex-shrink: 0;
+    z-index: 100;
+}
+
+.main-content {
+    margin-left: 250px;
+    width: calc(100vw - 250px);
+    display: flex;
+    flex-direction: column;
+}
+
+.top-bar {
+    background: var(--admin-white);
+    padding: 0 30px;
+    border-bottom: 1px solid var(--admin-border);
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    height: 65px;
+    flex-shrink: 0;
+}
+
+.content-area {
+    padding: 40px;
+    flex-grow: 1;
+    overflow-y: auto;
+}
+
+.container-fluid { 
+    width: 100%; 
+}
+
+/* ==========================================================================
+   3. COMPONENTES REUTILIZÁVEIS
+   ========================================================================== */
+
+/* ----- Sidebar ----- */
+.sidebar-header { 
+    padding: 20px; 
+    text-align: center; 
+    border-bottom: 1px solid rgba(255,255,255,0.1); 
+}
+.sidebar-header h3 { 
+    margin: 0; 
+    color: var(--admin-white); 
+}
+.sidebar-nav ul { 
+    list-style: none; 
+    padding: 15px 0; 
+    margin: 0; 
+}
+.sidebar-nav a { 
+    display: flex; 
+    align-items: center; 
+    gap: 10px; 
+    padding: 12px 25px; 
+    color: var(--admin-sidebar-link); 
+    text-decoration: none; 
+    font-weight: 500; 
+    transition: all 0.2s; 
+    border-left: 3px solid transparent; 
+}
+.sidebar-nav a:hover { 
+    background-color: rgba(255,255,255,0.05); 
+    color: var(--admin-sidebar-link-hover); 
+}
+.sidebar-nav a.active { 
+    color: var(--admin-sidebar-link-active); 
+    background-color: var(--admin-sidebar-active-bg); 
+    border-left-color: #66b0ff; 
+}
+
+.sidebar-logo {
+    max-width: 160px; /* Define a largura máxima do logo */
+    height: auto;     /* Mantém a proporção da imagem */
+    display: block;   /* Remove espaços extras abaixo da imagem */
+    margin: 0 auto;   /* Centraliza o logo dentro do link */
+}
+
+/* ----- Logoff ----- */
+.btn-logout {
+    background-color: var(--admin-danger);
+    color: var(--admin-white);
+    padding: 8px 12px;
+    border-radius: 4px;
+    text-decoration: none;
+    transition: background-color 0.2s;
+}
+.btn-logout:hover {
+    background-color: #c82333;
+}
+
+/* ----- Cards ----- */
+.card { 
+    background-color: var(--admin-white); 
+    border-radius: 8px; 
+    box-shadow: var(--admin-shadow); 
+    margin-bottom: 30px; 
+}
+.card-header { 
+    background-color: var(--admin-light); 
+    padding: 15px 20px; 
+    font-weight: 600; 
+    border-bottom: 1px solid var(--admin-border); 
+    border-radius: 8px 8px 0 0; 
+}
+.card-body { 
+    padding: 20px; 
+}
+
+/* ----- Tabelas ----- */
+.table-wrapper { 
+    overflow-x: auto; 
+}
+.table { 
+    width: 100%; 
+    min-width: 800px; 
+    border-collapse: collapse; 
+}
+.table thead { 
+    background-color: var(--admin-light); 
+}
+.table th, .table td { 
+    padding: 15px; 
+    text-align: left; 
+    border-bottom: 1px solid var(--admin-border); 
+    white-space: nowrap; 
+}
+.table th { 
+    font-weight: 600; 
+    font-size: 0.85rem; 
+    text-transform: uppercase; 
+    color: #495057; 
+}
+.table tbody tr:hover { 
+    background-color: #f1f3f5; 
+}
+.table-img { 
+    width: 50px; 
+    height: 50px; 
+    object-fit: cover; 
+    border-radius: 4px; 
+}
+.table td.actions {
+    display: flex !important;
+    align-items: center !important;
+    gap: 10px;
+}
+
+
+/* ----- Formulários ----- */
+.form-group { 
+    margin-bottom: 20px; 
+}
+.form-group label { 
+    display: block; 
+    margin-bottom: 8px; 
+    font-weight: 600; 
+}
+.form-control { 
+    width: 100%; 
+    padding: 12px; 
+    border: 1px solid var(--admin-border); 
+    border-radius: 6px; 
+    font-size: 1rem; 
+    transition: border-color 0.2s, box-shadow 0.2s; 
+}
+.form-control:focus { 
+    outline: none; 
+    border-color: var(--admin-primary); 
+    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.15); 
+}
+.form-row { 
+    display: grid; 
+    grid-template-columns: 1fr 1fr; 
+    gap: 20px; 
+}
+
+/* ----- Botões ----- */
+.btn-admin { 
+    padding: 12px 20px; 
+    border: none; 
+    background-color: var(--admin-primary); 
+    color: white; 
+    font-size: 1rem; 
+    font-weight: 600; 
+    border-radius: 6px; 
+    cursor: pointer; 
+    text-decoration: none; 
+    display: inline-block; 
+    transition: background-color 0.2s; 
+}
+.btn-admin:hover { 
+    background-color: var(--admin-primary-hover); 
+}
+.btn-admin-secondary { 
+    background-color: #6c757d; 
+}
+.btn-admin-secondary:hover { 
+    background-color: #5a6268; 
+}
+.actions { 
+    display: flex; 
+    gap: 10px; 
+}
+.btn-action { 
+    padding: 6px 12px; 
+    font-size: 0.8rem; 
+    font-weight: 600; 
+    border-radius: 4px; 
+    text-decoration: none; 
+    text-align: center; 
+    color: var(--admin-white); 
+}
+.btn-edit { 
+    background-color: var(--admin-warning); 
+    color: var(--admin-dark); 
+}
+.btn-delete { 
+    background-color: var(--admin-danger); 
+}
+.btn-view { 
+    background-color: var(--admin-info); 
+}
+.btn-danger {
+    background-color: var(--admin-danger);
+}
+.btn-danger:hover {
+    background-color: #c82333;
+}
+
+/* ==========================================================================
+   4. COMPONENTES DE INTERAÇÃO
+   ========================================================================== */
+
+/* ----- Modal de Confirmação ----- */
+.modal-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background-color: rgba(0, 0, 0, 0.6);
+    display: flex; justify-content: center; align-items: center;
+    z-index: 2000;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+.modal-overlay.visible { opacity: 1; }
+.modal-box {
+    background: var(--admin-white); padding: 30px; border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    width: 100%; max-width: 400px;
+    text-align: center;
+    transform: scale(0.9);
+    transition: transform 0.3s ease;
+}
+.modal-overlay.visible .modal-box { transform: scale(1); }
+.modal-box h3 { margin-top: 0; font-size: 1.5rem; }
+.modal-box p { margin: 15px 0 30px 0; color: var(--admin-text); }
+.modal-actions { display: flex; justify-content: center; gap: 15px; }
+.modal-actions button { width: 120px; }
+
+/* ----- Notificações "Toast" ----- */
+#toast-container {
+    position: fixed; top: 85px; right: 30px;
+    z-index: 3000; display: flex; flex-direction: column; gap: 10px;
+}
+.toast {
+    background-color: var(--admin-dark); color: var(--admin-white);
+    padding: 15px 20px; border-radius: 8px; box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    display: flex; align-items: center; gap: 10px;
+    opacity: 0; transform: translateX(100%);
+    transition: all 0.5s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+}
+.toast.show { opacity: 1; transform: translateX(0); }
+.toast.success { background-color: var(--admin-success); }
+.toast.danger { background-color: var(--admin-danger); }
+.toast.info { background-color: var(--admin-info); }
+.toast::before { font-size: 1.2rem; font-weight: bold; }
+.toast.success::before { content: '✓'; }
+.toast.danger::before { content: '✗'; }
+.toast.info::before { content: 'ℹ️'; }
+
+/* ==========================================================================
+   5. ESTILOS DE PÁGINAS ESPECÍFICAS
+   ========================================================================== */
+
+/* ----- Login ----- */
+.login-page {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background: linear-gradient(135deg, #f0f4f8, #d9e2ec);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.login-box {
+    background: #ffffff;
+    padding: 40px 30px;
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    max-width: 400px;
+    text-align: center;
+}
+
+.login-box h2 {
+    font-size: 1.8rem;
+    margin-bottom: 10px;
+    color: #333;
+}
+
+.login-box p {
+    font-size: 1rem;
+    color: #666;
+    margin-bottom: 25px;
+}
+
+.form-group {
+    margin-bottom: 20px;
+    text-align: left;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 6px;
+    font-weight: 500;
+    color: #444;
+}
+
+.form-group input {
+    width: 100%;
+    padding: 12px 15px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 1rem;
+    transition: border-color 0.2s;
+}
+
+.form-group input:focus {
+    border-color: #0078d4;
+    outline: none;
+}
+
+.btn-admin {
+    width: 100%;
+    padding: 12px;
+    background-color: #0078d4;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.btn-admin:hover {
+    background-color: #005fa3;
+}
+
+.alert-admin.alert-danger {
+    background-color: #f8d7da;
+    color: #842029;
+    padding: 12px;
+    border-radius: 6px;
+    margin-bottom: 20px;
+    font-size: 0.95rem;
+    border: 1px solid #f5c2c7;
+}
+
+
+/* ----- Dashboard ----- */
+.charts-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 30px;
+    margin-bottom: 30px;
+}
+#salesChart, .chart-pie-container {
+    height: 350px;
+}
+.quick-actions .card-body {
+    display: flex;
+    gap: 15px;
+}
+
+/* ==========================================================================
+   6. RESPONSIVIDADE
+   ========================================================================== */
+@media (max-width: 992px) {
+    .charts-grid {
+        grid-template-columns: 1fr;
+    }
+}
+@media (max-width: 768px) {
+    .sidebar { 
+        transform: translateX(-100%); 
+        position: absolute; 
+    }
+    .main-content { 
+        margin-left: 0; 
+        width: 100vw; 
+    }
+    /* Adicionar lógica de menu hamburguer com JS no futuro */
+}

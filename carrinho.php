@@ -171,15 +171,18 @@ if ($usuarioLogado) {
                         $itemId = $usuarioLogado ? $item['id'] : $item['id_produto'];
                     ?>
                         <div class="cart-item">
-                            <img src="assets/img/<?= htmlspecialchars($item['imagem'] ?: 'placeholder.jpg') ?>" alt="<?= htmlspecialchars($item['nome']) ?>" class="cart-item-image">
+                            <img src="assets/img/produtos/<?= htmlspecialchars($item['imagem'] ?: 'placeholder.jpg') ?>" alt="<?= htmlspecialchars($item['nome']) ?>" class="cart-item-image">
                             <div class="cart-item-details">
                                 <span class="cart-item-name"><?= htmlspecialchars($item['nome']) ?></span>
                                 <span class="cart-item-price">R$ <?= number_format($item['preco_unitario'], 2, ',', '.') ?></span>
                             </div>
                             <div class="cart-item-quantity">
-                                <label for="qtd_<?= $itemId ?>" class="sr-only">Quantidade</label>
-                                <input type="number" id="qtd_<?= $itemId ?>" name="quantidades[<?= $itemId ?>]" value="<?= $item['quantidade'] ?>" min="1" class="quantity-input">
-                            </div>
+    <div class="quantity-stepper">
+        <button type="button" class="quantity-btn minus" aria-label="Diminuir quantidade">-</button>
+        <input type="number" id="qtd_<?= $itemId ?>" name="quantidades[<?= $itemId ?>]" value="<?= $item['quantidade'] ?>" min="1" class="quantity-input" readonly>
+        <button type="button" class="quantity-btn plus" aria-label="Aumentar quantidade">+</button>
+    </div>
+</div>
                             <div class="cart-item-total">
                                 <span>R$ <?= number_format($item['total_item'], 2, ',', '.') ?></span>
                             </div>
@@ -197,7 +200,6 @@ if ($usuarioLogado) {
                     <div class="summary-row"><span>Subtotal</span><span>R$ <?= number_format($total_geral, 2, ',', '.') ?></span></div>
                     <div class="summary-row"><span>Frete</span><span>A calcular</span></div>
                     <div class="summary-total"><span>Total</span><span>R$ <?= number_format($total_geral, 2, ',', '.') ?></span></div>
-                    <button type="submit" name="atualizar" class="btn btn-secondary">Atualizar Carrinho</button>
                     <a href="checkout.php" class="btn btn-primary btn-checkout">Finalizar Compra</a>
                 </div>
             </div>
@@ -205,5 +207,53 @@ if ($usuarioLogado) {
     <?php endif; ?>
 </div>
 </main>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const quantitySteppers = document.querySelectorAll('.quantity-stepper');
+    const cartForm = document.querySelector('.cart-layout').closest('form');
+    let updateTimeout;
+
+    quantitySteppers.forEach(stepper => {
+        const input = stepper.querySelector('.quantity-input');
+        const btnMinus = stepper.querySelector('.quantity-btn.minus');
+        const btnPlus = stepper.querySelector('.quantity-btn.plus');
+
+        btnMinus.addEventListener('click', function() {
+            let currentValue = parseInt(input.value);
+            if (currentValue > 1) {
+                input.value = currentValue - 1;
+                // Dispara o evento para o auto-update
+                input.dispatchEvent(new Event('change'));
+            }
+        });
+
+        btnPlus.addEventListener('click', function() {
+            let currentValue = parseInt(input.value);
+            input.value = currentValue + 1;
+            // Dispara o evento para o auto-update
+            input.dispatchEvent(new Event('change'));
+        });
+
+        // Evento de 'change' para acionar o envio do formulário
+        input.addEventListener('change', function() {
+            // "Debounce": Cancela o envio anterior e agenda um novo
+            // Isso evita múltiplos envios se o usuário clicar rápido
+            clearTimeout(updateTimeout);
+            
+            updateTimeout = setTimeout(() => {
+                // Adiciona um name ao formulário para que o PHP saiba que é uma atualização
+                const updateInput = document.createElement('input');
+                updateInput.type = 'hidden';
+                updateInput.name = 'atualizar';
+                updateInput.value = '1';
+                cartForm.appendChild(updateInput);
+                
+                cartForm.submit();
+            }, 1000); // Espera 1 segundo após o último clique para atualizar
+        });
+    });
+});
+</script>
 
 <?php include 'includes/footer.php'; ?>

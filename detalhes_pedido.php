@@ -94,7 +94,7 @@ if (empty($_GET['id']) || !is_numeric($_GET['id'])) {
                         $subtotal = $item['quantidade'] * $item['preco_unitario'];    
                     ?>
                         <div class="produto-item">
-                            <img src="assets/img/<?= htmlspecialchars($item['imagem'] ?: 'placeholder.jpg') ?>" alt="<?= htmlspecialchars($item['nome']) ?>" class="produto-item-image">
+                            <img src="assets/img/produtos/<?= htmlspecialchars($item['imagem'] ?: 'placeholder.jpg') ?>" alt="<?= htmlspecialchars($item['nome']) ?>" class="produto-item-image">
                             <div class="produto-item-details">
                                 <span class="produto-item-name"><?= htmlspecialchars($item['nome']) ?></span>
                                 <span class="produto-item-price-qty">

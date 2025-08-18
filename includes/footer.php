@@ -1,53 +1,69 @@
-<footer class="main-footer" style="background-color: #1f1f1f; color: #ccc; padding: 40px 0; font-family: 'Inter', sans-serif;">
-    <div class="container" style="max-width: 1200px; margin: 0 auto; padding: 0 20px;">
-        <div class="footer-content" style="display: flex; flex-wrap: wrap; justify-content: space-between; gap: 40px;">
+<?php
+// Se a variável $pdo não existir (caso o footer seja chamado em uma página simples),
+// incluímos a conexão para buscar as categorias.
+if (!isset($pdo)) {
+    include_once 'includes/conexao.php';
+}
+
+// Busca 4 categorias para exibir no rodapé
+try {
+    $stmtFooterCat = $pdo->query("SELECT id_categoria, nome FROM categorias WHERE nome != 'Todos os Departamentos' ORDER BY nome LIMIT 4");
+    $categoriasFooter = $stmtFooterCat->fetchAll(PDO::FETCH_ASSOC);
+} catch (PDOException $e) {
+    $categoriasFooter = []; // Define como vazio em caso de erro
+    error_log("Erro ao buscar categorias para o footer: " . $e->getMessage());
+}
+?>
+
+<footer class="main-footer">
+    <div class="container">
+        <div class="footer-content">
             
-            <!-- Sobre -->
-            <div class="footer-section" style="flex: 1; min-width: 250px;">
-                <h4 style="color: #fff; margin-bottom: 15px;">🚗 GearUp Express</h4>
+            <div class="footer-section">
+                <h4>🚗 GearUP Express</h4>
                 <p>Sua paixão por carros, nossa dedicação em peças. Qualidade e confiança desde 2025.</p>
-                <p style="margin-top: 10px;">📍 Manaus, AM<br>📞 (92) 4002-8922<br>✉️ contato@gearup.com.br</p>
-            </div>
-
-            <!-- Departamentos -->
-            <div class="footer-section" style="flex: 1; min-width: 200px;">
-                <h4 style="color: #fff; margin-bottom: 15px;">🧰 Departamentos</h4>
-                <ul style="list-style: none; padding: 0;">
-                    <li><a href="produtos.php?categoria=1" style="color: #ccc; text-decoration: none;">🛞 Pneus</a></li>
-                    <li><a href="produtos.php?categoria=2" style="color: #ccc; text-decoration: none;">🔧 Autopeças</a></li>
-                    <li><a href="produtos.php?categoria=3" style="color: #ccc; text-decoration: none;">⚡ Elétrica</a></li>
-                    <li><a href="produtos.php" style="color: #ccc; text-decoration: none;">📦 Ver todos...</a></li>
+                <ul class="footer-contact">
+                    <li>📍 Manaus, AM</li>
+                    <li>📞 (92) 4002-8922</li>
+                    <li>✉️ contato@gearup.com.br</li>
                 </ul>
             </div>
 
-            <!-- Atendimento -->
-            <div class="footer-section" style="flex: 1; min-width: 200px;">
-                <h4 style="color: #fff; margin-bottom: 15px;">📞 Atendimento</h4>
-                <ul style="list-style: none; padding: 0;">
-                    <li><a href="#" style="color: #ccc; text-decoration: none;">💬 Fale Conosco</a></li>
-                    <li><a href="#" style="color: #ccc; text-decoration: none;">🔄 Trocas e Devoluções</a></li>
-                    <li><a href="#" style="color: #ccc; text-decoration: none;">🔐 Política de Privacidade</a></li>
+            <div class="footer-section">
+                <h4>🧰 Departamentos</h4>
+                <ul class="footer-links">
+                    <?php foreach ($categoriasFooter as $cat): ?>
+                        <li><a href="produtos.php?categoria=<?= $cat['id_categoria'] ?>"><?= htmlspecialchars($cat['nome']) ?></a></li>
+                    <?php endforeach; ?>
+                    <li><a href="produtos.php">Ver todos...</a></li>
                 </ul>
             </div>
 
-            <!-- Redes Sociais -->
-            <div class="footer-section" style="flex: 1; min-width: 200px;">
-                <h4 style="color: #fff; margin-bottom: 15px;">🌐 Redes Sociais</h4>
-                <ul style="list-style: none; padding: 0; display: flex; gap: 10px;">
-                    <li><a href="#" style="color: #ccc; font-size: 1.5rem;">📘</a></li>
-                    <li><a href="#" style="color: #ccc; font-size: 1.5rem;">📸</a></li>
-                    <li><a href="#" style="color: #ccc; font-size: 1.5rem;">🐦</a></li>
-                    <li><a href="#" style="color: #ccc; font-size: 1.5rem;">🎥</a></li>
+            <div class="footer-section">
+                <h4>📞 Atendimento</h4>
+                <ul class="footer-links">
+                    <li><a href="#">Fale Conosco</a></li>
+                    <li><a href="#">Trocas e Devoluções</a></li>
+                    <li><a href="#">Política de Privacidade</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-section">
+                <h4>🌐 Redes Sociais</h4>
+                <ul class="footer-social">
+                    <li><a href="#" aria-label="Facebook">📘</a></li>
+                    <li><a href="#" aria-label="Instagram">📸</a></li>
+                    <li><a href="#" aria-label="Twitter">🐦</a></li>
+                    <li><a href="#" aria-label="YouTube">🎥</a></li>
                 </ul>
             </div>
         </div>
 
-        <hr style="border-color: #444; margin: 30px 0;">
-
-        <div class="footer-bottom" style="text-align: center; font-size: 14px;">
-            <p>&copy; <?= date('Y') ?> GearUp Express. Todos os direitos reservados.</p>
+        <div class="footer-bottom">
+            <p>&copy; <?= date('Y') ?> GearUP Express. Todos os direitos reservados.</p>
         </div>
     </div>
 </footer>
+
 </body>
 </html>
