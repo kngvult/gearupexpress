@@ -28,7 +28,7 @@ $scripts_adicionais = "
 $(document).ready(function() {
     $('#tabela-produtos').DataTable({
         \"language\": {
-            \"url\": \"//cdn.datatables.net/plug-ins/1.13.6/i18n/pt-BR.json\"
+            \"url\": \"https://cdn.datatables.net/plug-ins/1.13.6/i18n/pt-BR.json\"
         },
         \"columnDefs\": [
             { \"orderable\": false, \"targets\": [0, 6] } // Desabilita ordenação na coluna de imagem e ações
@@ -81,7 +81,7 @@ $(document).ready(function() {
                                     <td><?= htmlspecialchars($produto['estoque']) ?></td>
                                     <td class="actions">
                                         <a href="produto_form.php?id=<?= $produto['id_produto'] ?>" class="btn-action btn-edit">Editar</a>
-                                        <a href="javascript:void(0);" class="btn-action btn-delete" onclick="showConfirmModal('Tem certeza que deseja excluir este produto? Esta ação não pode ser desfeita.', () => { window.location.href = 'produto_deletar.php?id=<?= $produto['id_produto'] ?>' })">Excluir</a>
+                                        <a href="#" class="btn-action btn-delete" data-id="<?= $produto['id_produto'] ?>" data-nome="<?= htmlspecialchars($produto['nome']) ?>">Excluir</a>
                                     </td>
                                 </tr>
                             <?php endforeach; ?>

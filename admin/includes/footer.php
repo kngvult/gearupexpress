@@ -1,5 +1,15 @@
-</main> </div> </div> <script src="https://code.jquery.com/jquery-3.7.0.js"></script>
-    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+</main> </div> </div> <div id="confirm-modal" class="modal-overlay">
+        <div class="modal-box">
+            <h3 id="modal-title">Confirmar Ação</h3>
+            <p id="modal-message">Você tem certeza que deseja continuar?</p>
+            <div class="modal-actions">
+                <button id="modal-cancel-btn" class="btn-admin btn-admin-secondary">Cancelar</button>
+                <button id="modal-confirm-btn" class="btn-admin btn-danger">Confirmar</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.7.0.js"></script>
     <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
