@@ -60,7 +60,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // LÓGICA DE FRETE (SIMULADO)
         // Em um site real, aqui você chamaria uma API dos Correios.
         // Para nossa simulação, vamos usar um valor fixo.
-        $valor_frete = 25.00; 
+        $valor_frete = 5.00; 
         $total_final = $total_carrinho + $valor_frete;
 
         $pdo->beginTransaction();
@@ -76,7 +76,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             ]);
             $id_novo_pedido = $stmtPedido->fetchColumn();
 
-            // ... Lógica para inserir itens_pedido e limpar carrinho ...
+            // Limpa o carrinho do usuário
+            $stmtLimpaCarrinho = $pdo->prepare("DELETE FROM carrinho WHERE usuario_id = ?");
+            $stmtLimpaCarrinho->execute([$id_usuario]);
 
             $pdo->commit();
             $pedido_sucesso = true;
@@ -86,20 +88,35 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $pdo->rollBack();
             $erro = "Não foi possível finalizar seu pedido. Por favor, tente novamente.";
             error_log("Erro no checkout: " . $e->getMessage());
+
+            header('Location: meus_pedidos.php?order=success');
+            exit;
         }
     }
 }
 ?>
 
 <main class="page-content">
+    <div id="processing-overlay" style="display: none;">
+    <div class="spinner"></div>
+    <p>Processando pagamento, por favor aguarde...</p>
+</div>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css">
 <div class="container checkout-container">
 
     <?php if ($pedido_sucesso ?? false): ?>
-        <div class="checkout-success">
-            <h2>Pedido Realizado com Sucesso!</h2>
-            </div>
-    <?php else: ?>
+    <div class="checkout-success-container">
+        <div class="checkout-card success-card">
+            <i class="fas fa-check-circle success-icon"></i>
+            <h2 class="section-title">Pedido realizado com sucesso!</h2>
+            <p class="success-message">
+                Seu pedido foi registrado e em breve será preparado para envio.<br>
+                O número do seu pedido é: <strong>#<?= htmlspecialchars($num_pedido_sucesso) ?></strong>
+            </p>
+            <a href="meus_pedidos.php" class="btn btn-primary">Acompanhar meus pedidos</a>
+        </div>
+    </div>
+<?php else: ?>
         <h2 class="section-title">Finalizar Compra</h2>
 
         <?php if (!empty($erro)): ?>
@@ -189,35 +206,38 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <div class="checkout-card checkout-address-full">
                     <h4>Endereço de Entrega</h4>
                     <div class="address-form-container">
-                        <div class="form-group">
-                            <label for="cep">CEP</label>
-                            <input type="text" id="cep" name="cep" placeholder="00000-000" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="rua">Rua / Logradouro</label>
-                            <input type="text" id="rua" name="rua" required>
-                        </div>
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label for="numero">Número</label>
-                                <input type="text" id="numero" name="numero" required>
-                            </div>
-                            <div class="form-group">
-                                <label for="bairro">Bairro</label>
-                                <input type="text" id="bairro" name="bairro" required>
-                            </div>
-                        </div>
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label for="cidade">Cidade</label>
-                                <input type="text" id="cidade" name="cidade" required>
-                            </div>
-                            <div class="form-group">
-                                <label for="estado">Estado (UF)</label>
-                                <input type="text" id="estado" name="estado" maxlength="2" required>
-                            </div>
-                        </div>
-                    </div>
+    <div class="form-group">
+        <label for="cep">CEP</label>
+        <div class="cep-wrapper">
+            <input type="text" id="cep" name="cep" placeholder="00000-000" required maxlength="9">
+            <span id="cep-feedback"></span>
+        </div>
+    </div>
+    <div class="form-group">
+        <label for="rua">Rua / Logradouro</label>
+        <input type="text" id="rua" name="rua" class="form-control" required>
+    </div>
+    <div class="form-row">
+        <div class="form-group">
+            <label for="numero">Número</label>
+            <input type="text" id="numero" name="numero" class="form-control" required>
+        </div>
+        <div class="form-group">
+            <label for="bairro">Bairro</label>
+            <input type="text" id="bairro" name="bairro" class="form-control" required>
+        </div>
+    </div>
+    <div class="form-row">
+        <div class="form-group">
+            <label for="cidade">Cidade</label>
+            <input type="text" id="cidade" name="cidade" class="form-control" required>
+        </div>
+        <div class="form-group">
+            <label for="estado">Estado (UF)</label>
+            <input type="text" id="estado" name="estado" class="form-control" maxlength="2" required>
+        </div>
+    </div>
+</div>
                 </div>
             </div>
 
@@ -232,59 +252,108 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+
+    // ======================================================================
+    // SEÇÃO 1: LÓGICA DO CEP, FRETE E HABILITAÇÃO DO BOTÃO
+    // ======================================================================
     const cepInput = document.getElementById('cep');
-    const shippingRow = document.getElementById('shipping-row');
-    const shippingCostEl = document.getElementById('shipping-cost');
-    const totalCostEl = document.getElementById('total-cost');
-    const submitButton = document.getElementById('submit-button');
-    const helperText = document.getElementById('submit-helper-text');
-    const subtotal = <?= $total_carrinho ?>;
-    
-    cepInput.addEventListener('input', function() {
-        // Remove caracteres não numéricos
-        this.value = this.value.replace(/\D/g, '');
+    if (cepInput) {
+        const ruaInput = document.getElementById('rua');
+        const bairroInput = document.getElementById('bairro');
+        const cidadeInput = document.getElementById('cidade');
+        const estadoInput = document.getElementById('estado');
+        const numeroInput = document.getElementById('numero');
+        const cepFeedback = document.getElementById('cep-feedback');
+        const submitButton = document.getElementById('submit-button');
+        const helperText = document.getElementById('submit-helper-text');
+        const shippingRow = document.getElementById('shipping-row');
+        const shippingCostSpan = document.getElementById('shipping-cost');
+        const totalCostSpan = document.getElementById('total-cost');
+        const totalCarrinho = <?= $total_carrinho ?>;
 
-        if (this.value.length === 8) {
-            // CEP válido, simula cálculo
-            shippingCostEl.textContent = 'Calculando...';
-            shippingRow.style.display = 'flex';
-            submitButton.disabled = true;
-            helperText.style.display = 'block';
-
-            setTimeout(() => {
-                const frete = 25.00; // Valor de frete simulado
-                const totalFinal = subtotal + frete;
-                
-                shippingCostEl.textContent = 'R$ ' + frete.toFixed(2).replace('.', ',');
-                totalCostEl.textContent = 'R$ ' + totalFinal.toFixed(2).replace('.', ',');
-                
-                // Habilita o botão de finalizar
+        function habilitarBotao() {
+            if(submitButton) {
                 submitButton.disabled = false;
                 helperText.style.display = 'none';
-
-            }, 1500); // Simula 1.5s de chamada de API
-        } else {
-            // CEP inválido, reseta os valores
-            shippingRow.style.display = 'none';
-            totalCostEl.textContent = 'R$ ' + subtotal.toFixed(2).replace('.', ',');
-            submitButton.disabled = true;
-            helperText.style.display = 'block';
+                cepFeedback.textContent = '';
+            }
         }
-    });
-});
-document.addEventListener('DOMContentLoaded', function() {
-    // Lógica para o seletor de método de pagamento
+        function desabilitarBotao() {
+            if(submitButton) {
+                submitButton.disabled = true;
+                helperText.style.display = 'block';
+                shippingRow.style.display = 'none';
+                totalCostSpan.textContent = `R$ ${totalCarrinho.toFixed(2).replace('.', ',')}`;
+            }
+        }
+        function limparCamposEndereco() {
+            ruaInput.value = '';
+            bairroInput.value = '';
+            cidadeInput.value = '';
+            estadoInput.value = '';
+        }
+
+        cepInput.addEventListener('blur', function() {
+            let cep = this.value.replace(/\D/g, '');
+            if (cep.length === 8) {
+                cepFeedback.textContent = 'Buscando...';
+                desabilitarBotao();
+                fetch(`https://viacep.com.br/ws/${cep}/json/`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.erro) {
+                            cepFeedback.textContent = 'CEP não encontrado.';
+                        } else {
+                            ruaInput.value = data.logradouro;
+                            bairroInput.value = data.bairro;
+                            cidadeInput.value = data.localidade;
+                            estadoInput.value = data.uf;
+                            const frete = parseFloat((Math.random() * 30 + 15).toFixed(2));
+                            const totalFinal = totalCarrinho + frete;
+                            shippingCostSpan.textContent = `R$ ${frete.toFixed(2).replace('.', ',')}`;
+                            totalCostSpan.textContent = `R$ ${totalFinal.toFixed(2).replace('.', ',')}`;
+                            shippingRow.style.display = 'flex';
+                            habilitarBotao();
+                            numeroInput.focus();
+                        }
+                    });
+            }
+        });
+    }
+
+    // ======================================================================
+    // SEÇÃO 2: LÓGICA DA SIMULAÇÃO DE PAGAMENTO
+    // ======================================================================
+    const form = document.getElementById('checkout-form');
+    if (form) {
+        const overlay = document.getElementById('processing-overlay');
+        form.addEventListener('submit', function(event) {
+            const paymentMethod = document.querySelector('input[name="metodo_pagamento"]:checked');
+            if (paymentMethod && paymentMethod.value === 'Cartao de Credito') {
+                event.preventDefault();
+                overlay.style.display = 'flex';
+                const cardNumberInput = document.getElementById('card-number');
+                const cardNumber = cardNumberInput ? cardNumberInput.value.replace(/\s/g, '') : '';
+                setTimeout(() => {
+                    overlay.style.display = 'none';
+                    if (cardNumber.endsWith('4242')) {
+                        form.submit();
+                    } else {
+                        alert('Pagamento recusado. Verifique os dados do cartão.');
+                    }
+                }, 2500);
+            }
+        });
+    }
+
+    // ======================================================================
+    // SEÇÃO 3: LÓGICA PARA EXIBIR/ESCONDER OPÇÕES DE PAGAMENTO
+    // ======================================================================
     const paymentOptions = document.querySelectorAll('input[name="metodo_pagamento"]');
     const contentPanels = document.querySelectorAll('.payment-content');
-
     paymentOptions.forEach(option => {
         option.addEventListener('change', function() {
-            // Esconde todos os painéis de conteúdo
-            contentPanels.forEach(panel => {
-                panel.classList.remove('active');
-            });
-
-            // Mostra o painel alvo correspondente à opção selecionada
+            contentPanels.forEach(panel => panel.classList.remove('active'));
             const targetId = this.dataset.target;
             const targetPanel = document.getElementById(targetId);
             if (targetPanel) {
@@ -292,9 +361,5 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     });
-
-    // Aciona o 'change' na primeira opção para inicializar a visualização
-    document.querySelector('input[name="metodo_pagamento"]:checked')?.dispatchEvent(new Event('change'));
 });
-
 </script>
