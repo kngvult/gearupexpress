@@ -15,6 +15,7 @@ $pagina_atual = basename($_SERVER['PHP_SELF']);
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css">
     <title>Painel Administrativo - GearUP Express</title>
     <link rel="icon" href="../assets/img/favicon.ico" type="image/x-icon" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css">
     <link rel="stylesheet" href="assets/css/admin_style.css">
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
 </head>
@@ -28,12 +29,13 @@ $pagina_atual = basename($_SERVER['PHP_SELF']);
         </a>
     </div>
     <nav class="sidebar-nav">
-                <ul>
-                    <li><a href="index.php" class="<?= ($pagina_atual == 'index.php') ? 'active' : '' ?>">📊 Dashboard</a></li>
-                    <li><a href="produtos.php" class="<?= ($pagina_atual == 'produtos.php' || $pagina_atual == 'produto_form.php') ? 'active' : '' ?>">📦 Produtos</a></li>
-                    <li><a href="pedidos.php" class="<?= ($pagina_atual == 'pedidos.php' || $pagina_atual == 'pedido_detalhes.php') ? 'active' : '' ?>">🛒 Pedidos</a></li>
-                </ul>
-            </nav>
+    <ul>
+        <li><a href="index.php" class="<?= ($pagina_atual == 'index.php') ? 'active' : '' ?>"><i class="fas fa-chart-line"></i> Dashboard</a></li>
+        <li><a href="produtos.php" class="<?= ($pagina_atual == 'produtos.php' || $pagina_atual == 'produto_form.php') ? 'active' : '' ?>"><i class="fas fa-box"></i> Produtos</a></li>
+        <li><a href="pedidos.php" class="<?= ($pagina_atual == 'pedidos.php' || $pagina_atual == 'pedido_detalhes.php') ? 'active' : '' ?>"><i class="fas fa-shopping-cart"></i> Pedidos</a></li>
+        <li><a href="relatorios.php" class="<?= ($pagina_atual == 'relatorios.php') ? 'active' : '' ?>"><i class="fas fa-file"></i> Relatórios</a></li>
+    </ul>
+</nav>
         </aside>
 
         <div class="main-content">

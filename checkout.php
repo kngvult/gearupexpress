@@ -84,6 +84,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $pedido_sucesso = true;
             $num_pedido_sucesso = $id_novo_pedido;
 
+            // Insere o log de atividade
+            $logDescricao = "Novo pedido (#{$id_novo_pedido}) recebido.";
+            $stmtLog = $pdo->prepare("INSERT INTO logs_atividade (descricao) VALUES (?)");
+            $stmtLog->execute([$logDescricao]);
+
         } catch (PDOException $e) {
             $pdo->rollBack();
             $erro = "Não foi possível finalizar seu pedido. Por favor, tente novamente.";

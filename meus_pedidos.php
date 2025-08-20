@@ -1,6 +1,9 @@
 <?php
-include 'includes/header.php'; 
-include 'includes/conexao.php';
+// ETAPA 1: LÓGICA DE BACKEND E VERIFICAÇÕES (ANTES DE QUALQUER HTML)
+// session_start() será chamado pelo header.php, mas podemos garantir aqui.
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 
 // Verifica se o usuário está logado usando a chave correta da sessão
 if (!isset($_SESSION['usuario']['id'])) {
@@ -8,8 +11,9 @@ if (!isset($_SESSION['usuario']['id'])) {
     exit;
 }
 
-$id_usuario = $_SESSION['usuario']['id']; // Este é o UUID do usuário
+include 'includes/conexao.php';
 
+$id_usuario = $_SESSION['usuario']['id'];
 // Busca os pedidos do usuário no banco de dados
 $pedidos = [];
 try {
@@ -22,16 +26,22 @@ try {
     $stmt->execute([$id_usuario]);
     $pedidos = $stmt->fetchAll(PDO::FETCH_ASSOC);
 } catch (PDOException $e) {
-    // Em caso de erro, podemos logar e mostrar uma mensagem amigável
     error_log("Erro ao buscar pedidos: " . $e->getMessage());
-    // A página continuará, mas exibirá a mensagem de "nenhum pedido".
 }
 
+// ETAPA 2: RENDERIZAÇÃO DO HTML (SÓ AGORA COMEÇAMOS A ENVIAR CONTEÚDO)
+include 'includes/header.php';
 ?>
 
 <main class="page-content">
 <div class="container">
     <h2 class="section-title">Meus Pedidos</h2>
+
+    <?php if (isset($_GET['order']) && $_GET['order'] == 'success'): ?>
+        <div class="alert alert-success">
+            Seu pedido foi realizado com sucesso e já está disponível abaixo!
+        </div>
+    <?php endif; ?>
 
     <?php if (empty($pedidos)): ?>
         <div class="info-box">
@@ -68,7 +78,7 @@ try {
                     </div>
                     <div class="pedido-footer">
                         <a href="detalhes_pedido.php?id=<?= $pedido['id_pedido'] ?>" class="btn btn-secondary">Ver Detalhes</a>
-                        <?php if ($pedido['status'] === 'enviado'): ?>
+                        <?php if ($pedido['status'] !== 'cancelado'): ?>
                             <a href="rastrear_pedido.php?id=<?= $pedido['id_pedido'] ?>" class="btn btn-primary">Rastrear Pedido</a>
                         <?php endif; ?>
                     </div>
@@ -78,96 +88,5 @@ try {
     <?php endif; ?>
 </div>
 </main>
-
-<style>
-/* Adicione este CSS ao seu arquivo estilos.css principal */
-.pedidos-lista {
-    display: grid;
-    gap: 20px;
-}
-.pedido-card {
-    background-color: var(--white);
-    border-radius: 12px;
-    box-shadow: var(--soft-shadow);
-    border: 1px solid var(--border-color);
-    transition: all 0.3s ease;
-}
-.pedido-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 12px 25px rgba(0,0,0,0.08);
-}
-.pedido-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 15px 20px;
-    background-color: var(--background-light);
-    border-bottom: 1px solid var(--border-color);
-    border-radius: 12px 12px 0 0;
-}
-.pedido-id { font-weight: 600; color: var(--dark-text); }
-.pedido-data { font-size: 0.9rem; color: var(--light-text); }
-.pedido-body {
-    padding: 20px;
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 15px;
-}
-.pedido-info {
-    display: flex;
-    flex-direction: column;
-}
-.pedido-info.total {
-    font-size: 1.2rem;
-    font-weight: 600;
-}
-.pedido-info strong {
-    font-size: 0.8rem;
-    color: var(--light-text);
-    text-transform: uppercase;
-    margin-bottom: 5px;
-}
-.pedido-footer {
-    padding: 15px 20px;
-    border-top: 1px solid var(--border-color);
-    display: flex;
-    gap: 10px;
-    justify-content: flex-end;
-}
-.pedido-footer .btn {
-    padding: 8px 16px;
-    font-size: 0.9rem;
-}
-
-/* Badges de Status Coloridos */
-.status-badge {
-    padding: 4px 10px;
-    border-radius: 20px;
-    font-size: 0.8rem;
-    font-weight: 600;
-    text-align: center;
-    display: inline-block;
-    width: fit-content;
-}
-.status-pendente { background-color: #fff3cd; color: #856404; }
-.status-enviado { background-color: #d1ecf1; color: #0c5460; }
-.status-entregue { background-color: #d4edda; color: #155724; }
-.status-cancelado { background-color: #f8d7da; color: #721c24; }
-
-/* Bloco de "Nenhum Pedido" */
-.info-box {
-    text-align: center;
-    padding: 60px 40px;
-    background-color: var(--background-light);
-    border-radius: 12px;
-}
-.info-box .bi-box-seam {
-    color: #ced4da;
-    margin-bottom: 20px;
-}
-.info-box h3 { font-size: 1.8rem; margin: 0; }
-.info-box p { color: var(--light-text); margin: 10px 0 30px 0; }
-.info-box .btn { margin-top: 0; }
-</style>
 
 <?php include 'includes/footer.php'; ?>

@@ -808,6 +808,95 @@ footer {
     border-bottom: 2px solid var(--border-color);
 }
 
+/* ----- Estilo da página meus pedidos ----- */
+.pedidos-lista {
+    display: grid;
+    gap: 20px;
+}
+.pedido-card {
+    background-color: var(--white);
+    border-radius: 12px;
+    box-shadow: var(--soft-shadow);
+    border: 1px solid var(--border-color);
+    transition: all 0.3s ease;
+}
+.pedido-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 25px rgba(0,0,0,0.08);
+}
+.pedido-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 20px;
+    background-color: var(--background-light);
+    border-bottom: 1px solid var(--border-color);
+    border-radius: 12px 12px 0 0;
+}
+.pedido-id { font-weight: 600; color: var(--dark-text); }
+.pedido-data { font-size: 0.9rem; color: var(--light-text); }
+.pedido-body {
+    padding: 20px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+}
+.pedido-info {
+    display: flex;
+    flex-direction: column;
+}
+.pedido-info.total {
+    font-size: 1.2rem;
+    font-weight: 600;
+}
+.pedido-info strong {
+    font-size: 0.8rem;
+    color: var(--light-text);
+    text-transform: uppercase;
+    margin-bottom: 5px;
+}
+.pedido-footer {
+    padding: 15px 20px;
+    border-top: 1px solid var(--border-color);
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+}
+.pedido-footer .btn {
+    padding: 8px 16px;
+    font-size: 0.9rem;
+}
+
+/* Badges de Status Coloridos */
+.status-badge {
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-align: center;
+    display: inline-block;
+    width: fit-content;
+}
+.status-pendente { background-color: #fff3cd; color: #856404; }
+.status-enviado { background-color: #d1ecf1; color: #0c5460; }
+.status-entregue { background-color: #d4edda; color: #155724; }
+.status-cancelado { background-color: #f8d7da; color: #721c24; }
+
+/* Bloco de "Nenhum Pedido" */
+.info-box {
+    text-align: center;
+    padding: 60px 40px;
+    background-color: var(--background-light);
+    border-radius: 12px;
+}
+.info-box .bi-box-seam {
+    color: #ced4da;
+    margin-bottom: 20px;
+}
+.info-box h3 { font-size: 1.8rem; margin: 0; }
+.info-box p { color: var(--light-text); margin: 10px 0 30px 0; }
+.info-box .btn { margin-top: 0; }
+
 /* ----- Componentes da Página de Detalhes do Pedido ----- */
 .breadcrumbs {
     margin-bottom: 30px;
@@ -822,6 +911,87 @@ footer {
     grid-template-columns: 1fr 1fr;
     gap: 50px;
     margin-bottom: 60px;
+}
+.detalhes-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 15px;
+    margin-bottom: 30px;
+}
+.detalhes-header .section-title {
+    margin: 0;
+}
+
+.detalhes-grid {
+    display: grid;
+    grid-template-columns: 1fr 2fr; /* 1/3 para o resumo, 2/3 para os itens */
+    gap: 40px;
+    align-items: flex-start;
+}
+
+.pedido-sumario-card, .produto-item-lista {
+    background-color: var(--white);
+    border-radius: 12px;
+    box-shadow: var(--soft-shadow);
+    padding: 30px;
+}
+
+.pedido-sumario-card h4, .produto-item-lista h4 {
+    margin-top: 0;
+    margin-bottom: 25px;
+    font-size: 1.3rem;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 15px;
+}
+
+.sumario-info {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 15px;
+    font-size: 0.95rem;
+}
+.sumario-info span { color: var(--light-text); }
+.sumario-info strong { color: var(--dark-text); text-align: right; }
+.sumario-info .status-badge { font-size: 0.8rem; }
+.sumario-info.total {
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 2px solid var(--dark-text);
+    font-size: 1.5rem;
+}
+
+.produto-item {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    padding: 15px 0;
+    border-bottom: 1px solid var(--border-color);
+}
+.produto-item:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+.produto-item-image {
+    width: 70px;
+    height: 70px;
+    border-radius: 8px;
+    object-fit: cover;
+}
+.produto-item-details { flex-grow: 1; }
+.produto-item-name { font-weight: 600; display: block; margin-bottom: 5px; }
+.produto-item-price-qty { color: var(--light-text); font-size: 0.9rem; }
+.produto-item-subtotal { font-weight: 600; font-size: 1.1rem; }
+
+/* Badges de Status (reutilizados de meus_pedidos.php) */
+.status-badge{padding:4px 10px;border-radius:20px;font-size:0.8rem;font-weight:600;text-align:center;display:inline-block;width:fit-content}.status-pendente{background-color:#fff3cd;color:#856404}.status-enviado{background-color:#d1ecf1;color:#0c5460}.status-entregue{background-color:#d4edda;color:#155724}.status-cancelado{background-color:#f8d7da;color:#721c24}
+
+/* Bloco de Info/Erro */
+.info-box { text-align: center; padding: 60px 40px; background-color: var(--background-light); border-radius: 12px; }
+
+@media (max-width: 992px) {
+    .detalhes-grid { grid-template-columns: 1fr; }
 }
 
 /* Galeria de Imagem com Efeito de Zoom no Hover */
@@ -1182,6 +1352,95 @@ footer {
     to {
         transform: rotate(360deg);
     }
+}
+
+/* ==========================================================================
+   PÁGINA DE RASTREIO DE PEDIDO
+   ========================================================================== */
+.tracking-header {
+    text-align: center;
+    margin-bottom: 40px;
+}
+.tracking-header .status-badge {
+    font-size: 1rem;
+    padding: 8px 15px;
+}
+
+.tracking-timeline {
+    list-style: none;
+    padding: 0;
+    position: relative;
+}
+
+/* A linha vertical da timeline */
+.tracking-timeline::before {
+    content: '';
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    height: calc(100% - 20px);
+    width: 4px;
+    background-color: var(--border-color);
+}
+
+.tracking-timeline li {
+    margin-bottom: 30px;
+    padding-left: 40px;
+    position: relative;
+}
+
+.timeline-marker {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background-color: var(--border-color);
+    border: 4px solid var(--page-bg);
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 1;
+}
+
+.timeline-content h4 {
+    margin: 0 0 5px 0;
+    color: var(--secondary-text);
+}
+.timeline-content small {
+    display: block;
+    margin-bottom: 10px;
+    color: var(--secondary-text);
+}
+.timeline-content p {
+    margin: 0;
+    line-height: 1.6;
+}
+
+/* Estilos para estágios concluídos */
+.tracking-timeline li.complete .timeline-marker {
+    background-color: var(--primary-color);
+}
+.tracking-timeline li.complete h4 {
+    color: var(--dark-text);
+    font-weight: 600;
+}
+/* Linha de progresso */
+.tracking-timeline li.complete::before {
+    content: '';
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    height: 100%;
+    width: 4px;
+    background-color: var(--primary-color);
+    z-index: 0;
+}
+.tracking-timeline li:last-child::before {
+    height: 0; /* Remove a continuação da linha no último item */
+}
+
+.back-link-container {
+    text-align: center;
+    margin-top: 40px;
 }
 
 /* ==========================================================================

@@ -14,14 +14,21 @@ if (!isset($_GET['id']) || !is_numeric($_GET['id'])) {
 
     // 2. LÓGICA PARA ATUALIZAR O STATUS (se o formulário for enviado)
     if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['status'])) {
-        try {
-            $novo_status = $_POST['status'];
-            $stmtUpdate = $pdo->prepare("UPDATE public.pedidos SET status = ? WHERE id_pedido = ?");
-            $stmtUpdate->execute([$novo_status, $id_pedido]);
-            // Recarrega a página para mostrar o status atualizado
-            header("Location: pedido_detalhes.php?id=$id_pedido&status=success");
-            exit;
-        } catch (PDOException $e) {
+    try {
+        $novo_status = $_POST['status'];
+        // Atualiza o status
+        $stmtUpdate = $pdo->prepare("UPDATE public.pedidos SET status = ? WHERE id_pedido = ?");
+        $stmtUpdate->execute([$novo_status, $id_pedido]);
+        
+        // NOVA AÇÃO: Insere o log de atividade
+        $logDescricao = "Status do pedido (#{$id_pedido}) alterado para '{$novo_status}'.";
+        $stmtLog = $pdo->prepare("INSERT INTO logs_atividade (descricao) VALUES (?)");
+        $stmtLog->execute([$logDescricao]);
+        
+        // Recarrega a página
+        header("Location: pedido_detalhes.php?id=$id_pedido&status=success&msg=" . urlencode('Status atualizado!'));
+        exit;
+    } catch (PDOException $e) {
             $erro = "Erro ao atualizar o status do pedido.";
             error_log($e->getMessage());
         }

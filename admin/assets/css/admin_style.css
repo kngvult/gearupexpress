@@ -159,7 +159,7 @@ body {
     background-color: var(--admin-white); 
     border-radius: 8px; 
     box-shadow: var(--admin-shadow); 
-    margin-bottom: 30px; 
+    margin-bottom: 40px; 
 }
 .card-header { 
     background-color: var(--admin-light); 
@@ -171,6 +171,10 @@ body {
 .card-body { 
     padding: 20px; 
 }
+.card + .card {
+    margin-top: 32px; /* ajuste o valor conforme desejar */
+}
+
 
 /* ----- Tabelas ----- */
 .table-wrapper { 
@@ -454,6 +458,75 @@ body {
     display: flex;
     gap: 15px;
 }
+.low-stock-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.low-stock-item {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 15px 10px;
+    border-bottom: 1px solid var(--admin-border);
+}
+
+.low-stock-item:last-child {
+    border-bottom: none;
+}
+
+.low-stock-item .item-details {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.low-stock-item .item-name {
+    font-weight: 600;
+}
+
+.low-stock-item .item-stock {
+    font-size: 0.9rem;
+    color: var(--admin-text);
+}
+
+.low-stock-item .item-stock strong {
+    color: var(--admin-danger); /* Cor de perigo para destacar o número */
+    font-size: 1rem;
+}
+
+.activity-log-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+.activity-log-item {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 15px 5px;
+    border-bottom: 1px solid var(--admin-border);
+}
+.activity-log-item:last-child {
+    border-bottom: none;
+}
+.log-icon {
+    font-size: 1.2rem;
+    color: var(--admin-sidebar-link);
+}
+.log-details {
+    display: flex;
+    flex-direction: column;
+}
+.log-description {
+    font-weight: 500;
+}
+.log-time {
+    font-size: 0.85rem;
+    color: #888;
+}
+
 
 /* ==========================================================================
    6. RESPONSIVIDADE

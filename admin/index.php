@@ -1,45 +1,35 @@
 <?php
 include 'includes/header.php';
 
-// --- LÓGICA PARA BUSCAR DADOS PARA OS GRÁFICOS ---
+// --- LÓGICA PARA BUSCAR DADOS PARA O DASHBOARD ---
 try {
-    // 1. Dados para o gráfico de Vendas nos Últimos 7 Dias
-    $vendas_sql = "
-        SELECT
-            d.day::date AS sale_date,
-            COALESCE(SUM(p.total), 0) AS total_sales
-        FROM
-            generate_series(
-                CURRENT_DATE - INTERVAL '6 days',
-                CURRENT_DATE,
-                INTERVAL '1 day'
-            ) AS d(day)
-        LEFT JOIN
-            public.pedidos p ON d.day::date = p.data_pedido::date AND p.status = 'entregue'
-        GROUP BY
-            d.day
-        ORDER BY
-            d.day ASC;
-    ";
+    // 1. Dados para os gráficos (já existentes)
+    $vendas_sql = "SELECT TO_CHAR(data_pedido, 'YYYY-MM-DD') as dia, SUM(total) as total_vendas FROM pedidos WHERE status = 'entregue' AND data_pedido >= CURRENT_DATE - INTERVAL '6 days' GROUP BY dia ORDER BY dia ASC";
     $stmtVendas = $pdo->query($vendas_sql);
     $vendas_data = $stmtVendas->fetchAll(PDO::FETCH_ASSOC);
+    $vendas_labels = json_encode(array_column($vendas_data, 'dia'));
+    $vendas_valores = json_encode(array_column($vendas_data, 'total_vendas'));
 
-    // Formata os dados para o JavaScript
-    $vendas_labels = json_encode(array_map(fn($row) => date('d/m', strtotime($row['sale_date'])), $vendas_data));
-    $vendas_valores = json_encode(array_column($vendas_data, 'total_sales'));
-
-    // 2. Dados para o gráfico de Pedidos por Status
     $status_sql = "SELECT status, COUNT(*) as count FROM public.pedidos GROUP BY status";
     $stmtStatus = $pdo->query($status_sql);
     $status_data = $stmtStatus->fetchAll(PDO::FETCH_ASSOC);
-
     $status_labels = json_encode(array_column($status_data, 'status'));
     $status_valores = json_encode(array_column($status_data, 'count'));
 
+    // 2. NOVA LÓGICA: Buscar produtos com estoque baixo (limite: 5 unidades)
+    $limite_estoque = 5;
+    $stmtEstoque = $pdo->prepare("SELECT id_produto, nome, estoque, imagem FROM produtos WHERE estoque <= ? AND estoque > 0 ORDER BY estoque ASC");
+    $stmtEstoque->execute([$limite_estoque]);
+    $produtos_baixo_estoque = $stmtEstoque->fetchAll(PDO::FETCH_ASSOC);
+
+    $stmtLogs = $pdo->query("SELECT descricao, data_log FROM logs_atividade ORDER BY data_log DESC LIMIT 5");
+    $logs = $stmtLogs->fetchAll(PDO::FETCH_ASSOC);
 } catch (PDOException $e) {
     // Em caso de erro, define dados vazios para não quebrar o JS
     $vendas_labels = $vendas_valores = $status_labels = $status_valores = '[]';
-    error_log("Erro no dashboard (gráficos): " . $e->getMessage());
+    $produtos_baixo_estoque = [];
+    error_log("Erro no dashboard: " . $e->getMessage());
+    $logs = [];
 }
 ?>
 
@@ -48,28 +38,58 @@ try {
     
     <div class="charts-grid">
         <div class="card">
-            <div class="card-header">
-                <h4>Vendas nos Últimos 7 Dias (Pedidos Entregues)</h4>
-            </div>
-            <div class="card-body">
-                <canvas id="salesChart"></canvas>
-            </div>
+            <div class="card-header"><h4>Vendas nos Últimos 7 Dias</h4></div>
+            <div class="card-body"><canvas id="salesChart"></canvas></div>
         </div>
         <div class="card">
-            <div class="card-header">
-                <h4>Pedidos por Status</h4>
-            </div>
-            <div class="card-body chart-pie-container">
-                <canvas id="statusChart"></canvas>
-            </div>
+            <div class="card-header"><h4>Pedidos por Status</h4></div>
+            <div class="card-body chart-pie-container"><canvas id="statusChart"></canvas></div>
         </div>
     </div>
 
-    <div class="quick-actions card">
-        <div class="card-header"><h4>Ações Rápidas</h4></div>
+    <div class="card">
+        <div class="card-header">
+            <h4>Atividades Recentes</h4>
+        </div>
         <div class="card-body">
-            <a href="produto_form.php" class="btn-admin">Adicionar Novo Produto</a>
-            <a href="pedidos.php" class="btn-admin">Ver Todos os Pedidos</a>
+            <?php if (empty($logs)): ?>
+                <p>Nenhuma atividade registrada ainda.</p>
+            <?php else: ?>
+                <ul class="activity-log-list">
+                    <?php foreach ($logs as $log): ?>
+                        <li class="activity-log-item">
+                            <div class="log-icon"><i class="fas fa-history"></i></div>
+                            <div class="log-details">
+                                <span class="log-description"><?= htmlspecialchars($log['descricao']) ?></span>
+                                <span class="log-time"><?= date('d/m/Y H:i', strtotime($log['data_log'])) ?></span>
+                            </div>
+                        </li>
+                    <?php endforeach; ?>
+                </ul>
+            <?php endif; ?>
+        </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h4>⚠️ Alerta de Estoque Baixo (igual ou inferior a <?= $limite_estoque ?> unidades)</h4>
+        </div>
+        <div class="card-body">
+            <?php if (empty($produtos_baixo_estoque)): ?>
+                <p>Nenhum produto com baixo estoque no momento. Bom trabalho!</p>
+            <?php else: ?>
+                <ul class="low-stock-list">
+                    <?php foreach ($produtos_baixo_estoque as $produto): ?>
+                        <li class="low-stock-item">
+                            <img src="../assets/img/produtos/<?= htmlspecialchars($produto['imagem']) ?>" alt="<?= htmlspecialchars($produto['nome']) ?>" class="table-img">
+                            <div class="item-details">
+                                <span class="item-name"><?= htmlspecialchars($produto['nome']) ?></span>
+                                <span class="item-stock">Restam apenas <strong><?= $produto['estoque'] ?></strong> unidades</span>
+                            </div>
+                            <a href="produto_form.php?id=<?= $produto['id_produto'] ?>" class="btn-action btn-edit">Gerenciar</a>
+                        </li>
+                    <?php endforeach; ?>
+                </ul>
+            <?php endif; ?>
         </div>
     </div>
 </div>
