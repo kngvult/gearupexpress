@@ -1,49 +1,30 @@
 <?php
-include 'includes/header.php'; 
+// ETAPA 1: LÓGICA DE BACKEND (ANTES DE QUALQUER HTML)
+session_start(); 
 include 'includes/conexao.php';
 
-// ... Lógica inicial de verificação de login e busca do carrinho ...
+// Verifica se o usuário está logado
 if (!isset($_SESSION['usuario']['id'])) {
     header('Location: login.php');
     exit;
 }
 
-// Inicialização de todas as variáveis para evitar erros
 $id_usuario = $_SESSION['usuario']['id'];
-$itensCarrinho = [];
-$total_carrinho = 0;
-$pedido_sucesso = false; // Define como 'false' por padrão
-$num_pedido_sucesso = 0;
 $erro = '';
 
-// Busca os dados do carrinho SEMPRE que a página carrega
-try {
-    $stmt = $pdo->prepare("
-        SELECT p.nome, p.imagem, c.quantidade, c.preco_unitario, (c.quantidade * c.preco_unitario) AS total_item, p.id_produto
-        FROM carrinho c
-        JOIN produtos p ON c.id_produto = p.id_produto
-        WHERE c.usuario_id = ?
-    ");
-    $stmt->execute([$id_usuario]);
-    $itensCarrinho = $stmt->fetchAll(PDO::FETCH_ASSOC);
+// Se a página foi submetida (botão "Finalizar Compra" foi clicado)
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    
+    // Busca os itens do carrinho do usuário a partir do banco de dados
+    $stmtCarrinhoPost = $pdo->prepare("SELECT id_produto, quantidade, preco_unitario FROM carrinho WHERE usuario_id = ?");
+    $stmtCarrinhoPost->execute([$id_usuario]);
+    $itensCarrinhoPost = $stmtCarrinhoPost->fetchAll(PDO::FETCH_ASSOC);
 
-    if (empty($itensCarrinho) && $_SERVER['REQUEST_METHOD'] !== 'POST') {
-        header('Location: carrinho.php');
+    if (empty($itensCarrinhoPost)) {
+        header('Location: carrinho.php'); // Impede checkout com carrinho vazio
         exit;
     }
 
-    foreach ($itensCarrinho as $item) {
-        $total_carrinho += $item['total_item'];
-    }
-} catch (PDOException $e) {
-    $erro = "Erro ao buscar os itens do carrinho.";
-    error_log("Erro ao buscar carrinho: " . $e->getMessage());
-}
-
-// ======================================================================
-// PROCESSAMENTO DO PEDIDO COM ENDEREÇO E FRETE
-// ======================================================================
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Coleta dos dados do formulário
     $metodo_pagamento = $_POST['metodo_pagamento'] ?? '';
     $cep = $_POST['cep'] ?? '';
@@ -53,52 +34,77 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $cidade = $_POST['cidade'] ?? '';
     $estado = $_POST['estado'] ?? '';
     
-    // Validações
-    if (empty($metodo_pagamento) || empty($cep) || empty($rua) || empty($numero) || empty($cidade) || empty($estado)) {
-        $erro = "Por favor, preencha todos os campos de endereço e pagamento.";
+    if (empty($metodo_pagamento) || empty($cep) || empty($rua) || empty($numero)) {
+        $erro = "Por favor, preencha todos os campos obrigatórios.";
     } else {
-        // LÓGICA DE FRETE (SIMULADO)
-        // Em um site real, aqui você chamaria uma API dos Correios.
-        // Para nossa simulação, vamos usar um valor fixo.
-        $valor_frete = 5.00; 
-        $total_final = $total_carrinho + $valor_frete;
+        // Recalcula o total no backend para segurança
+        $total_carrinho_post = 0;
+        foreach ($itensCarrinhoPost as $item) {
+            $total_carrinho_post += $item['quantidade'] * $item['preco_unitario'];
+        }
+        
+        $valor_frete = floatval((rand(15, 30)) / 10);
+        $total_final = $total_carrinho_post + $valor_frete;
 
         $pdo->beginTransaction();
         try {
+            // 1. Insere o pedido
             $stmtPedido = $pdo->prepare(
-                "INSERT INTO public.pedidos 
-                (id_usuario, total, metodo_pagamento, valor_frete, endereco_cep, endereco_rua, endereco_numero, endereco_bairro, endereco_cidade, endereco_estado) 
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING id_pedido"
+                "INSERT INTO public.pedidos (id_usuario, total, metodo_pagamento, valor_frete, endereco_cep, endereco_rua, endereco_numero, endereco_bairro, endereco_cidade, endereco_estado, status) 
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pendente')"
             );
-            $stmtPedido->execute([
-                $id_usuario, $total_final, $metodo_pagamento, $valor_frete,
-                $cep, $rua, $numero, $bairro, $cidade, $estado
-            ]);
-            $id_novo_pedido = $stmtPedido->fetchColumn();
+            $stmtPedido->execute([$id_usuario, $total_final, $metodo_pagamento, $valor_frete, $cep, $rua, $numero, $bairro, $cidade, $estado]);
+            $id_novo_pedido = $pdo->lastInsertId();
 
-            // Limpa o carrinho do usuário
+            // 2. Insere os itens do pedido
+            $stmtItens = $pdo->prepare(
+                "INSERT INTO public.itens_pedido (id_pedido, id_produto, quantidade, preco_unitario) VALUES (?, ?, ?, ?)"
+            );
+            foreach ($itensCarrinhoPost as $item) {
+                $stmtItens->execute([$id_novo_pedido, $item['id_produto'], $item['quantidade'], $item['preco_unitario']]);
+            }
+
+            // 3. Limpa o carrinho do usuário (Sua correção, no lugar perfeito!)
             $stmtLimpaCarrinho = $pdo->prepare("DELETE FROM carrinho WHERE usuario_id = ?");
             $stmtLimpaCarrinho->execute([$id_usuario]);
 
+            // 4. Se tudo deu certo, confirma a transação
             $pdo->commit();
-            $pedido_sucesso = true;
-            $num_pedido_sucesso = $id_novo_pedido;
-
-            // Insere o log de atividade
-            $logDescricao = "Novo pedido (#{$id_novo_pedido}) recebido.";
-            $stmtLog = $pdo->prepare("INSERT INTO logs_atividade (descricao) VALUES (?)");
-            $stmtLog->execute([$logDescricao]);
+            
+            // 5. Redireciona para a página de sucesso
+            header('Location: meus_pedidos.php?order=success');
+            exit;
 
         } catch (PDOException $e) {
             $pdo->rollBack();
             $erro = "Não foi possível finalizar seu pedido. Por favor, tente novamente.";
             error_log("Erro no checkout: " . $e->getMessage());
-
-            header('Location: meus_pedidos.php?order=success');
-            exit;
+            // Se der erro, o script continua e exibe a mensagem de erro no HTML abaixo
         }
     }
 }
+
+// ETAPA 2: PREPARAÇÃO DOS DADOS PARA EXIBIÇÃO (se a página não foi submetida ou se deu erro)
+$stmtCarrinho = $pdo->prepare("
+    SELECT p.nome, p.imagem, c.quantidade, c.preco_unitario, (c.quantidade * c.preco_unitario) AS total_item
+    FROM carrinho c
+    JOIN produtos p ON c.id_produto = p.id_produto
+    WHERE c.usuario_id = ?
+");
+$stmtCarrinho->execute([$id_usuario]);
+$itensCarrinho = $stmtCarrinho->fetchAll(PDO::FETCH_ASSOC);
+
+if (empty($itensCarrinho)) {
+    header('Location: carrinho.php');
+    exit;
+}
+$total_carrinho = 0;
+foreach ($itensCarrinho as $item) {
+    $total_carrinho += $item['total_item'];
+}
+
+// A partir daqui, começa a parte visual da página
+include 'includes/header.php';
 ?>
 
 <main class="page-content">

@@ -133,7 +133,7 @@ if ($usuarioLogado) {
             $produto = $stmt->fetch(PDO::FETCH_ASSOC);
             if (!$produto) continue;
             $itensCarrinho[] = [
-                'id' => $id_produto, 'nome' => $produto['nome'], 'imagem' => $produto['imagem'],
+                'id' => $id_produto,'id_produto' => $id_produto, 'nome' => $produto['nome'], 'imagem' => $produto['imagem'],
                 'quantidade' => $quantidade, 'preco_unitario' => $produto['preco'],
                 'total_item' => $produto['preco'] * $quantidade
             ];

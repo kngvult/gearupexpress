@@ -28,7 +28,7 @@ try {
         WHERE o.status = 'entregue'                 -- Filtra apenas por pedidos entregues
         GROUP BY p.nome
         ORDER BY total_vendido DESC
-        LIMIT 5
+        LIMIT 10
     ");
     $mais_vendidos_data = $stmtMaisVendidos->fetchAll(PDO::FETCH_ASSOC);
     $mais_vendidos_labels = json_encode(array_column($mais_vendidos_data, 'nome'));
@@ -52,7 +52,7 @@ try {
             </div>
         </div>
         <div class="card">
-            <div class="card-header"><h4>Top 5 Produtos Mais Vendidos (de Pedidos Entregues)</h4></div>
+            <div class="card-header"><h4>Produtos Mais Vendidos</h4></div>
             <div class="card-body chart-pie-container">
                 <canvas id="topProductsChart"></canvas>
             </div>
@@ -102,8 +102,9 @@ document.addEventListener('DOMContentLoaded', function () {
                 datasets: [{
                     label: 'Unidades Vendidas',
                     data: <?= $mais_vendidos_valores ?>,
-                    backgroundColor: [
-                        '#007bff', '#28a745', '#ffc107', '#17a2b8', '#6c757d'
+                    backgroundColor: [ // Adicionei mais cores para suportar 10 itens
+                        '#007bff', '#28a745', '#ffc107', '#17a2b8', '#6c757d',
+                        '#dc3545', '#343a40', '#fd7e14', '#20c997', '#6f42c1'
                     ],
                     hoverOffset: 4
                 }]
