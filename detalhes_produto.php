@@ -69,7 +69,17 @@ if (empty($_GET['id']) || !is_numeric($_GET['id'])) {
                     </p>
                 </div>
                 
-                <form method="post" action="carrinho.php" class="add-to-cart-form">
+                <form method="post" action="carrinho_adicionar.php" id="add-to-cart-form" class="add-to-cart-form">
+    <input type="hidden" name="id_produto" value="<?= $produto['id_produto'] ?>">
+    <div class="form-group quantity-selector">
+        <label for="quantidade">Quantidade:</label>
+        <input type="number" name="quantidade" id="quantidade" value="1" min="1" max="<?= htmlspecialchars($produto['estoque']) ?>">
+    </div>
+    <button type="submit" id="add-to-cart-btn" name="adicionar" class="btn btn-primary btn-lg" <?= $produto['estoque'] <= 0 ? 'disabled' : '' ?>>
+        <i class="fas fa-shopping-cart"></i> Adicionar ao Carrinho
+    </button>
+</form>
+                <!-- <form method="post" action="carrinho.php" class="add-to-cart-form">
                     <input type="hidden" name="id_produto" value="<?= $produto['id_produto'] ?>">
                     <div class="form-group quantity-selector">
                         <label for="quantidade">Quantidade:</label>
@@ -78,46 +88,37 @@ if (empty($_GET['id']) || !is_numeric($_GET['id'])) {
                     <button type="submit" name="adicionar" class="btn btn-primary btn-lg" <?= $produto['estoque'] <= 0 ? 'disabled' : '' ?>>
                         Adicionar ao Carrinho
                     </button>
-                </form>
+                </form> -->
             </div>
         </div>
 
-        <div class="product-info-tabs">
-            <h3>Descrição Completa</h3>
-            <div class="tab-content">
-                <p><?= nl2br(htmlspecialchars($produto['descricao'])) ?></p>
-            </div>
-            
-            <h3>Especificações Técnicas</h3>
-            <div class="tab-content">
-                <table class="specs-table">
-                    <tr>
-                        <td>Marca</td>
-                        <td>Marca Fictícia</td>
-                    </tr>
-                    <tr>
-                        <td>Código do Produto</td>
-                        <td>SKU-<?= str_pad($produto['id_produto'], 6, '0', STR_PAD_LEFT) ?></td>
-                    </tr>
-                     <tr>
-                        <td>Categoria</td>
-                        <td><?= htmlspecialchars($produto['nome_categoria']) ?></td>
-                    </tr>
-                    <tr>
-                        <td>Garantia</td>
-                        <td>3 meses</td>
-                    </tr>
-                </table>
-            </div>
+        <div class="product-info-section">
+    <ul class="tabs-nav">
+        <li><button class="tab-link active" data-tab="tab-descricao">Descrição</button></li>
+        <li><button class="tab-link" data-tab="tab-especificacoes">Especificações</button></li>
+        <li><button class="tab-link" data-tab="tab-avaliacoes">Avaliações</button></li>
+    </ul>
 
-            <h3>Avaliações de Clientes</h3>
-            <div class="tab-content">
-                <div class="reviews-placeholder">
-                    <p>Ainda não há avaliações para este produto.</p>
-                    <span>Seja o primeiro a avaliar!</span>
-                </div>
+    <div class="tabs-content">
+        <div id="tab-descricao" class="tab-pane active">
+            <p><?= nl2br(htmlspecialchars($produto['descricao'])) ?></p>
+        </div>
+        <div id="tab-especificacoes" class="tab-pane">
+            <table class="specs-table">
+                <tr><td>Marca</td><td>Marca Fictícia</td></tr>
+                <tr><td>Código</td><td>SKU-<?= str_pad($produto['id_produto'], 6, '0', STR_PAD_LEFT) ?></td></tr>
+                <tr><td>Categoria</td><td><?= htmlspecialchars($produto['nome_categoria']) ?></td></tr>
+                <tr><td>Garantia</td><td>3 meses</td></tr>
+            </table>
+        </div>
+        <div id="tab-avaliacoes" class="tab-pane">
+            <div class="reviews-placeholder">
+                <p>Ainda não há avaliações para este produto.</p>
+                <span>Seja o primeiro a avaliar!</span>
             </div>
         </div>
+    </div>
+</div>
 
         <?php if (!empty($produtos_relacionados)): ?>
         <div class="related-products-section">
@@ -127,5 +128,84 @@ if (empty($_GET['id']) || !is_numeric($_GET['id'])) {
     <?php endif; ?>
 </div>
 </main>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const tabLinks = document.querySelectorAll('.tab-link');
+    const tabPanes = document.querySelectorAll('.tab-pane');
 
+    tabLinks.forEach(link => {
+        link.addEventListener('click', function() {
+            const tabId = this.dataset.tab;
+
+            // Desativa todos os links e painéis
+            tabLinks.forEach(l => l.classList.remove('active'));
+            tabPanes.forEach(p => p.classList.remove('active'));
+
+            // Ativa o link clicado e o painel correspondente
+            this.classList.add('active');
+            document.getElementById(tabId).classList.add('active');
+        });
+    });
+     const addToCartForm = document.getElementById('add-to-cart-form');
+    const addToCartBtn = document.getElementById('add-to-cart-btn');
+
+    if (addToCartForm) {
+        addToCartForm.addEventListener('submit', function(event) {
+            event.preventDefault(); // Impede o recarregamento da página
+
+            // Pega os dados do formulário
+            const formData = new FormData(this);
+            const originalButtonHtml = addToCartBtn.innerHTML;
+
+            // Desativa o botão e mostra estado de "carregando"
+            addToCartBtn.disabled = true;
+            addToCartBtn.innerHTML = '<span class="spinner-sm"></span> Adicionando...';
+
+            // Envia os dados para o backend com fetch API
+            fetch('carrinho_adicionar.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Feedback de sucesso
+                    addToCartBtn.classList.add('btn-success');
+                    addToCartBtn.innerHTML = '<i class="fas fa-check"></i> Adicionado!';
+                    
+                    // Atualiza o contador do carrinho no header
+                    const cartBadge = document.querySelector('.cart-badge');
+                    if (cartBadge) {
+                        cartBadge.textContent = data.totalItensCarrinho;
+                        cartBadge.style.display = 'flex'; // Garante que fica visível
+                    } else {
+                        // Se não houver badge, cria um
+                        const cartLink = document.querySelector('a[href="carrinho.php"]');
+                        const newBadge = document.createElement('span');
+                        newBadge.className = 'cart-badge';
+                        newBadge.textContent = data.totalItensCarrinho;
+                        cartLink.appendChild(newBadge);
+                    }
+                } else {
+                    // Feedback de erro
+                    addToCartBtn.innerHTML = 'Erro ao adicionar';
+                }
+
+                // Volta ao estado original após 2 segundos
+                setTimeout(() => {
+                    addToCartBtn.disabled = false;
+                    addToCartBtn.innerHTML = originalButtonHtml;
+                    addToCartBtn.classList.remove('btn-success');
+                }, 2000);
+            })
+            .catch(error => {
+                console.error('Erro:', error);
+                // Volta ao estado original em caso de erro de rede
+                addToCartBtn.disabled = false;
+                addToCartBtn.innerHTML = originalButtonHtml;
+            });
+        });
+    }
+});
+</script>
 <?php include 'includes/footer.php'; ?>

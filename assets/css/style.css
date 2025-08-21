@@ -1087,6 +1087,59 @@ footer {
     .product-detail-layout { grid-template-columns: 1fr; }
 }
 
+/* ----- UX - SISTEMA DE ABAS (TABS) NA PÁGINA DE PRODUTO ----- */
+.product-info-section {
+    border-top: 1px solid var(--border-color);
+    padding-top: 40px;
+    margin-top: 60px;
+}
+
+.tabs-nav {
+    display: flex;
+    list-style: none;
+    padding: 0;
+    margin: 0 0 30px 0;
+    border-bottom: 2px solid var(--border-color);
+}
+
+.tab-link {
+    padding: 15px 25px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    border: none;
+    background-color: transparent;
+    cursor: pointer;
+    color: var(--light-text);
+    position: relative;
+    top: 2px; /* Alinha o botão com a borda inferior */
+    border-bottom: 2px solid transparent;
+    transition: all 0.2s ease;
+}
+
+.tab-link:hover {
+    color: var(--dark-text);
+}
+
+.tab-link.active {
+    color: var(--primary-color);
+    border-bottom-color: var(--primary-color);
+}
+
+.tab-pane {
+    display: none; /* Esconde todas as abas por defeito */
+    line-height: 1.7;
+    animation: fadeIn 0.4s ease;
+}
+
+.tab-pane.active {
+    display: block; /* Mostra apenas a aba ativa */
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
 /* --- Hero Banner/Slideshow Produtos em destaque --- */
 .hero-banner {
     position: relative;
