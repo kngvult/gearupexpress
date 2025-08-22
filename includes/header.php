@@ -42,6 +42,7 @@ $totalItensCarrinho = (int)$totalItensCarrinho; // Garante que é um número
     <!-- SEU FAVICON - MANTIDO -->
     <link rel="icon" href="assets/img/favicon.ico" type="image/x-icon" />
     <link rel="stylesheet" href="assets/css/style.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css"/>
 </head>
 <body>
 

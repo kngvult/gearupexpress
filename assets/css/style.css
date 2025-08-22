@@ -908,7 +908,7 @@ footer {
 
 .product-detail-layout {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 0.8fr 1.2fr;
     gap: 50px;
     margin-bottom: 60px;
 }
@@ -1085,6 +1085,77 @@ footer {
 /* Responsividade */
 @media (max-width: 992px) {
     .product-detail-layout { grid-template-columns: 1fr; }
+}
+
+/* ----- Carrosel de produtos relacionados ----- */
+.related-products-section {
+    padding: 40px 0;
+    margin-top: 60px;
+    border-top: 1px solid var(--border-color);
+}
+
+.related-products-carousel {
+    position: relative; /* Garante que os botões se posicionem em relação ao carrossel */
+    padding: 10px 50px; /* Adiciona espaço nas laterais para os botões não ficarem em cima do conteúdo */
+    margin: 0 -50px;  /* Compensa o padding para alinhar com o site */
+}
+
+/* --- CORREÇÃO 1: IMAGEM DENTRO DO CARD --- */
+/* Esta regra garante que a imagem nunca ultrapasse os limites do card */
+.swiper-slide .product-card .product-card-image {
+    width: 100%;
+    height: 180px; /* Defina uma altura fixa para todas as imagens */
+    object-fit: cover; /* Garante que a imagem cubra a área sem se distorcer */
+}
+
+/* --- CORREÇÃO 2: BOTÕES DE NAVEGAÇÃO VISÍVEIS E ESTILIZADOS --- */
+.swiper-button-next,
+.swiper-button-prev {
+    width: 44px;
+    height: 44px;
+    background-color: var(--white);
+    border-radius: 50%;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    color: var(--primary-color);
+    top: 50%;
+    transform: translateY(-50%);
+    transition: all 0.2s ease;
+    border: 1px solid var(--border-color);
+}
+
+.swiper-button-next:hover,
+.swiper-button-prev:hover {
+    background-color: var(--primary-color);
+    color: var(--white);
+    transform: translateY(-50%) scale(1.05); /* Efeito subtil ao passar o rato */
+}
+
+.swiper-button-next::after,
+.swiper-button-prev::after {
+    font-size: 1rem; /* Tamanho da seta */
+    font-weight: 700;
+}
+
+.swiper-button-prev {
+    left: 0; /* Posiciona no início da área de padding */
+}
+.swiper-button-next {
+    right: 0; /* Posiciona no final da área de padding */
+}
+
+/* --- CORREÇÃO 3: DESIGN CONSISTENTE --- */
+/* Garante que os cards se comportem corretamente dentro dos slides */
+.swiper-slide {
+    height: auto;
+    display: flex;
+}
+.swiper-slide .product-card {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+}
+.swiper-slide .product-card-info {
+    flex-grow: 1; /* Faz o conteúdo de texto preencher o espaço restante */
 }
 
 /* ----- UX - SISTEMA DE ABAS (TABS) NA PÁGINA DE PRODUTO ----- */

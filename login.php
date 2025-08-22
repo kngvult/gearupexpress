@@ -1,9 +1,9 @@
 <?php
-// PASSO 1: TODA A LÓGICA PHP VEM PRIMEIRO, ANTES DE QUALQUER HTML
+// login.php - VERSÃO FINAL
 
-// Inicia a sessão e a conexão com o banco
 session_start();
 include 'includes/conexao.php';
+include_once 'includes/funcoes_carrinho.php'; // Inclui as funções do carrinho
 
 // Redireciona se o usuário já estiver logado
 if (isset($_SESSION['usuario']['id'])) {
@@ -13,7 +13,7 @@ if (isset($_SESSION['usuario']['id'])) {
 
 $erro = "";
 
-// Processa o formulário de login
+// PROCESSA O FORMULÁRIO DE LOGIN
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $email = trim($_POST['email']);
     $senha_formulario = $_POST['senha'];
@@ -22,12 +22,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $erro = "Por favor, preencha todos os campos.";
     } else {
         try {
-            // Chama a função de autenticação que criamos no banco de dados
+            // AUTENTICAÇÃO DO USUÁRIO NO BANCO DE DADOS DO SUPABASE
             $stmt = $pdo->prepare("SELECT * FROM public.authenticate_user(?, ?)");
             $stmt->execute([$email, $senha_formulario]);
             $usuario = $stmt->fetch(PDO::FETCH_ASSOC);
     
-            // Se a função retornou um usuário, o login é bem-sucedido
             if ($usuario) {
                 // Define a sessão do usuário
                 $_SESSION['usuario'] = [
@@ -36,19 +35,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     'email' => $usuario['email']
                 ];
                 
-                // Lógica para mesclar o carrinho de visitante com o do banco (se existir)
-                if (!empty($_SESSION['carrinho'])) {
-                    // Incluímos a função aqui para garantir que ela exista
-                    include_once 'includes/funcoes_carrinho.php'; // Crie este arquivo se necessário
-                    foreach ($_SESSION['carrinho'] as $id_produto => $quantidade) {
-                        adicionarOuAtualizarBanco($pdo, $_SESSION['usuario']['id'], $id_produto, $quantidade);
-                    }
-                    unset($_SESSION['carrinho']);
-                }
+                // Chama a nossa função "gestora" corrigida para fundir os carrinhos
+                sincronizarCarrinho($pdo, $usuario['id']);
                 
-                // REDIRECIONAMENTO ACONTECE AQUI, ANTES DE QUALQUER HTML
-                header('Location: index.php');
-                exit; // Encerra o script após o redirecionamento
+                // Redireciona para a página do carrinho para o utilizador ver os seus produtos
+                header('Location: carrinho.php');
+                exit;
     
             } else {
                 $erro = "Email ou senha inválidos.";
@@ -60,8 +52,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-// PASSO 2: SÓ DEPOIS DE TODA A LÓGICA, INCLUÍMOS O HEADER PARA EXIBIR A PÁGINA
-// Se o login foi bem-sucedido, o script já foi encerrado pelo 'exit' acima e esta parte nunca será executada.
 include 'includes/header.php';
 ?>
 

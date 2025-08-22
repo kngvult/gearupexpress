@@ -133,9 +133,13 @@ if ($usuarioLogado) {
             $produto = $stmt->fetch(PDO::FETCH_ASSOC);
             if (!$produto) continue;
             $itensCarrinho[] = [
-                'id' => $id_produto,'id_produto' => $id_produto, 'nome' => $produto['nome'], 'imagem' => $produto['imagem'],
-                'quantidade' => $quantidade, 'preco_unitario' => $produto['preco'],
-                'total_item' => $produto['preco'] * $quantidade
+                'id' => $id_produto,
+                'id_produto' => $id_produto,
+                'nome' => $produto['nome'],
+                'imagem' => $produto['imagem'],
+                'quantidade' => (int)$quantidade,
+                'preco_unitario' => (float)$produto['preco'],
+                'total_item' => ((float)$produto['preco']) * ((int)$quantidade)
             ];
         }
     }

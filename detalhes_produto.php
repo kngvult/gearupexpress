@@ -70,25 +70,15 @@ if (empty($_GET['id']) || !is_numeric($_GET['id'])) {
                 </div>
                 
                 <form method="post" action="carrinho_adicionar.php" id="add-to-cart-form" class="add-to-cart-form">
-    <input type="hidden" name="id_produto" value="<?= $produto['id_produto'] ?>">
-    <div class="form-group quantity-selector">
-        <label for="quantidade">Quantidade:</label>
-        <input type="number" name="quantidade" id="quantidade" value="1" min="1" max="<?= htmlspecialchars($produto['estoque']) ?>">
-    </div>
-    <button type="submit" id="add-to-cart-btn" name="adicionar" class="btn btn-primary btn-lg" <?= $produto['estoque'] <= 0 ? 'disabled' : '' ?>>
-        <i class="fas fa-shopping-cart"></i> Adicionar ao Carrinho
-    </button>
-</form>
-                <!-- <form method="post" action="carrinho.php" class="add-to-cart-form">
                     <input type="hidden" name="id_produto" value="<?= $produto['id_produto'] ?>">
                     <div class="form-group quantity-selector">
                         <label for="quantidade">Quantidade:</label>
                         <input type="number" name="quantidade" id="quantidade" value="1" min="1" max="<?= htmlspecialchars($produto['estoque']) ?>">
                     </div>
-                    <button type="submit" name="adicionar" class="btn btn-primary btn-lg" <?= $produto['estoque'] <= 0 ? 'disabled' : '' ?>>
-                        Adicionar ao Carrinho
+                    <button type="submit" id="add-to-cart-btn" name="adicionar" class="btn btn-primary btn-lg" <?= $produto['estoque'] <= 0 ? 'disabled' : '' ?>>
+                        <i class="fas fa-shopping-cart"></i> Adicionar ao Carrinho
                     </button>
-                </form> -->
+                </form>
             </div>
         </div>
 
@@ -122,7 +112,28 @@ if (empty($_GET['id']) || !is_numeric($_GET['id'])) {
 
         <?php if (!empty($produtos_relacionados)): ?>
         <div class="related-products-section">
-            </div>
+            <h2 class="section-title">Produtos Relacionados</h2>
+
+            <div class="swiper related-products-carousel">
+                <div class="swiper-wrapper">
+                    <?php foreach ($produtos_relacionados as $relacionado): ?>
+                        <div class="swiper-slide">
+                            <div class="product-card">
+                                <a href="detalhes_produto.php?id=<?= $relacionado['id_produto'] ?>" class="product-card-link">
+                                    <img src="assets/img/produtos/<?= htmlspecialchars($relacionado['imagem']) ?>" alt="<?= htmlspecialchars($relacionado['nome']) ?>" class="product-card-image">
+                                    <div class="product-card-info">
+                                        <h3 class="product-card-title"><?= htmlspecialchars($relacionado['nome']) ?></h3>
+                                        <p class="product-card-price">R$ <?= number_format($relacionado['preco'], 2, ',', '.') ?></p>
+                                    </div>
+                                </a>
+                            </div>
+                        </div>
+                    <?php endforeach; ?>
+                </div>
+                <div class="swiper-button-next"></div>
+                <div class="swiper-button-prev"></div>
+            </div>    
+        </div>
         <?php endif; ?>
 
     <?php endif; ?>
@@ -146,7 +157,7 @@ document.addEventListener('DOMContentLoaded', function() {
             document.getElementById(tabId).classList.add('active');
         });
     });
-     const addToCartForm = document.getElementById('add-to-cart-form');
+    const addToCartForm = document.getElementById('add-to-cart-form');
     const addToCartBtn = document.getElementById('add-to-cart-btn');
 
     if (addToCartForm) {
@@ -206,6 +217,30 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         });
     }
+    const swiper = new Swiper('.related-products-carousel', {
+        // Configurações do Swiper
+        loop: false, // Se deve voltar ao início
+        spaceBetween: 20, // Espaço entre os slides
+        slidesPerView: 2, // Quantos slides visíveis em telas pequenas
+        
+        // Botões de navegação
+        navigation: {
+            nextEl: '.swiper-button-next',
+            prevEl: '.swiper-button-prev',
+        },
+
+        // Responsividade: ajusta o número de slides por tamanho de tela
+        breakpoints: {
+            768: {
+                slidesPerView: 3,
+                spaceBetween: 30
+            },
+            992: {
+                slidesPerView: 4,
+                spaceBetween: 30
+            }
+        }
+    });
 });
 </script>
 <?php include 'includes/footer.php'; ?>
