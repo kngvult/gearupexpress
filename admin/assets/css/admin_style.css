@@ -1,60 +1,81 @@
 /* ==========================================================================
-   DESIGN SYSTEM DO PAINEL ADMINISTRATIVO GEARUP EXPRESS (VERSÃO FINAL)
+    DESIGN SYSTEM DO PAINEL ADMINISTRATIVO GEARUP EXPRESS (VERSÃO MODERNIZADA)
    ========================================================================== */
 
 /* * ÍNDICE:
- * 1. Variáveis e Estilos Globais
- * 2. Estrutura Principal do Layout (Sidebar, Top-bar, etc.)
- * 3. Componentes Reutilizáveis (Cards, Tabelas, Botões, Formulários)
- * 4. Componentes de Interação (Modal, Toast)
- * 5. Estilos de Páginas Específicas (Login, Dashboard)
+ * 1. Fontes Externas e Variáveis
+ * 2. Estilos Globais
+ * 3. Estrutura Principal do Layout
+ * 4. Componentes Reutilizáveis
+ * 5. Estilos de Páginas Específicas
  * 6. Responsividade
 */
 
 /* ==========================================================================
-   1. VARIÁVEIS E ESTILOS GLOBAIS
+    1. FONTES EXTERNAS E VARIÁVEIS
    ========================================================================== */
+
+/* Importa a fonte 'Inter' do Google Fonts para um visual mais moderno */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
 :root {
-    --admin-primary: #007bff;
-    --admin-primary-hover: #0056b3;
-    --admin-dark: #343a40;
-    --admin-light: #f8f9fa;
-    --admin-sidebar-bg: #1e2a38;
-    --admin-sidebar-link: #aeb9c4;
+    /* Paleta de Cores Refinada */
+    --admin-primary: #3b82f6; /* Azul mais moderno e suave */
+    --admin-primary-hover: #2563eb;
+    --admin-dark: #111827; /* Preto suave para texto principal */
+    --admin-sidebar-bg: #1f2937; /* Fundo da sidebar mais escuro */
+    --admin-content-bg: #f9fafb; /* Fundo do conteúdo quase branco */
+    
+    --admin-sidebar-link: #9ca3af; /* Cinza claro para links inativos */
     --admin-sidebar-link-hover: #ffffff;
-    --admin-sidebar-link-active: #ffffff;
-    --admin-sidebar-active-bg: #007bff;
-    --admin-content-bg: #f4f6f9;
-    --admin-text: #495057;
-    --admin-border: #dee2e6;
+    --admin-sidebar-active-bg: #3b82f6;
+    
+    --admin-text: #374151; /* Cinza escuro para texto geral */
+    --admin-text-light: #6b7280; /* Cinza mais claro para subtextos */
+    --admin-border: #e5e7eb; /* Borda muito suave */
     --admin-white: #ffffff;
-    --admin-success: #28a745;
-    --admin-warning: #ffc107;
-    --admin-danger: #dc3545;
-    --admin-info: #17a2b8;
-    --admin-shadow: 0 4px 15px rgba(0, 0, 0, 0.07);
+
+    /* Cores Semânticas */
+    --admin-success: #10b981;
+    --admin-warning: #f59e0b;
+    --admin-danger: #ef4444;
+    --admin-info: #3b82f6;
+
+    /* Estilos de Interface */
+    --admin-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+    --admin-shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+    --admin-radius: 8px; /* Raio de borda padrão */
 }
+
+/* ==========================================================================
+    2. ESTILOS GLOBAIS
+   ========================================================================== */
 
 *, *:before, *:after { 
     box-sizing: border-box; 
 }
 
 body {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    font-family: 'Inter', sans-serif; /* Nova fonte */
     background-color: var(--admin-content-bg);
     color: var(--admin-text);
     margin: 0;
     font-size: 16px;
-    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased; /* Melhora a renderização da fonte */
+    -moz-osx-font-smoothing: grayscale;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    color: var(--admin-dark);
+    font-weight: 600;
 }
 
 /* ==========================================================================
-   2. ESTRUTURA PRINCIPAL DO LAYOUT
+    3. ESTRUTURA PRINCIPAL DO LAYOUT
    ========================================================================== */
 .admin-wrapper { 
     display: flex; 
 }
-
 .sidebar {
     width: 250px;
     background-color: var(--admin-sidebar-bg);
@@ -65,14 +86,10 @@ body {
     flex-shrink: 0;
     z-index: 100;
 }
-
 .main-content {
     margin-left: 250px;
-    width: calc(100vw - 250px);
-    display: flex;
-    flex-direction: column;
+    width: calc(100% - 250px); /* Corrigido para ser mais preciso */
 }
-
 .top-bar {
     background: var(--admin-white);
     padding: 0 30px;
@@ -81,32 +98,29 @@ body {
     justify-content: flex-end;
     align-items: center;
     height: 65px;
-    flex-shrink: 0;
 }
-
 .content-area {
     padding: 40px;
-    flex-grow: 1;
     overflow-y: auto;
 }
-
 .container-fluid { 
     width: 100%; 
 }
 
 /* ==========================================================================
-   3. COMPONENTES REUTILIZÁVEIS
+    4. COMPONENTES REUTILIZÁVEIS
    ========================================================================== */
 
-/* ----- Sidebar ----- */
+/* ----- Sidebar Refinada ----- */
 .sidebar-header { 
-    padding: 20px; 
-    text-align: center; 
-    border-bottom: 1px solid rgba(255,255,255,0.1); 
+    padding: 18px 20px; 
+    border-bottom: 1px solid rgba(255,255,255,0.05); 
 }
-.sidebar-header h3 { 
-    margin: 0; 
-    color: var(--admin-white); 
+.sidebar-logo {
+    max-width: 140px;
+    height: auto;
+    display: block;
+    margin: 0 auto;
 }
 .sidebar-nav ul { 
     list-style: none; 
@@ -116,31 +130,28 @@ body {
 .sidebar-nav a { 
     display: flex; 
     align-items: center; 
-    gap: 10px; 
+    gap: 12px; 
     padding: 12px 25px; 
     color: var(--admin-sidebar-link); 
     text-decoration: none; 
     font-weight: 500; 
-    transition: all 0.2s; 
+    transition: all 0.2s ease-in-out;
     border-left: 3px solid transparent; 
 }
 .sidebar-nav a:hover { 
-    background-color: rgba(255,255,255,0.05); 
+    background-color: rgba(255,255,255,0.03); 
     color: var(--admin-sidebar-link-hover); 
 }
 .sidebar-nav a.active { 
-    color: var(--admin-sidebar-link-active); 
-    background-color: var(--admin-sidebar-active-bg); 
-    border-left-color: #66b0ff; 
+    color: var(--admin-white); 
+    background-color: var(--admin-primary); 
+    border-left-color: #93c5fd; /* Borda de destaque mais clara */
 }
-
-.sidebar-logo {
-    max-width: 160px; /* Define a largura máxima do logo */
-    height: auto;     /* Mantém a proporção da imagem */
-    display: block;   /* Remove espaços extras abaixo da imagem */
-    margin: 0 auto;   /* Centraliza o logo dentro do link */
+.sidebar-nav a i {
+    font-size: 1.1rem;
+    width: 20px; /* Alinha os ícones */
+    text-align: center;
 }
-
 /* ----- Logoff ----- */
 .btn-logout {
     background-color: var(--admin-danger);
@@ -154,29 +165,28 @@ body {
     background-color: #c82333;
 }
 
-/* ----- Cards ----- */
+/* ----- Cards Modernizados ----- */
 .card { 
     background-color: var(--admin-white); 
-    border-radius: 8px; 
+    border-radius: var(--admin-radius); 
     box-shadow: var(--admin-shadow); 
-    margin-bottom: 40px; 
+    border: 1px solid var(--admin-border);
+    margin-bottom: 40px;
 }
 .card-header { 
-    background-color: var(--admin-light); 
-    padding: 15px 20px; 
+    background-color: transparent; /* Remove o fundo cinza */
+    padding: 15px 24px; 
     font-weight: 600; 
+    font-size: 1.1rem;
     border-bottom: 1px solid var(--admin-border); 
-    border-radius: 8px 8px 0 0; 
+    border-radius: var(--admin-radius) var(--admin-radius) 0 0;
 }
+.card-header h4 { margin: 0; }
 .card-body { 
-    padding: 20px; 
-}
-.card + .card {
-    margin-top: 32px; /* ajuste o valor conforme desejar */
+    padding: 24px; 
 }
 
-
-/* ----- Tabelas ----- */
+/* ----- Tabelas Limpas ----- */
 .table-wrapper { 
     overflow-x: auto; 
 }
@@ -218,57 +228,91 @@ body {
     gap: 10px;
 }
 
-
-/* ----- Formulários ----- */
-.form-group { 
-    margin-bottom: 20px; 
-}
+/* ----- Formulários Modernos ----- */
 .form-group label { 
     display: block; 
     margin-bottom: 8px; 
-    font-weight: 600; 
+    font-weight: 500;
+    font-size: 0.9rem;
 }
 .form-control { 
     width: 100%; 
     padding: 12px; 
     border: 1px solid var(--admin-border); 
-    border-radius: 6px; 
+    border-radius: var(--admin-radius); 
     font-size: 1rem; 
+    background-color: var(--admin-white);
     transition: border-color 0.2s, box-shadow 0.2s; 
 }
 .form-control:focus { 
     outline: none; 
     border-color: var(--admin-primary); 
-    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.15); 
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2); 
 }
 .form-row { 
     display: grid; 
-    grid-template-columns: 1fr 1fr; 
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
     gap: 20px; 
 }
 
-/* ----- Botões ----- */
-.btn-admin { 
-    padding: 12px 20px; 
-    border: none; 
-    background-color: var(--admin-primary); 
-    color: white; 
-    font-size: 1rem; 
-    font-weight: 600; 
-    border-radius: 6px; 
-    cursor: pointer; 
-    text-decoration: none; 
-    display: inline-block; 
-    transition: background-color 0.2s; 
+/* ----- Botões Refinados ----- */
+.btn {
+    padding: 10px 20px;
+    border: none;
+    font-size: 0.95rem;
+    font-weight: 600;
+    border-radius: var(--admin-radius);
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: all 0.2s ease-in-out;
 }
-.btn-admin:hover { 
-    background-color: var(--admin-primary-hover); 
+.btn:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--admin-shadow-lg);
+}
+.btn-success {
+    background-color: var(--admin-success);
+    color: var(--admin-white);
+}
+.btn-secondary {
+    background-color: var(--admin-text-light);
+    color: var(--admin-white);
+}
+
+.btn-admin {
+    width: auto;
+    padding: 12px;
+    background-color: #0078d4;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    font-size: 1rem;
+    text-decoration: none;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.btn-admin:hover {
+    background-color: #005fa3;
 }
 .btn-admin-secondary { 
-    background-color: #6c757d; 
+    width: auto;
+    padding: 12px;
+    background-color: #e7bd34;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    font-size: 1rem;
+    text-decoration: none;
+    cursor: pointer;
+    transition: background-color 0.3s; 
 }
 .btn-admin-secondary:hover { 
-    background-color: #5a6268; 
+    background-color: #d4a200; 
 }
 .actions { 
     display: flex; 
@@ -299,9 +343,18 @@ body {
 .btn-danger:hover {
     background-color: #c82333;
 }
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+}
+.page-title {
+    margin: 0;
+}
 
 /* ==========================================================================
-   4. COMPONENTES DE INTERAÇÃO
+    5. COMPONENTES DE INTERAÇÃO
    ========================================================================== */
 
 /* ----- Modal de Confirmação ----- */
@@ -356,7 +409,7 @@ body {
 .toast.info::before { content: 'ℹ️'; }
 
 /* ==========================================================================
-   5. ESTILOS DE PÁGINAS ESPECÍFICAS
+    6. ESTILOS DE PÁGINAS ESPECÍFICAS
    ========================================================================== */
 
 /* ----- Login ----- */
@@ -366,7 +419,7 @@ body {
     align-items: center;
     height: 100vh;
     background: linear-gradient(135deg, #f0f4f8, #d9e2ec);
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-family: "Montserrat", sans-serif;
 }
 
 .login-box {
@@ -415,22 +468,6 @@ body {
 .form-group input:focus {
     border-color: #0078d4;
     outline: none;
-}
-
-.btn-admin {
-    width: 100%;
-    padding: 12px;
-    background-color: #0078d4;
-    color: #fff;
-    border: none;
-    border-radius: 6px;
-    font-size: 1rem;
-    cursor: pointer;
-    transition: background-color 0.3s;
-}
-
-.btn-admin:hover {
-    background-color: #005fa3;
 }
 
 .alert-admin.alert-danger {
@@ -529,7 +566,7 @@ body {
 
 
 /* ==========================================================================
-   6. RESPONSIVIDADE
+    7. RESPONSIVIDADE
    ========================================================================== */
 @media (max-width: 992px) {
     .charts-grid {

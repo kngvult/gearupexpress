@@ -34,8 +34,8 @@ try {
 ?>
 
 <div class="container-fluid">
-    <h1 class="page-title">Dashboard</h1>
-    
+    <h1 class="page-title" style="margin-bottom: 43px;">Dashboard</h1>
+
     <div class="charts-grid">
         <div class="card">
             <div class="card-header"><h4>Vendas nos Últimos 7 Dias</h4></div>
@@ -47,7 +47,7 @@ try {
         </div>
     </div>
 
-    <div class="card">
+    <div class="card" style="margin-bottom: 24px;">
         <div class="card-header">
             <h4>Atividades Recentes</h4>
         </div>
@@ -68,6 +68,7 @@ try {
                 </ul>
             <?php endif; ?>
         </div>
+    </div>
 
     <div class="card">
         <div class="card-header">
@@ -138,10 +139,10 @@ document.addEventListener('DOMContentLoaded', function () {
                     label: 'Pedidos',
                     data: <?= $status_valores ?>,
                     backgroundColor: [
+                        'rgb(220, 53, 69)',  // Cancelado (Vermelho)
                         'rgb(255, 193, 7)',   // Pendente (Amarelo)
                         'rgb(23, 162, 184)', // Enviado (Azul)
-                        'rgb(40, 167, 69)',  // Entregue (Verde)
-                        'rgb(220, 53, 69)'   // Cancelado (Vermelho)
+                        'rgb(40, 167, 69)'  // Entregue (Verde)
                     ],
                     hoverOffset: 4
                 }]

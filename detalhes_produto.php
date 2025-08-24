@@ -63,7 +63,13 @@ if (empty($_GET['id']) || !is_numeric($_GET['id'])) {
                 <h1><?= htmlspecialchars($produto['nome']) ?></h1>
                 
                 <div class="product-price-stock-wrapper">
-                    <p class="product-price-large">R$ <?= number_format($produto['preco'], 2, ',', '.') ?></p>
+                    <div class="price-details">
+                        <p class="product-price-large">R$ <?= number_format($produto['preco'], 2, ',', '.') ?></p>
+                        
+                        <p class="product-installments-main">
+                            ou em até <strong>3x</strong> de <strong>R$ <?= number_format($produto['preco'] / 3, 2, ',', '.') ?></strong>
+                        </p>
+                    </div>
                     <p class="product-stock <?= $produto['estoque'] > 0 ? 'in-stock' : 'out-of-stock' ?>">
                         <?= $produto['estoque'] > 0 ? '✓ Em estoque' : '✗ Indisponível' ?>
                     </p>
@@ -95,10 +101,22 @@ if (empty($_GET['id']) || !is_numeric($_GET['id'])) {
         </div>
         <div id="tab-especificacoes" class="tab-pane">
             <table class="specs-table">
-                <tr><td>Marca</td><td>Marca Fictícia</td></tr>
-                <tr><td>Código</td><td>SKU-<?= str_pad($produto['id_produto'], 6, '0', STR_PAD_LEFT) ?></td></tr>
-                <tr><td>Categoria</td><td><?= htmlspecialchars($produto['nome_categoria']) ?></td></tr>
-                <tr><td>Garantia</td><td>3 meses</td></tr>
+                <tr>
+                    <td>Marca</td>
+                    <td><?= htmlspecialchars($produto['marca'] ?: 'Não informada') ?></td>
+                </tr>
+                <tr>
+                    <td>Código do Produto</td>
+                    <td><?= htmlspecialchars($produto['codigo_produto'] ?: 'Não informado') ?></td>
+                </tr>
+                <tr>
+                    <td>Categoria</td>
+                    <td><?= htmlspecialchars($produto['nome_categoria']) ?></td>
+                </tr>
+                <tr>
+                    <td>Garantia</td>
+                    <td>3 meses</td>
+                </tr>
             </table>
         </div>
         <div id="tab-avaliacoes" class="tab-pane">
@@ -109,32 +127,56 @@ if (empty($_GET['id']) || !is_numeric($_GET['id'])) {
         </div>
     </div>
 </div>
-
+        <!-- Carrossel de Produtos Relacionados -->
         <?php if (!empty($produtos_relacionados)): ?>
-        <div class="related-products-section">
-            <h2 class="section-title">Produtos Relacionados</h2>
+    <div class="related-products-section">
+        <h2 class="section-title">Produtos Relacionados</h2>
 
-            <div class="swiper related-products-carousel">
-                <div class="swiper-wrapper">
-                    <?php foreach ($produtos_relacionados as $relacionado): ?>
-                        <div class="swiper-slide">
-                            <div class="product-card">
-                                <a href="detalhes_produto.php?id=<?= $relacionado['id_produto'] ?>" class="product-card-link">
-                                    <img src="assets/img/produtos/<?= htmlspecialchars($relacionado['imagem']) ?>" alt="<?= htmlspecialchars($relacionado['nome']) ?>" class="product-card-image">
-                                    <div class="product-card-info">
-                                        <h3 class="product-card-title"><?= htmlspecialchars($relacionado['nome']) ?></h3>
-                                        <p class="product-card-price">R$ <?= number_format($relacionado['preco'], 2, ',', '.') ?></p>
-                                    </div>
+        <div class="swiper related-products-carousel">
+            <div class="swiper-wrapper">
+                <?php foreach ($produtos_relacionados as $relacionado): ?>
+                    <div class="swiper-slide">
+                        <div class="product-card">
+                            <img src="assets/img/produtos/<?= htmlspecialchars($relacionado['imagem']) ?>" alt="<?= htmlspecialchars($relacionado['nome']) ?>">
+                            
+                            <h4><?= htmlspecialchars($relacionado['nome']) ?></h4>
+
+                            <?php if (!empty($relacionado['preco_antigo'])): ?>
+                                <div class="product-old-price">
+                                    De: R$ <?= number_format($relacionado['preco_antigo'], 2, ',', '.') ?>
+                                </div>
+                            <?php endif; ?>
+
+                            <div class="product-price">
+                                Por: R$ <?= number_format($relacionado['preco'], 2, ',', '.') ?>
+                            </div>
+
+                            <div class="product-installments">
+                                Em até 3x de R$ <?= number_format($relacionado['preco']/3, 2, ',', '.') ?>
+                            </div>
+
+                            <div class="product-actions">
+                                <form method="post" action="carrinho.php" style="margin:0;">
+                                    <input type="hidden" name="id_produto" value="<?= $relacionado['id_produto'] ?>">
+                                    <input type="hidden" name="quantidade" value="1">
+                                    <button type="submit" name="adicionar" class="btn btn-cart">
+                                        Adicionar ao Carrinho
+                                    </button>
+                                </form>
+                                <a href="detalhes_produto.php?id=<?= $relacionado['id_produto'] ?>" class="btn btn-details">
+                                    Ver Detalhes
                                 </a>
                             </div>
                         </div>
-                    <?php endforeach; ?>
-                </div>
-                <div class="swiper-button-next"></div>
-                <div class="swiper-button-prev"></div>
-            </div>    
-        </div>
-        <?php endif; ?>
+                    </div>
+                <?php endforeach; ?>
+            </div>
+
+            <div class="swiper-button-next"></div>
+            <div class="swiper-button-prev"></div>
+        </div>    
+    </div>
+<?php endif; ?>
 
     <?php endif; ?>
 </div>

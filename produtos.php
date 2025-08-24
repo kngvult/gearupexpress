@@ -101,9 +101,9 @@ try {
         <div class="product-card-actions">
             <a href="detalhes_produto.php?id=<?= $produto['id_produto'] ?>" class="btn btn-secondary">Detalhes</a>
             
-            <form method="post" action="carrinho.php">
+            <form method="post" action="carrinho_adicionar.php" id="add-to-cart-form" class="add-to-cart-form">
                 <input type="hidden" name="id_produto" value="<?= $produto['id_produto'] ?>">
-                <button type="submit" name="adicionar" class="btn btn-primary">Adicionar</button>
+                <button type="submit" class="btn btn-primary btn-block">Adicionar</button>
             </form>
         </div>
     </div>

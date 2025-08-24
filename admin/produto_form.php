@@ -1,99 +1,118 @@
 <?php
 include 'includes/header.php';
 
-// --- LÓGICA PARA CARREGAR DADOS (MODO EDIÇÃO) ---
-$produto = null;
-$edit_mode = false;
-$page_title = "Adicionar Novo Produto";
+$produto = ['id_produto' => '', 'nome' => '', 'descricao' => '', 'preco' => '', 'estoque' => '', 'id_categoria' => '', 'imagem' => '', 'marca' => '', 'codigo_produto' => ''];
+$categorias = [];
+$erro = '';
+$titulo_pagina = 'Adicionar Novo Produto';
 
-if (isset($_GET['id']) && is_numeric($_GET['id'])) {
+// Busca todas as categorias para o seletor
+try {
+    $stmtCat = $pdo->query("SELECT id_categoria, nome FROM categorias ORDER BY nome ASC");
+    $categorias = $stmtCat->fetchAll(PDO::FETCH_ASSOC);
+} catch (PDOException $e) {
+    $erro = "Erro ao buscar categorias.";
+}
+
+// Lógica de Edição (se um ID for passado)
+if (isset($_GET['id'])) {
     $id_produto = (int)$_GET['id'];
-    $edit_mode = true;
-    $page_title = "Editar Produto";
-
-    // Busca os dados do produto para preencher o formulário
-    $stmt = $pdo->prepare("SELECT * FROM public.produtos WHERE id_produto = ?");
+    $titulo_pagina = 'Editar Produto';
+    $stmt = $pdo->prepare("SELECT * FROM produtos WHERE id_produto = ?");
     $stmt->execute([$id_produto]);
     $produto = $stmt->fetch(PDO::FETCH_ASSOC);
-
     if (!$produto) {
-        // Se o produto não for encontrado, redireciona ou mostra erro
-        echo "<p>Produto não encontrado!</p>";
-        include 'includes/footer.php';
+        header('Location: produtos.php');
         exit;
     }
 }
 
-// Busca todas as categorias para o menu dropdown
-try {
-    $stmtCat = $pdo->query("SELECT id_categoria, nome FROM public.categorias ORDER BY nome ASC");
-    $categorias = $stmtCat->fetchAll(PDO::FETCH_ASSOC);
-} catch (PDOException $e) {
-    $categorias = [];
-    error_log("Erro ao buscar categorias para o form: " . $e->getMessage());
+// Lógica para Salvar (Adicionar ou Atualizar)
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $id_produto = $_POST['id_produto'] ? (int)$_POST['id_produto'] : null;
+    $nome = $_POST['nome'];
+    $descricao = $_POST['descricao'];
+    $preco = $_POST['preco'];
+    $estoque = $_POST['estoque'];
+    $id_categoria = $_POST['id_categoria'];
+    // *** NOVOS CAMPOS ***
+    $marca = $_POST['marca'];
+    $codigo_produto = $_POST['codigo_produto'];
+    // ... (lógica de upload de imagem) ...
+
+    if ($id_produto) { // Atualizar
+        $sql = "UPDATE produtos SET nome = ?, descricao = ?, preco = ?, estoque = ?, id_categoria = ?, marca = ?, codigo_produto = ? WHERE id_produto = ?";
+        $params = [$nome, $descricao, $preco, $estoque, $id_categoria, $marca, $codigo_produto, $id_produto];
+    } else { // Inserir
+        $sql = "INSERT INTO produtos (nome, descricao, preco, estoque, id_categoria, marca, codigo_produto) VALUES (?, ?, ?, ?, ?, ?, ?)";
+        $params = [$nome, $descricao, $preco, $estoque, $id_categoria, $marca, $codigo_produto];
+    }
+    
+    try {
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute($params);
+        header('Location: produtos.php?status=success');
+        exit;
+    } catch (PDOException $e) {
+        $erro = "Erro ao salvar produto: " . $e->getMessage();
+    }
 }
 ?>
 
 <div class="container-fluid">
-    <h1 class="page-title"><?= $page_title ?></h1>
+    <h1 class="page-title"><?= $titulo_pagina ?></h1>
+
+    <?php if ($erro): ?><div class="alert alert-danger"><?= $erro ?></div><?php endif; ?>
 
     <div class="card">
         <div class="card-body">
-            <form action="produto_salvar.php" method="POST" enctype="multipart/form-data">
+            <form action="produto_form.php<?= $produto['id_produto'] ? '?id='.$produto['id_produto'] : '' ?>" method="post" enctype="multipart/form-data">
+                <input type="hidden" name="id_produto" value="<?= htmlspecialchars($produto['id_produto']) ?>">
                 
-                <?php if ($edit_mode): ?>
-                    <input type="hidden" name="id_produto" value="<?= htmlspecialchars($produto['id_produto']) ?>">
-                <?php endif; ?>
-
                 <div class="form-group">
                     <label for="nome">Nome do Produto</label>
-                    <input type="text" id="nome" name="nome" class="form-control" value="<?= htmlspecialchars($produto['nome'] ?? '') ?>" required>
-                </div>
-
-                <div class="form-group">
-                    <label for="descricao">Descrição</label>
-                    <textarea id="descricao" name="descricao" class="form-control" rows="5" required><?= htmlspecialchars($produto['descricao'] ?? '') ?></textarea>
+                    <input type="text" class="form-control" id="nome" name="nome" value="<?= htmlspecialchars($produto['nome']) ?>" required>
                 </div>
                 
                 <div class="form-row">
-                    <div class="form-group">
-                        <label for="preco">Preço (ex: 123.45)</label>
-                        <input type="text" id="preco" name="preco" class="form-control" value="<?= htmlspecialchars($produto['preco'] ?? '') ?>" required>
+                    <div class="form-group col-md-6">
+                        <label for="marca">Marca</label>
+                        <input type="text" class="form-control" id="marca" name="marca" value="<?= htmlspecialchars($produto['marca']) ?>">
                     </div>
-                    <div class="form-group">
+                    <div class="form-group col-md-6">
+                        <label for="codigo_produto">Código do Produto</label>
+                        <input type="text" class="form-control" id="codigo_produto" name="codigo_produto" value="<?= htmlspecialchars($produto['codigo_produto']) ?>">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="descricao">Descrição</label>
+                    <textarea class="form-control" id="descricao" name="descricao" rows="5" required><?= htmlspecialchars($produto['descricao']) ?></textarea>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group col-md-4">
+                        <label for="preco">Preço (R$)</label>
+                        <input type="number" step="0.01" class="form-control" id="preco" name="preco" value="<?= htmlspecialchars($produto['preco']) ?>" required>
+                    </div>
+                    <div class="form-group col-md-4">
                         <label for="estoque">Estoque</label>
-                        <input type="number" id="estoque" name="estoque" class="form-control" value="<?= htmlspecialchars($produto['estoque'] ?? '0') ?>" required>
+                        <input type="number" class="form-control" id="estoque" name="estoque" value="<?= htmlspecialchars($produto['estoque']) ?>" required>
+                    </div>
+                    <div class="form-group col-md-4">
+                        <label for="id_categoria">Categoria</label>
+                        <select class="form-control" id="id_categoria" name="id_categoria" required>
+                            <option value="">Selecione...</option>
+                            <?php foreach ($categorias as $categoria): ?>
+                                <option value="<?= $categoria['id_categoria'] ?>" <?= ($produto['id_categoria'] == $categoria['id_categoria']) ? 'selected' : '' ?>>
+                                    <?= htmlspecialchars($categoria['nome']) ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
                     </div>
                 </div>
 
-                <div class="form-group">
-                    <label for="id_categoria">Categoria</label>
-                    <select id="id_categoria" name="id_categoria" class="form-control" required>
-                        <option value="">Selecione uma categoria</option>
-                        <?php foreach ($categorias as $categoria): ?>
-                            <option value="<?= $categoria['id_categoria'] ?>" <?= (isset($produto['id_categoria']) && $produto['id_categoria'] == $categoria['id_categoria']) ? 'selected' : '' ?>>
-                                <?= htmlspecialchars($categoria['nome']) ?>
-                            </option>
-                        <?php endforeach; ?>
-                    </select>
-                </div>
-
-                <div class="form-group">
-                    <label for="imagem">Imagem do Produto</label>
-                    <input type="file" id="imagem" name="imagem" class="form-control">
-                    <?php if ($edit_mode && !empty($produto['imagem'])): ?>
-                        <div class="current-image">
-                            <p>Imagem atual:</p>
-                            <img src="../assets/img/<?= htmlspecialchars($produto['imagem']) ?>" alt="Imagem atual">
-                            <input type="hidden" name="imagem_atual" value="<?= htmlspecialchars($produto['imagem']) ?>">
-                        </div>
-                    <?php endif; ?>
-                </div>
-
-                <div class="form-actions">
-                    <button type="submit" class="btn-admin">Salvar Produto</button>
-                    <a href="produtos.php" class="btn-admin-secondary">Cancelar</a>
-                </div>
+                <button type="submit" class="btn btn-success">Salvar Produto</button>
+                <a href="produtos.php" class="btn btn-secondary">Cancelar</a>
             </form>
         </div>
     </div>

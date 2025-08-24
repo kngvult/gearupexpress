@@ -64,6 +64,79 @@ try {
         </div>
     </div>
 </footer>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Procura todos os formulários com a nossa classe especial
+    const allAddToCartForms = document.querySelectorAll('.add-to-cart-form');
+
+    allAddToCartForms.forEach(form => {
+        form.addEventListener('submit', function(event) {
+            event.preventDefault(); // Impede o recarregamento da página
+
+            const button = form.querySelector('button[type="submit"]');
+            const originalButtonHtml = button.innerHTML;
+            const formData = new FormData(form);
+
+            // Desativa o botão e mostra "Adicionando..."
+            button.disabled = true;
+            button.innerHTML = 'Adicionando...';
+
+            // Envia os dados para o nosso script PHP
+            fetch('carrinho_adicionar.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Feedback de sucesso
+                    button.innerHTML = 'Adicionado!';
+                    
+                    // Atualiza o contador do carrinho no header
+                    const cartBadge = document.querySelector('.cart-badge');
+                    if (cartBadge) {
+                        cartBadge.textContent = data.totalItensCarrinho;
+                        if (data.totalItensCarrinho > 0) {
+                            cartBadge.style.display = 'flex';
+                        }
+                    } else if (data.totalItensCarrinho > 0) {
+                        const cartLink = document.querySelector('a[href="carrinho.php"]');
+                        if(cartLink) {
+                            const newBadge = document.createElement('span');
+                            newBadge.className = 'cart-badge';
+                            newBadge.textContent = data.totalItensCarrinho;
+                            cartLink.appendChild(newBadge);
+                        }
+                    }
+                } else {
+                    button.innerHTML = 'Erro!';
+                }
+                // Volta ao estado original após 1.5 segundos
+                setTimeout(() => {
+                    button.disabled = false;
+                    button.innerHTML = originalButtonHtml;
+                }, 1500);
+            })
+            .catch(error => {
+                console.error('Erro no AJAX:', error);
+                button.disabled = false;
+                button.innerHTML = originalButtonHtml;
+            });
+        });
+    });
+});
+</script>
 <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+<!--<script>
+var swiper = new Swiper(".mySwiper", {
+    slidesPerView: 5,
+    spaceBetween: 20,
+    navigation: {
+    nextEl: ".swiper-button-next",
+    prevEl: ".swiper-button-prev",
+    },
+    loop: true,
+});
+</script> -->
 </body>
 </html>

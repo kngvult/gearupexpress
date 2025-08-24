@@ -42,7 +42,7 @@ try {
 ?>
 
 <div class="container-fluid">
-    <h1 class="page-title">Relatórios de Vendas</h1>
+    <h1 class="page-title" style="margin-bottom: 43px;">Relatórios de Vendas</h1>
 
     <div class="charts-grid">
         <div class="card">
