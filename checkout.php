@@ -43,58 +43,60 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $total_carrinho_post += $item['quantidade'] * $item['preco_unitario'];
         }
         
-        $valor_frete = floatval((rand(15, 30)) / 10);
+        $valor_frete = isset($_POST['valor_frete']) ? floatval(str_replace(',', '.', $_POST['valor_frete'])) : 0;
         $total_final = $total_carrinho_post + $valor_frete;
 
         $pdo->beginTransaction();
-        try {
-            // 1. Insere o pedido
-            $stmtPedido = $pdo->prepare(
-                "INSERT INTO public.pedidos (id_usuario, total, metodo_pagamento, valor_frete, endereco_cep, endereco_rua, endereco_numero, endereco_bairro, endereco_cidade, endereco_estado, status) 
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pendente')"
-            );
-            $stmtPedido->execute([$id_usuario, $total_final, $metodo_pagamento, $valor_frete, $cep, $rua, $numero, $bairro, $cidade, $estado]);
-            $id_novo_pedido = $pdo->lastInsertId();
+    try {
+        // 1. Insere o pedido principal
+        $stmtPedido = $pdo->prepare(
+            "INSERT INTO public.pedidos (id_usuario, total, metodo_pagamento, valor_frete, endereco_cep, endereco_rua, endereco_numero, endereco_bairro, endereco_cidade, endereco_estado) 
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+        );
+        $stmtPedido->execute([$id_usuario, $total_final, $metodo_pagamento, $valor_frete, $cep, $rua, $numero, $bairro, $cidade, $estado]);
+        $id_novo_pedido = $pdo->lastInsertId();
 
-            // 2. Insere os itens do pedido
-            $stmtItens = $pdo->prepare(
-                "INSERT INTO public.itens_pedido (id_pedido, id_produto, quantidade, preco_unitario) VALUES (?, ?, ?, ?)"
-            );
-            foreach ($itensCarrinhoPost as $item) {
-                $stmtItens->execute([$id_novo_pedido, $item['id_produto'], $item['quantidade'], $item['preco_unitario']]);
-            }
+        // 2. Prepara as queries para os próximos passos
+        $stmtItens = $pdo->prepare("INSERT INTO public.itens_pedido (id_pedido, id_produto, quantidade, preco_unitario) VALUES (?, ?, ?, ?)");
+        $stmtEstoque = $pdo->prepare("UPDATE public.produtos SET estoque = estoque - ? WHERE id_produto = ?");
 
-            // 3. Para cada item no carrinho, diminui a quantidade no estoque do produto
-            $stmtEstoque = $pdo->prepare(
-                "UPDATE produtos SET estoque = estoque - ? WHERE id_produto = ?"
-            );
-            foreach ($itensCarrinho as $item) {
-                // Garante que não tentamos comprar mais do que existe (segurança extra)
-                $stmtEstoque->execute([$item['quantidade'], $item['id_produto']]);
-            }
-
-            // 4. Limpa o carrinho do usuário (Sua correção, no lugar perfeito!)
-            $stmtLimpaCarrinho = $pdo->prepare("DELETE FROM carrinho WHERE usuario_id = ?");
-            $stmtLimpaCarrinho->execute([$id_usuario]);
-
-            // 5. Insere o log de atividade
-            $logDescricao = "Novo pedido (#{$id_novo_pedido}) recebido.";
-            $stmtLog = $pdo->prepare("INSERT INTO logs_atividade (descricao) VALUES (?)");
-            $stmtLog->execute([$logDescricao]);
-
-            // 6. Se tudo deu certo, confirma a transação
-            $pdo->commit();
-            
-            // 7. Redireciona para a página de sucesso
-            header('Location: meus_pedidos.php?order=success');
-            exit;
-
-        } catch (PDOException $e) {
-            $pdo->rollBack();
-            $erro = "Não foi possível finalizar seu pedido. Por favor, tente novamente.";
-            error_log("Erro no checkout: " . $e->getMessage());
-            // Se der erro, o script continua e exibe a mensagem de erro no HTML abaixo
+        // 3. Itera sobre os itens do carrinho para inseri-los E atualizar o estoque
+        foreach ($itensCarrinhoPost as $item) {
+            // Insere o item na tabela 'itens_pedido'
+            $stmtItens->execute([
+                $id_novo_pedido, 
+                $item['id_produto'], 
+                $item['quantidade'], 
+                $item['preco_unitario']
+            ]);
+            // Diminui a quantidade do estoque na tabela 'produtos'
+            $stmtEstoque->execute([
+                $item['quantidade'], 
+                $item['id_produto']
+            ]);
         }
+
+        // 4. Limpa o carrinho do usuário
+        $stmtLimpaCarrinho = $pdo->prepare("DELETE FROM carrinho WHERE usuario_id = ?");
+        $stmtLimpaCarrinho->execute([$id_usuario]);
+
+        // 5. Insere o log de atividade
+        $logDescricao = "Novo pedido (#{$id_novo_pedido}) recebido.";
+        $stmtLog = $pdo->prepare("INSERT INTO logs_atividade (descricao) VALUES (?)");
+        $stmtLog->execute([$logDescricao]);
+
+        // 6. Confirma todas as operações no banco de dados
+        $pdo->commit();
+        
+        // 7. Redireciona para a página de sucesso
+        header('Location: meus_pedidos.php?order=success');
+        exit;
+
+    } catch (PDOException $e) {
+        $pdo->rollBack(); // Desfaz tudo se ocorrer qualquer erro
+        $erro = "Não foi possível finalizar seu pedido. Por favor, tente novamente.";
+        error_log("Erro crítico no checkout: " . $e->getMessage());
+    }
     }
 }
 

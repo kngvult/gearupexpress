@@ -24,16 +24,18 @@ $pagina_atual = basename($_SERVER['PHP_SELF']);
     <div class="admin-wrapper">
         <aside class="sidebar">
     <div class="sidebar-header">
-        <a href="index.php">
-            <img src="../assets/img/GUPX-logo-v2.png" alt="GearUp Express Logo" class="sidebar-logo">
-        </a>
+            <img src="../assets/img/GUPX-logo-v2.png" alt="GearUp Express Logo" class="sidebar-logo sidebar-logo-large">
+            <img src="../assets/img/GUPX-icon-v2.ico" alt="GearUp Express Logo Mini" class="sidebar-logo sidebar-logo-mini" style="display:none;">
+            <button id="sidebar-toggle-btn" title="Expandir menu" style="display: none;">
+                
+            </button>
     </div>
     <nav class="sidebar-nav">
     <ul>
-        <li><a href="index.php" class="<?= ($pagina_atual == 'index.php') ? 'active' : '' ?>"><i class="fas fa-chart-line"></i> Dashboard</a></li>
-        <li><a href="produtos.php" class="<?= ($pagina_atual == 'produtos.php' || $pagina_atual == 'produto_form.php') ? 'active' : '' ?>"><i class="fas fa-box"></i> Produtos</a></li>
-        <li><a href="pedidos.php" class="<?= ($pagina_atual == 'pedidos.php' || $pagina_atual == 'pedido_detalhes.php') ? 'active' : '' ?>"><i class="fas fa-shopping-cart"></i> Pedidos</a></li>
-        <li><a href="relatorios.php" class="<?= ($pagina_atual == 'relatorios.php') ? 'active' : '' ?>"><i class="fas fa-file"></i> Relatórios</a></li>
+        <li><a href="index.php" class="<?= ($pagina_atual == 'index.php') ? 'active' : '' ?>"><i class="fas fa-chart-line"></i> <span class="sidebar-text">Dashboard</span></a></li>
+        <li><a href="produtos.php" class="<?= ($pagina_atual == 'produtos.php' || $pagina_atual == 'produto_form.php') ? 'active' : '' ?>"><i class="fas fa-box"></i> <span class="sidebar-text">Produtos</span></a></li>
+        <li><a href="pedidos.php" class="<?= ($pagina_atual == 'pedidos.php' || $pagina_atual == 'pedido_detalhes.php') ? 'active' : '' ?>"><i class="fas fa-shopping-cart"></i> <span class="sidebar-text">Pedidos</span></a></li>
+        <li><a href="relatorios.php" class="<?= ($pagina_atual == 'relatorios.php') ? 'active' : '' ?>"><i class="fas fa-file"></i> <span class="sidebar-text">Relatórios</span></a></li>
     </ul>
 </nav>
         </aside>
@@ -50,3 +52,52 @@ $pagina_atual = basename($_SERVER['PHP_SELF']);
             </header>
             
             <main class="content-area">
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const sidebar = document.querySelector('.sidebar');
+    const logoLarge = document.querySelector('.sidebar-logo-large');
+    const logoMini = document.querySelector('.sidebar-logo-mini');
+    const mainContent = document.querySelector('.main-content');
+    
+    // Deixamos de usar o toggleBtn, o clique na logo mini já faz a ação
+    logoLarge.style.cursor = 'pointer';
+    logoMini.style.cursor = 'pointer';
+
+    // Função para recolher a sidebar
+    function collapseSidebar() {
+        sidebar.classList.add('sidebar-collapsed');
+        logoLarge.style.display = 'none';
+        logoMini.style.display = 'block';
+        mainContent.classList.add('main-content-expanded');
+        // NOVO: Salva o estado no localStorage
+        localStorage.setItem('sidebarCollapsed', 'true');
+    }
+
+    // Função para expandir a sidebar
+    function expandSidebar() {
+        sidebar.classList.remove('sidebar-collapsed');
+        logoLarge.style.display = 'block';
+        logoMini.style.display = 'none';
+        mainContent.classList.remove('main-content-expanded');
+        // NOVO: Salva o estado no localStorage
+        localStorage.setItem('sidebarCollapsed', 'false');
+    }
+
+    // Evento de clique na logo grande (para recolher)
+    logoLarge.addEventListener('click', collapseSidebar);
+
+    // Evento de clique na logo mini (para expandir)
+    logoMini.addEventListener('click', expandSidebar);
+    
+    // --- LÓGICA DO LOCALSTORAGE ---
+    // NOVO: Ao carregar a página, verifica o estado guardado
+    const isCollapsed = localStorage.getItem('sidebarCollapsed');
+    if (isCollapsed === 'true') {
+        // Se estava guardado como recolhido, já inicia a página nesse estado
+        collapseSidebar();
+    }
+});
+</script>
+</body>
+</html>

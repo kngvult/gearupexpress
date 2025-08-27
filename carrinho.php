@@ -260,17 +260,22 @@ document.addEventListener('DOMContentLoaded', function() {
             }, 1000); // Espera 1 segundo após o último clique para atualizar
         });
     });
-});
 document.querySelectorAll('.remove-btn').forEach(btn => {
-    btn.addEventListener('click', function(e) {
-        e.preventDefault();
-        document.getElementById('modalRemoverId').value = this.dataset.id;
-        document.getElementById('modal-remover-carrinho').style.display = 'flex';
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            document.getElementById('modalRemoverId').value = this.dataset.id;
+            document.getElementById('modal-remover-carrinho').style.display = 'flex';
+        });
     });
+
+    const cancelBtn = document.getElementById('confirmModalNo');
+    if (cancelBtn) {
+        cancelBtn.onclick = function() {
+            document.getElementById('modal-remover-carrinho').style.display = 'none';
+        };
+    }
 });
-document.getElementById('confirmModalNo').onclick = function() {
-    document.getElementById('modal-remover-carrinho').style.display = 'none';
-};
+
 </script>
 
 <!-- Modal de confirmação de remoção do item do carrinho -->

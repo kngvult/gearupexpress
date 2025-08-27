@@ -74,10 +74,12 @@ h1, h2, h3, h4, h5, h6 {
     3. ESTRUTURA PRINCIPAL DO LAYOUT
    ========================================================================== */
 .admin-wrapper { 
-    display: flex; 
+    display: flex;
+    min-width: 100vh;
 }
 .sidebar {
-    width: 250px;
+    width: 220px;
+    transition: width 0.3s;
     background-color: var(--admin-sidebar-bg);
     height: 100vh;
     position: fixed;
@@ -86,9 +88,54 @@ h1, h2, h3, h4, h5, h6 {
     flex-shrink: 0;
     z-index: 100;
 }
+.sidebar.sidebar-collapsed {
+    width: 60px;
+}
+.sidebar.sidebar-collapsed .sidebar-text {
+    display: none;
+}
+.sidebar-logo-large {
+    margin: 10px auto;
+    display: block;
+    transition: width 0.3s, height 0.3s;
+}
+.sidebar-logo-mini {
+    width: 32px;
+    height: 32px;
+    margin: 14px auto;
+    display: none;
+    transition: width 0.3s, height 0.3s;
+    cursor: pointer;
+}
+.sidebar.sidebar-collapsed .sidebar-logo-large {
+    display: none !important;
+}
+.sidebar.sidebar-collapsed .sidebar-logo-mini {
+    display: block !important;
+}
+
 .main-content {
-    margin-left: 250px;
-    width: calc(100% - 250px); /* Corrigido para ser mais preciso */
+    flex: 1;
+    transition: margin-left 0.3s;
+    margin-left: 220px;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+}
+.main-content-expanded {
+    margin-left: 60px !important;
+}
+#sidebar-toggle-btn {
+    background: none;
+    border: none;
+    color: #333;
+    font-size: 1.5rem;
+    cursor: pointer;
+    margin: 10px auto;
+    display: none;
+}
+.sidebar.sidebar-collapsed #sidebar-toggle-btn {
+    display: block;
 }
 .top-bar {
     background: var(--admin-white);
@@ -100,8 +147,9 @@ h1, h2, h3, h4, h5, h6 {
     height: 65px;
 }
 .content-area {
-    padding: 40px;
-    overflow-y: auto;
+    flex: 1;
+    padding: 32px 24px;
+    min-width: 0;
 }
 .container-fluid { 
     width: 100%; 
@@ -114,7 +162,6 @@ h1, h2, h3, h4, h5, h6 {
 /* ----- Sidebar Refinada ----- */
 .sidebar-header { 
     padding: 18px 20px; 
-    border-bottom: 1px solid rgba(255,255,255,0.05); 
 }
 .sidebar-logo {
     max-width: 140px;
@@ -150,6 +197,26 @@ h1, h2, h3, h4, h5, h6 {
 .sidebar-nav a i {
     font-size: 1.1rem;
     width: 20px; /* Alinha os ícones */
+    text-align: center;
+}
+.sidebar-nav ul li a {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 18px;
+    transition: padding 0.3s;
+}
+.sidebar.sidebar-collapsed .sidebar-nav ul li a {
+    justify-content: center;
+    gap: 0;
+    padding: 12px 0;
+}
+.sidebar.sidebar-collapsed .sidebar-nav ul li a .sidebar-text {
+    display: none;
+}
+.sidebar-nav ul li a i {
+    font-size: 1.3rem;
+    min-width: 32px;
     text-align: center;
 }
 /* ----- Logoff ----- */

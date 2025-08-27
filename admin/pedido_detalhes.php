@@ -14,46 +14,48 @@ if (!isset($_GET['id']) || !is_numeric($_GET['id'])) {
     
     // 2. LÓGICA PARA ATUALIZAR O STATUS (se o formulário for enviado)
     if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['status'])) {
-        $novo_status = $_POST['status'];
-        
-        $pdo->beginTransaction();
-        try {
-            // Verifica o status atual do pedido
-            $stmtStatusAtual = $pdo->prepare("SELECT status FROM public.pedidos WHERE id_pedido = ?");
-            $stmtStatusAtual->execute([$id_pedido]);
-            $status_atual = $stmtStatusAtual->fetchColumn();
+    $novo_status = $_POST['status'];
+    
+    $pdo->beginTransaction();
+    try {
+        // Busca o status atual do pedido
+        $stmtStatusAtual = $pdo->prepare("SELECT status FROM public.pedidos WHERE id_pedido = ?");
+        $stmtStatusAtual->execute([$id_pedido]);
+        $status_atual = $stmtStatusAtual->fetchColumn();
 
-            // Se o pedido está sendo cancelado (e não estava cancelado antes), restaura o estoque
-            if ($novo_status === 'cancelado' && $status_atual !== 'cancelado') {
-                $stmtItens = $pdo->prepare("SELECT id_produto, quantidade FROM public.itens_pedido WHERE id_pedido = ?");
-                $stmtItens->execute([$id_pedido]);
-                $itens_do_pedido = $stmtItens->fetchAll(PDO::FETCH_ASSOC);
+        // Se o status está mudando para "cancelado" (e não era antes), restaura o estoque
+        if ($novo_status === 'cancelado' && $status_atual !== 'cancelado') {
+            $stmtItens = $pdo->prepare("SELECT id_produto, quantidade FROM public.itens_pedido WHERE id_pedido = ?");
+            $stmtItens->execute([$id_pedido]);
+            $itens_do_pedido = $stmtItens->fetchAll(PDO::FETCH_ASSOC);
 
+            if ($itens_do_pedido) {
                 $stmtEstoque = $pdo->prepare("UPDATE public.produtos SET estoque = estoque + ? WHERE id_produto = ?");
                 foreach ($itens_do_pedido as $item) {
                     $stmtEstoque->execute([$item['quantidade'], $item['id_produto']]);
                 }
             }
-            
-            // Atualiza o status do pedido
-            $stmtUpdate = $pdo->prepare("UPDATE public.pedidos SET status = ? WHERE id_pedido = ?");
-            $stmtUpdate->execute([$novo_status, $id_pedido]);
-            
-            // Insere o log de atividade
-            $logDescricao = "Status do pedido (#{$id_pedido}) alterado para '{$novo_status}'.";
-            $stmtLog = $pdo->prepare("INSERT INTO logs_atividade (descricao) VALUES (?)");
-            $stmtLog->execute([$logDescricao]);
-
-            $pdo->commit(); // Confirma a transação
-
-            header("Location: pedido_detalhes.php?id=$id_pedido&status=success&msg=" . urlencode('Status atualizado!'));
-            exit;
-        } catch (PDOException $e) {
-            $pdo->rollBack();
-            $erro = "Erro ao atualizar o status do pedido.";
-            error_log($e->getMessage());
         }
+        
+        // Atualiza o status do pedido
+        $stmtUpdate = $pdo->prepare("UPDATE public.pedidos SET status = ? WHERE id_pedido = ?");
+        $stmtUpdate->execute([$novo_status, $id_pedido]);
+        
+        // Insere o log de atividade
+        $logDescricao = "Status do pedido (#{$id_pedido}) alterado para '{$novo_status}'.";
+        $stmtLog = $pdo->prepare("INSERT INTO logs_atividade (descricao) VALUES (?)");
+        $stmtLog->execute([$logDescricao]);
+
+        $pdo->commit();
+
+        header("Location: pedido_detalhes.php?id=$id_pedido&status=success&msg=" . urlencode('Status atualizado!'));
+        exit;
+    } catch (PDOException $e) {
+        $pdo->rollBack();
+        $erro = "Erro ao atualizar o status do pedido.";
+        error_log("Erro ao atualizar status (Admin): " . $e->getMessage());
     }
+}
 
     // 3. BUSCA OS DADOS DO PEDIDO E DO CLIENTE
     try {
