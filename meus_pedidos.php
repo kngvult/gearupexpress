@@ -14,6 +14,21 @@ if (!isset($_SESSION['usuario']['id'])) {
 include 'includes/conexao.php';
 
 $id_usuario = $_SESSION['usuario']['id'];
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['id_pedido'], $_POST['acao'])) {
+    $id_pedido = (int)$_POST['id_pedido'];
+    $acao = $_POST['acao'];
+    if ($acao === 'cancelar') {
+        $stmt = $pdo->prepare("UPDATE public.pedidos SET status = 'cancelado' WHERE id_pedido = ? AND id_usuario = ?");
+        $stmt->execute([$id_pedido, $id_usuario]);
+        header('Location: meus_pedidos.php?order=cancelado');
+        exit;
+    } elseif ($acao === 'reembolso') {
+        $stmt = $pdo->prepare("UPDATE public.pedidos SET status = 'reembolso_solicitado' WHERE id_pedido = ? AND id_usuario = ?");
+        $stmt->execute([$id_pedido, $id_usuario]);
+        header('Location: meus_pedidos.php?order=reembolso');
+        exit;
+    }
+}
 // Busca os pedidos do usuário no banco de dados
 $pedidos = [];
 try {
@@ -56,37 +71,89 @@ include 'includes/header.php';
         <div class="pedidos-lista">
             <?php foreach ($pedidos as $pedido): ?>
                 <div class="pedido-card">
-                    <div class="pedido-header">
-                        <div class="pedido-id">Pedido #<?= htmlspecialchars($pedido['id_pedido']) ?></div>
-                        <div class="pedido-data"><?= date('d/m/Y H:i', strtotime($pedido['data_pedido'])) ?></div>
-                    </div>
-                    <div class="pedido-body">
-                        <div class="pedido-info">
-                            <strong>Status:</strong>
-                            <span class="status-badge status-<?= strtolower(htmlspecialchars($pedido['status'])) ?>">
-                                <?= ucfirst(htmlspecialchars($pedido['status'])) ?>
-                            </span>
-                        </div>
-                        <div class="pedido-info">
-                            <strong>Pagamento:</strong>
-                            <span><?= htmlspecialchars($pedido['metodo_pagamento']) ?></span>
-                        </div>
-                        <div class="pedido-info total">
-                            <strong>Total:</strong>
-                            <span>R$ <?= number_format($pedido['total'], 2, ',', '.') ?></span>
-                        </div>
-                    </div>
-                    <div class="pedido-footer">
-                        <a href="detalhes_pedido.php?id=<?= $pedido['id_pedido'] ?>" class="btn btn-secondary">Ver Detalhes</a>
-                        <?php if ($pedido['status'] !== 'cancelado'): ?>
-                            <a href="rastrear_pedido.php?id=<?= $pedido['id_pedido'] ?>" class="btn btn-primary">Rastrear Pedido</a>
-                        <?php endif; ?>
-                    </div>
-                </div>
+    <div class="pedido-header">
+        <div class="pedido-id">Pedido #<?= htmlspecialchars($pedido['id_pedido']) ?></div>
+        <div class="pedido-data"><?= date('d/m/Y H:i', strtotime($pedido['data_pedido'])) ?></div>
+    </div>
+    <div class="pedido-body">
+        <div class="pedido-info">
+            <strong>Status:</strong>
+            <span class="status-badge status-<?= strtolower(htmlspecialchars($pedido['status'])) ?>">
+                <?= ucfirst(str_replace('_', ' ', htmlspecialchars($pedido['status']))) ?>
+            </span>
+        </div>
+        <div class="pedido-info">
+            <strong>Pagamento:</strong>
+            <span><?= htmlspecialchars($pedido['metodo_pagamento']) ?></span>
+        </div>
+        <div class="pedido-info total">
+            <strong>Total:</strong>
+            <span>R$ <?= number_format($pedido['total'], 2, ',', '.') ?></span>
+        </div>
+    </div>
+    <div class="pedido-footer">
+        <a href="detalhes_pedido.php?id=<?= $pedido['id_pedido'] ?>" class="btn btn-secondary">Ver Detalhes</a>
+        
+        <?php 
+        // Mostra o botão de rastrear apenas se o pedido já foi enviado
+        $status_rastreavel = ['enviado', 'entregue'];
+        if (in_array($pedido['status'], $status_rastreavel)): 
+        ?>
+            <a href="rastrear_pedido.php?id=<?= $pedido['id_pedido'] ?>" class="btn btn-primary">Rastrear Pedido</a>
+        <?php endif; ?>
+
+        <?php if ($pedido['status'] === 'pendente'): ?>
+    <button type="button"
+            class="btn btn-warning-alt btn-modal-acao"
+            data-id="<?= $pedido['id_pedido'] ?>"
+            data-acao="cancelar"
+            data-title="Cancelar Pedido"
+            data-msg="Tem certeza que deseja cancelar este pedido? Esta ação não poderá ser desfeita."
+            style="background-color: #dc3545; color: #fff;">
+        Cancelar Pedido
+    </button>
+<?php elseif ($pedido['status'] === 'entregue'): ?>
+    <button type="button"
+            class="btn btn-danger btn-modal-acao"
+            data-id="<?= $pedido['id_pedido'] ?>"
+            data-acao="reembolso"
+            data-title="Solicitar Reembolso"
+            data-msg="Deseja solicitar o reembolso para este pedido? Esta ação não poderá ser desfeita."
+            style="background-color: #eca31aff; color: #fff;">
+        Pedir Reembolso
+    </button>
+<?php endif; ?>
+    </div>
+</div>
             <?php endforeach; ?>
         </div>
     <?php endif; ?>
 </div>
 </main>
-
+<div id="confirmModal" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.3); align-items:center; justify-content:center; z-index:9999;">
+    <div style="background:#fff; padding:30px; border-radius:12px; max-width:400px; margin:auto; text-align:center;">
+        <h4 id="confirmModalTitle" style="margin-top:0;">Confirmação</h4>
+        <p id="confirmModalMsg"></p>
+        <form id="confirmModalForm" method="post" style="margin-bottom:0;">
+        <input type="hidden" name="id_pedido" id="modalPedidoId">
+        <input type="hidden" name="acao" id="modalPedidoAcao">
+        <button type="submit" id="confirmModalYes" class="btn btn-danger" style="margin-right:10px; background-color: #dc3545; color: #fff;">Confirmar</button>
+        <button type="button" id="confirmModalNo" class="btn btn-secondary">Cancelar</button>
+        </form>
+    </div>
+</div>
+<script>
+document.querySelectorAll('.btn-modal-acao').forEach(btn => {
+    btn.addEventListener('click', function() {
+        document.getElementById('modalPedidoId').value = this.dataset.id;
+        document.getElementById('modalPedidoAcao').value = this.dataset.acao;
+        document.getElementById('confirmModalTitle').textContent = this.dataset.title;
+        document.getElementById('confirmModalMsg').textContent = this.dataset.msg;
+        document.getElementById('confirmModal').style.display = 'flex';
+    });
+});
+document.getElementById('confirmModalNo').onclick = function() {
+    document.getElementById('confirmModal').style.display = 'none';
+};
+</script>
 <?php include 'includes/footer.php'; ?>

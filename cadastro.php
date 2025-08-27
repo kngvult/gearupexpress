@@ -23,25 +23,42 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } elseif (strlen($senha) < 6) {
         $erro = "A senha deve ter no mínimo 6 caracteres.";
     } else {
-        try {
-            // 1. Gera o hash da senha usando o PHP (esta é a fonte da verdade para o hash)
-            $hashSenha = password_hash($senha, PASSWORD_DEFAULT);
+        $env = parse_ini_file(__DIR__ . '/includes/.env');
 
-            // 2. Chama a função SQL, passando o NOME no lugar da SENHA EM TEXTO
-            $stmt = $pdo->prepare("SELECT public.handle_new_user(?, ?, ?)");
-            
-            // 3. Executa com os parâmetros na ordem correta: email, nome, hash da senha
-            $stmt->execute([$email, $nome, $hashSenha]);
-            
-            $sucesso = "Cadastro realizado com sucesso! Você já pode fazer login.";
+        // Usa as variáveis
+        $supabaseUrl = $env['PHP_SITE_SUPABASE_URL'];
+        $serviceRoleKey = $env['PHP_SITE_SERVICE_ROLE_KEY'];
 
-        } catch (PDOException $e) {
-            if (str_contains($e->getMessage(), 'duplicate key value violates unique constraint')) {
-                $erro = "Este e-mail já está cadastrado.";
-            } else {
-                $erro = "<strong>Erro de Depuração:</strong><br><pre>" . htmlspecialchars($e->getMessage()) . "</pre>";
-            }
+        // Exemplo de chamada cURL usando as variáveis
+        $ch = curl_init($supabaseUrl . '/auth/v1/signup');
+        curl_setopt($ch, CURLOPT_POST, 1);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode([
+            'email' => $email,
+            'password' => $senha,
+            'data' => ['nome' => $nome]
+        ]));
+        curl_setopt($ch, CURLOPT_HTTPHEADER, [
+            'Content-Type: application/json',
+            'apikey: ' . $serviceRoleKey
+        ]);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        $response = curl_exec($ch);
+        curl_close($ch);
+
+        $data = json_decode($response, true);
+        if (isset($data['user'])) {
+            $id = $data['user']['id'];
+            // Insere na tabela perfis
+            $stmt = $pdo->prepare("INSERT INTO public.perfis (id, nome) VALUES (?, ?)");
+            $stmt->execute([$id, $nome]);
+            $sucesso = "Cadastro realizado! Verifique seu e-mail para ativar a conta.";
+        } elseif (isset($data['msg']) && str_contains($data['msg'], 'already registered')) {
+            $erro = "Este e-mail já está cadastrado.";
+        } else {
+            $erro = "<strong>Erro:</strong> " . htmlspecialchars($response);
         }
+    /*} catch (Exception $e) {
+        $erro = "<strong>Erro de conexão:</strong> " . htmlspecialchars($e->getMessage());*/
     }
 }
 ?>

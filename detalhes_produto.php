@@ -71,7 +71,7 @@ if (empty($_GET['id']) || !is_numeric($_GET['id'])) {
                         </p>
                     </div>
                     <p class="product-stock <?= $produto['estoque'] > 0 ? 'in-stock' : 'out-of-stock' ?>">
-                        <?= $produto['estoque'] > 0 ? '✓ Em estoque' : '✗ Indisponível' ?>
+                        <?= $produto['estoque'] > 0 ? '✓ Em estoque (' . $produto['estoque'] . ' disponíveis)' : '✗ Indisponível' ?>
                     </p>
                 </div>
                 

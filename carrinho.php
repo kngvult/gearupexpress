@@ -191,8 +191,11 @@ if ($usuarioLogado) {
                                 <span>R$ <?= number_format($item['total_item'], 2, ',', '.') ?></span>
                             </div>
                             <div class="cart-item-actions">
-                                <a href="carrinho.php?remover=<?= $itemId ?>" class="remove-btn" title="Remover item" onclick="return confirm('Tem certeza que quer remover este item?')">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16"><path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/><path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"/></svg>
+                                <a href="#" class="remove-btn" data-id="<?= $itemId ?>" title="Remover item">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
+                                        <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/>
+                                        <path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"/>
+                                    </svg>
                                 </a>
                             </div>
                         </div>
@@ -258,6 +261,28 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 });
+document.querySelectorAll('.remove-btn').forEach(btn => {
+    btn.addEventListener('click', function(e) {
+        e.preventDefault();
+        document.getElementById('modalRemoverId').value = this.dataset.id;
+        document.getElementById('modal-remover-carrinho').style.display = 'flex';
+    });
+});
+document.getElementById('confirmModalNo').onclick = function() {
+    document.getElementById('modal-remover-carrinho').style.display = 'none';
+};
 </script>
 
+<!-- Modal de confirmação de remoção do item do carrinho -->
+<div id="modal-remover-carrinho" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.3); align-items:center; justify-content:center; z-index:9999;">
+    <div style="background:#fff; padding:30px; border-radius:12px; max-width:400px; margin:auto; text-align:center;">
+        <h4 style="margin-top:0;">Remover Item</h4>
+        <p>Tem certeza que deseja remover este item do carrinho?</p>
+        <form id="form-remover-carrinho" method="get" action="carrinho.php" style="margin-bottom:0;">
+        <input type="hidden" name="remover" id="modalRemoverId">
+        <button type="submit" id="confirmModalYes" class="btn btn-danger" style="margin-right:10px; background-color: #dc3545; color: #fff;">Confirmar</button>
+        <button type="button" id="confirmModalNo" class="btn btn-secondary">Cancelar</button>
+        </form>
+    </div>
+</div>
 <?php include 'includes/footer.php'; ?>
