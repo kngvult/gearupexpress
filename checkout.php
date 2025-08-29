@@ -33,6 +33,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $bairro = $_POST['bairro'] ?? '';
     $cidade = $_POST['cidade'] ?? '';
     $estado = $_POST['estado'] ?? '';
+    $valor_frete = isset($_POST['valor_frete']) ? floatval(str_replace(',', '.', $_POST['valor_frete'])) : 0;
     
     if (empty($metodo_pagamento) || empty($cep) || empty($rua) || empty($numero)) {
         $erro = "Por favor, preencha todos os campos obrigatórios.";
@@ -43,7 +44,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $total_carrinho_post += $item['quantidade'] * $item['preco_unitario'];
         }
         
-        $valor_frete = isset($_POST['valor_frete']) ? floatval(str_replace(',', '.', $_POST['valor_frete'])) : 0;
         $total_final = $total_carrinho_post + $valor_frete;
 
         $pdo->beginTransaction();
@@ -150,6 +150,9 @@ include 'includes/header.php';
         <?php endif; ?>
 
         <form method="post" action="checkout.php" id="checkout-form">
+            <!-- Campo oculto para armazenar o valor do frete -->
+            <input type="hidden" id="valor_frete" name="valor_frete" value="0">
+            
             <div class="checkout-layout-grid">
                 <div class="checkout-card summary-card">
                     <h4>Resumo do Pedido</h4>
@@ -291,6 +294,8 @@ document.addEventListener('DOMContentLoaded', function() {
     // SEÇÃO 1: LÓGICA DO CEP, FRETE E HABILITAÇÃO DO BOTÃO
     // ======================================================================
     const cepInput = document.getElementById('cep');
+    const valorFreteInput = document.getElementById('valor_frete');
+    
     if (cepInput) {
         const ruaInput = document.getElementById('rua');
         const bairroInput = document.getElementById('bairro');
@@ -344,6 +349,12 @@ document.addEventListener('DOMContentLoaded', function() {
                             estadoInput.value = data.uf;
                             const frete = parseFloat((Math.random() * 30 + 15).toFixed(2));
                             const totalFinal = totalCarrinho + frete;
+                            
+                            // Atualiza o campo hidden com o valor do frete
+                            if (valorFreteInput) {
+                                valorFreteInput.value = frete.toFixed(2);
+                            }
+                            
                             shippingCostSpan.textContent = `R$ ${frete.toFixed(2).replace('.', ',')}`;
                             totalCostSpan.textContent = `R$ ${totalFinal.toFixed(2).replace('.', ',')}`;
                             shippingRow.style.display = 'flex';

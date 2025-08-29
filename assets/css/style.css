@@ -127,11 +127,41 @@ body {
     top: 0;
     z-index: 1000;
 }
-.app-bar-container { width: 100%; max-width: 1200px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; }
-.app-bar-logo { color: var(--primary-color); font-weight: 700; font-size: 1.4rem; text-decoration: none; }
-.nav-links { list-style: none; margin: 0; padding: 0; display: flex; align-items: center; gap: 10px; }
-.nav-links a { color: #495057; text-decoration: none; padding: 8px 16px; border-radius: 6px; font-size: 0.95rem; font-weight: 500; transition: background-color 0.2s ease, color 0.2s ease; }
-.nav-links a:hover { background-color: #f1f3f5; color: var(--primary-color); }
+.app-bar-container {
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.app-bar-logo {
+    color: var(--primary-color);
+    font-weight: 700;
+    font-size: 1.4rem;
+    text-decoration: none;
+}
+.nav-links {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.nav-links a {
+    color: #495057;
+    text-decoration: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-size: 0.95rem;
+    font-weight: 500;
+    transition: background-color 0.2s ease, color 0.2s ease;
+}
+.nav-links a:hover {
+    background-color: #f1f3f5;
+    color: var(--primary-color);
+}
 
 /* Ajustes no container principal do header */
 .app-bar {
@@ -639,104 +669,211 @@ body {
 }
 
 /* ----- Footer ----- */
-footer {
-    background: #ffffff;
-    color: #6c757d;
-    text-align: center;
-    padding: 20px 0;
-    border-top: 1px solid #dee2e6;
-    margin-top: 60px;
-    font-size: 0.9rem;
-}
-
 .main-footer {
-    background-color: #212529; /* Um cinza escuro, quase preto */
-    color: #adb5bd; /* Cor de texto clara, mas não branco puro */
-    padding: 60px 0 20px 0;
-    font-size: 0.9rem;
-}
-
-.main-footer .container {
-    margin: 0 auto; /* Garante que o container do footer funcione corretamente */
+    background-color: #212529;
+    color: #dee2e6;
+    padding: 10px 0 10px;
+    margin-top: 100px;
 }
 
 .footer-content {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: space-between;
-    gap: 40px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 30px;
     margin-bottom: 40px;
+    align-items: start; /* Garante alinhamento pelo topo */
 }
 
 .footer-section {
-    flex: 1;
-    min-width: 220px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    min-height: 100%;
+    padding: 0 10px; /* Adiciona padding lateral para evitar colar nas bordas */
+    box-sizing: border-box;
 }
 
 .footer-section h4 {
-    color: var(--white);
-    font-size: 1.1rem;
-    font-weight: 600;
     margin-top: 0;
+    margin-bottom: 20px;
+    font-size: 18px;
+    display: block;
+    align-items: center;
+    gap: 10px;
+}
+
+.footer-section p,
+.footer-section ul,
+.footer-section .footer-social,
+.footer-section .payment-methods {
     margin-bottom: 20px;
 }
 
-.footer-section p {
-    line-height: 1.7;
-    margin: 0 0 15px 0;
+.footer-section ul {
+    padding-left: 0;
+    list-style: none;
 }
 
-/* Listas de Contato e Links */
-.footer-contact,
-.footer-links {
-    list-style: none;
-    padding: 0;
-    margin: 0;
+.footer-section h4 i {
+    color: #0056b3;
+    font-size: 20px;
 }
-.footer-contact li {
-    margin-bottom: 8px;
+
+.footer-section p {
+    line-height: 1.6;
+    margin-bottom: 20px;
+    color: #adb5bd;
 }
+
+.footer-contact li,
 .footer-links li {
     margin-bottom: 12px;
-}
-.footer-links a {
-    color: #adb5bd;
-    text-decoration: none;
-    transition: all 0.2s ease;
-}
-.footer-links a:hover {
-    color: var(--white);
-    padding-left: 5px; /* Efeito sutil de deslocamento */
+    display: flow;
+    align-items: center;
+    gap: 10px;
 }
 
-/* Lista de Ícones de Redes Sociais */
+.footer-links a,
+.footer-contact li {
+    color: #adb5bd;
+    text-decoration: none;
+    transition: color 0.3s ease;
+    display: flow;
+    align-items: center;
+    gap: 8px;
+}
+
+.footer-links a:hover {
+    color: #3b82f6;
+}
+
 .footer-social {
-    list-style: none;
-    padding: 0;
-    margin: 0;
     display: flex;
     gap: 15px;
-}
-.footer-social a {
-    color: #adb5bd;
-    font-size: 1.6rem;
-    text-decoration: none;
-    transition: all 0.2s ease;
-}
-.footer-social a:hover {
-    color: var(--primary-color);
-    transform: scale(1.2);
+    margin-bottom: 25px;
 }
 
-/* Linha Divisória e Texto Final */
-.footer-bottom {
-    text-align: center;
-    padding-top: 30px;
-    border-top: 1px solid #495057;
-    font-size: 0.85rem;
+.footer-social a {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    background: #343a40;
+    border-radius: 50%;
+    color: #ffffff;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    font-size: 18px;
 }
+
+.footer-social a:hover {
+    background: #3b82f6;
+    transform: translateY(-2px);
+}
+
+.payment-methods h5 {
+    color: #ffffff;
+    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 16px;
+}
+
+.payment-methods h5 i {
+    color: #0056b3;
+}
+
+.payment-icons {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.payment-icons i {
+    font-size: 24px;
+    color: #adb5bd;
+    transition: color 0.3s ease;
+}
+
+.payment-icons i:hover {
+    color: #3b82f6;
+}
+
+.footer-bottom {
+    border-top: 1px solid #343a40;
+    padding-top: 20px;
+}
+
+.footer-bottom-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
 .footer-bottom p {
     margin: 0;
+    color: #adb5bd;
+}
+
+.security-badges {
+    display: flex;
+    gap: 20px;
+}
+
+.security-badge {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: #adb5bd;
+    font-size: 14px;
+}
+
+.security-badge i {
+    color: #3b82f6;
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+    .footer-content {
+        grid-template-columns: 1fr;
+        gap: 25px;
+    }
+    .footer-section {
+        padding: 0 0;
+    }
+
+    
+    .footer-bottom-content {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .security-badges {
+        justify-content: center;
+    }
+    
+    .footer-social {
+        justify-content: center;
+    }
+}
+
+@media (max-width: 480px) {
+    .main-footer {
+        padding: 40px 0 20px;
+    }
+    
+    .footer-section h4 {
+        font-size: 16px;
+    }
+    
+    .security-badges {
+        flex-direction: column;
+        gap: 10px;
+    }
 }
 
 /* Modal de confirmação */

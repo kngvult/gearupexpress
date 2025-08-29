@@ -14,53 +14,80 @@ try {
     error_log("Erro ao buscar categorias para o footer: " . $e->getMessage());
 }
 ?>
-
+<head>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css">
+</head>
 <footer class="main-footer">
     <div class="container">
         <div class="footer-content">
             
             <div class="footer-section">
-                <h4>🚗 GearUP Express</h4>
-                <p>Sua paixão por carros, nossa dedicação em peças. Qualidade e confiança desde 2025.</p>
+                <h4><i class="fas fa-car"></i> GearUP Express</h4>
+                <div class="footer-desc">
+                    <p>Sua paixão por carros, nossa dedicação em peças. Qualidade e confiança desde 2025.</p>
+                </div>
                 <ul class="footer-contact">
-                    <li>📍 Manaus, AM</li>
-                    <li>📞 (92) 4002-8922</li>
-                    <li>✉️ contato@gearup.com.br</li>
+                    <li><i class="fas fa-map-marker-alt"></i> Manaus, AM</li>
+                    <li><i class="fas fa-phone"></i> (92) 4002-8922</li>
+                    <li><i class="fas fa-envelope"></i> contato@gearup.com.br</li>
                 </ul>
             </div>
 
             <div class="footer-section">
-                <h4>🧰 Departamentos</h4>
+                <h4><i class="fas fa-toolbox"></i> Departamentos</h4>
+                <div class="footer-desc">
+                    <p>Principais categorias de peças e acessórios automotivos.</p>
+                </div>
                 <ul class="footer-links">
                     <?php foreach ($categoriasFooter as $cat): ?>
                         <li><a href="produtos.php?categoria=<?= $cat['id_categoria'] ?>"><?= htmlspecialchars($cat['nome']) ?></a></li>
                     <?php endforeach; ?>
-                    <li><a href="produtos.php">Ver todos...</a></li>
+                    <li><a href="produtos.php"><i class="fas fa-arrow-right"></i> Ver todos...</a></li>
                 </ul>
             </div>
 
             <div class="footer-section">
-                <h4>📞 Atendimento</h4>
+                <h4><i class="fas fa-headset"></i> Atendimento</h4>
+                <div class="footer-desc">
+                    <p>Suporte dedicado para dúvidas, trocas e políticas.</p>
+                </div>
                 <ul class="footer-links">
-                    <li><a href="#">Fale Conosco</a></li>
-                    <li><a href="#">Trocas e Devoluções</a></li>
-                    <li><a href="#">Política de Privacidade</a></li>
+                    <li><a href="#"><i class="fas fa-comments"></i> Fale Conosco</a></li>
+                    <li><a href="#"><i class="fas fa-exchange-alt"></i> Trocas e Devoluções</a></li>
+                    <li><a href="#"><i class="fas fa-shield-alt"></i> Política de Privacidade</a></li>
                 </ul>
             </div>
 
             <div class="footer-section">
-                <h4>🌐 Redes Sociais</h4>
+                <h4><i class="fas fa-globe-americas"></i> Redes Sociais</h4>
                 <ul class="footer-social">
-                    <li><a href="#" aria-label="Facebook">📘</a></li>
-                    <li><a href="#" aria-label="Instagram">📸</a></li>
-                    <li><a href="#" aria-label="Twitter">🐦</a></li>
-                    <li><a href="#" aria-label="YouTube">🎥</a></li>
+                    <li><a href="#" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a></li>
+                    <li><a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a></li>
+                    <li><a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a></li>
+                    <li><a href="#" aria-label="YouTube"><i class="fab fa-youtube"></i></a></li>
                 </ul>
+                
+                <div class="payment-methods">
+                    <h5><i class="fas fa-credit-card"></i> Formas de Pagamento</h5>
+                    <div class="payment-icons">
+                        <i class="fab fa-cc-visa" title="Visa"></i>
+                        <i class="fab fa-cc-mastercard" title="Mastercard"></i>
+                        <i class="fab fa-cc-amex" title="American Express"></i>
+                        <i class="fab fa-cc-paypal" title="PayPal"></i>
+                        <i class="fab fa-pix" title="PIX"></i>
+                    </div>
+                </div>
             </div>
         </div>
 
         <div class="footer-bottom">
-            <p>&copy; <?= date('Y') ?> GearUP Express. Todos os direitos reservados.</p>
+            <div class="footer-bottom-content">
+                <p>&copy; <?= date('Y') ?> GearUP Express. Todos os direitos reservados.</p>
+                <div class="security-badges">
+                    <span class="security-badge"><i class="fas fa-lock"></i> Site Seguro</span>
+                    <span class="security-badge"><i class="fas fa-truck"></i> Entregas em Todo Brasil</span>
+                </div>
+            </div>
         </div>
     </div>
 </footer>

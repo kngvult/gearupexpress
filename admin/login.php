@@ -45,30 +45,104 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - Painel Administrativo</title>
+    <title>Login - Painel Administrativo | GearUp Express</title>
     <link rel="icon" href="../assets/img/favicon.ico" type="image/x-icon" />
     <link rel="stylesheet" href="assets/css/admin_style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
     <div class="login-page">
-        <div class="login-box">
-            <h2>Painel Administrativo</h2>
-            <p>GearUp Express</p>
-            <?php if (!empty($erro)): ?>
-                <div class="alert-admin alert-danger"><?= htmlspecialchars($erro) ?></div>
-            <?php endif; ?>
-            <form method="post" action="login.php">
-                <div class="form-group">
-                    <label for="email">Email:</label>
-                    <input type="email" id="email" name="email" required>
+        <div class="login-container">
+            <div class="login-brand">
+                <div class="brand-logo">
+                    <img src="../assets/img/GUPX-logo-v2.ico" alt="Logo GearUp Express" style="max-width: 350px; display: block; margin: 0 auto 16px;">
                 </div>
-                <div class="form-group">
-                    <label for="senha">Senha:</label>
-                    <input type="password" id="senha" name="senha" required>
+                <!--<h1 class="brand-title">GearUp Express</h1> -->
+                <p class="brand-subtitle">Sistema de Gerenciamento e Controle de Peças Automotivas</p>
+                
+                <div class="brand-features">
+                    <div class="feature-item">
+                        <div class="feature-icon">
+                            <i class="fas fa-shield-alt"></i>
+                        </div>
+                        <span class="feature-text">Acesso seguro e criptografado</span>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-icon">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                        <span class="feature-text">Relatórios e análises em tempo real</span>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-icon">
+                            <i class="fas fa-cube"></i>
+                        </div>
+                        <span class="feature-text">Gestão completa de inventário</span>
+                    </div>
                 </div>
-                <button type="submit" class="btn-admin">Entrar</button>
-            </form>
+            </div>
+            
+            <div class="login-form-container">
+                <div class="form-header">
+                    <h2 class="form-title">Acessar Painel Admin</h2>
+                    <p class="form-subtitle">Entre com suas credenciais para gerenciar o sistema</p>
+                </div>
+                
+                <?php if (!empty($erro)): ?>
+                    <div class="alert-admin alert-danger">
+                        <i class="fas fa-exclamation-circle"></i> <?= htmlspecialchars($erro) ?>
+                    </div>
+                <?php endif; ?>
+                
+                <form method="post" action="login.php" class="login-form">
+                    <div class="form-group">
+                        <label for="email">E-mail administrativo</label>
+                        <div class="input-with-icon">
+                            <input type="email" name="email" class="form-control">
+                            <span class="input-icon"><i class="fas fa-envelope"></i></span>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="senha">Senha</label>
+                        <div class="input-with-icon">
+                            <input type="password" name="senha" class="form-control">
+                            <span class="input-icon"><i class="fas fa-lock"></i></span>
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="btn-login">
+                        <i class="fas fa-sign-in-alt"></i> Entrar no Painel
+                    </button>
+                </form>
+                
+                <div class="login-footer">
+                    <p>&copy; <?= date('Y'); ?> GearUP Express. Todos os direitos reservados.</p>
+                </div>
+            </div>
         </div>
     </div>
+
+    <script>
+        // Efeito de foco no primeiro campo ao carregar a página
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('email').focus();
+        });
+
+        // Validação básica do formulário
+        document.querySelector('.login-form').addEventListener('submit', function(e) {
+            const email = document.getElementById('email');
+            const senha = document.getElementById('senha');
+            
+            if (!email.value || !senha.value) {
+                e.preventDefault();
+                if (!email.value) {
+                    email.focus();
+                } else {
+                    senha.focus();
+                }
+            }
+        });
+    </script>
 </body>
 </html>
