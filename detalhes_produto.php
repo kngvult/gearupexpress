@@ -45,11 +45,12 @@ if (empty($_GET['id']) || !is_numeric($_GET['id'])) {
             <a href="produtos.php" class="btn btn-primary">Ver todos os produtos</a>
         </div>
     <?php elseif ($produto): ?>
-        <nav class="breadcrumbs">
-            <a href="index.php">Início</a> >
-            <a href="produtos.php">Produtos</a> >
-            <a href="produtos.php?categoria=<?= $produto['id_categoria'] ?>"><?= htmlspecialchars($produto['nome_categoria']) ?></a> >
-            <span><?= htmlspecialchars($produto['nome']) ?></span>
+        <nav class="breadcrumb" aria-label="breadcrumb">
+            <ol>
+                <li><a href="index.php">Página Inicial</a></li>
+                <li><a href="produtos.php">Produtos</a></li>
+                <li aria-current="page"><?= htmlspecialchars($produto['nome']) ?></li>
+    </ol>
         </nav>
 
         <div class="product-detail-layout">
