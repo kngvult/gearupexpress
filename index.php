@@ -506,7 +506,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // AJAX para adicionar ao carrinho
+    /* // AJAX para adicionar ao carrinho
     document.querySelectorAll('.ajax-add-to-cart-form').forEach(form => {
         form.addEventListener('submit', function(e) {
             e.preventDefault();
@@ -571,7 +571,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 }, 2000);
             });
         });
-    });
+    }); */
 
     // Animação de entrada das seções (código existente mantido)
     const observerOptions = {

@@ -142,9 +142,9 @@ $totalItensCarrinho = (int)$totalItensCarrinho;
                     <a href="carrinho.php" class="nav-link-icon" aria-label="Carrinho de Compras">
                         <div class="cart-icon-container">
                             <i class="fas fa-shopping-cart"></i>
-                            <?php if ($totalItensCarrinho > 0): ?>
-                                <span class="cart-badge"><?= $totalItensCarrinho ?></span>
-                            <?php endif; ?>
+                            <span class="cart-badge <?= ($totalItensCarrinho > 0) ? 'visible' : '' ?>">
+                                <?= $totalItensCarrinho ?>
+                            </span>
                         </div>
                         <span class="nav-text">Carrinho</span>
                     </a>

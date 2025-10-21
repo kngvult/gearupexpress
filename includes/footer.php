@@ -1,6 +1,5 @@
 <?php
-// Se a variável $pdo não existir (caso o footer seja chamado em uma página simples),
-// incluímos a conexão para buscar as categorias.
+
 if (!isset($pdo)) {
     include_once 'includes/conexao.php';
 }
@@ -91,68 +90,7 @@ try {
         </div>
     </div>
 </footer>
-<!--<script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Procura todos os formulários com a nossa classe especial
-    const allAddToCartForms = document.querySelectorAll('.add-to-cart-form');
 
-    allAddToCartForms.forEach(form => {
-        form.addEventListener('submit', function(event) {
-            event.preventDefault(); // Impede o recarregamento da página
-
-            const button = form.querySelector('button[type="submit"]');
-            const originalButtonHtml = button.innerHTML;
-            const formData = new FormData(form);
-
-            // Desativa o botão e mostra "Adicionando..."
-            button.disabled = true;
-            button.innerHTML = 'Adicionando...';
-
-            // Envia os dados para o nosso script PHP
-            fetch('carrinho_adicionar.php', {
-                method: 'POST',
-                body: formData
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    // Feedback de sucesso
-                    button.innerHTML = 'Adicionado!';
-                    
-                    // Atualiza o contador do carrinho no header
-                    const cartBadge = document.querySelector('.cart-badge');
-                    if (cartBadge) {
-                        cartBadge.textContent = data.totalItensCarrinho;
-                        if (data.totalItensCarrinho > 0) {
-                            cartBadge.style.display = 'flex';
-                        }
-                    } else if (data.totalItensCarrinho > 0) {
-                        const cartLink = document.querySelector('a[href="carrinho.php"]');
-                        if(cartLink) {
-                            const newBadge = document.createElement('span');
-                            newBadge.className = 'cart-badge';
-                            newBadge.textContent = data.totalItensCarrinho;
-                            cartLink.appendChild(newBadge);
-                        }
-                    }
-                } else {
-                    button.innerHTML = 'Erro!';
-                }
-                // Volta ao estado original após 1.5 segundos
-                setTimeout(() => {
-                    button.disabled = false;
-                    button.innerHTML = originalButtonHtml;
-                }, 1500);
-            })
-            .catch(error => {
-                console.error('Erro no AJAX:', error);
-                button.disabled = false;
-                button.innerHTML = originalButtonHtml;
-            });
-        });
-    });
-});
-</script> -->
 <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
 <script>
 var swiper = new Swiper(".mySwiper", {
@@ -164,6 +102,88 @@ var swiper = new Swiper(".mySwiper", {
     },
     loop: true,
 });
+</script>
+<script>
+// =====================================================
+    // FUNÇÃO GLOBAL DE ATUALIZAÇÃO DO BADGE DO CARRINHO
+    // =================================================
+    function updateCartBadge(newCount) {
+        // 1. Encontra o badge no header
+        const cartBadge = document.querySelector('.cart-badge');
+        
+        if (cartBadge) {
+            // 2. Converte para número
+            const count = parseInt(newCount) || 0;
+            
+            // 3. Atualiza o texto do contador
+            cartBadge.textContent = count;
+            
+            // 4. Adiciona ou remove a classe 'visible'
+            // (Requer a mudança no header.php e o CSS que sugeri antes)
+            if (count > 0) {
+                cartBadge.classList.add('visible');
+            } else {
+                cartBadge.classList.remove('visible');
+            }
+        }
+    }
+    
+
+
+    // ===============================================
+    // INÍCIO DO SCRIPT QUANDO A PÁGINA CARREGA
+    // ===============================================
+    document.addEventListener('DOMContentLoaded', function() {
+
+        // --- LÓGICA DE ADICIONAR AO CARRINHO (AJAX) ---
+        document.querySelectorAll('.ajax-add-to-cart-form').forEach(form => {
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const submitBtn = this.querySelector('button[type="submit"]');
+                const originalText = submitBtn.innerHTML;
+                const formData = new FormData(this);
+                
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+                submitBtn.disabled = true;
+                
+                fetch('carrinho_adicionar.php', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        submitBtn.innerHTML = '<i class="fas fa-check"></i> Adicionado';
+                        submitBtn.classList.add('btn-success');
+                        
+                        // **** AQUI ESTÁ A CORREÇÃO PRINCIPAL ****
+                        // Chama a função global IMEDIATAMENTE
+                        if (data.totalItensCarrinho !== undefined) {
+                            updateCartBadge(data.totalItensCarrinho);
+                        }
+                        
+                    } else {
+                        submitBtn.innerHTML = '<i class="fas fa-times"></i> Erro!';
+                        submitBtn.classList.add('btn-error');
+                    }
+                    
+                    setTimeout(() => {
+                        submitBtn.innerHTML = originalText;
+                        submitBtn.disabled = false;
+                        submitBtn.classList.remove('btn-success', 'btn-error');
+                    }, 2000);
+                    
+                })
+                .catch(error => {
+                    console.error('Erro no AJAX do carrinho:', error);
+                    submitBtn.innerHTML = originalText;
+                    submitBtn.disabled = false;
+                });
+            });
+        });
+    });
+    // --- WISHLIST ---
 document.addEventListener('DOMContentLoaded', function(){
 document.body.addEventListener('click', function(e) {
         

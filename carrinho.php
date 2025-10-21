@@ -276,6 +276,84 @@ document.querySelectorAll('.remove-btn').forEach(btn => {
     }
 });
 
+document.addEventListener('DOMContentLoaded', function() {
+    
+    document.body.addEventListener('click', function(e) {
+        
+        if (e.target.closest('.remove-btn')) { 
+            e.preventDefault();
+            const itemRow = e.target.closest('.carrinho-item'); // (Use a classe da sua linha de item)
+            const productId = itemRow.dataset.productId; // (Assumindo que a linha tem data-product-id="123")
+            
+            if (confirm('Deseja realmente remover este item?')) {
+                handleCartUpdate(productId, 0, 'remover', itemRow);
+            }
+        }
+    });
+
+    // Ouve todas as mudanças de quantidade
+    document.body.addEventListener('change', function(e) {
+        // (Confira se 'input-quantidade-item' é a classe do seu input de <input type="number">)
+        if (e.target.closest('.input-quantidade-item')) {
+            const itemRow = e.target.closest('.carrinho-item');
+            const productId = itemRow.dataset.productId;
+            const newQuantity = parseInt(e.target.value);
+            
+            handleCartUpdate(productId, newQuantity, 'atualizar', itemRow);
+        }
+    });
+
+    // Função central que faz o AJAX
+    function handleCartUpdate(productId, quantity, action, itemRowElement) {
+        
+        itemRowElement.style.opacity = '0.5'; // Efeito de "carregando"
+        const formData = new FormData();
+        formData.append('id_produto', productId);
+        formData.append('quantidade', quantity);
+        formData.append('acao', action);
+
+        // **AQUI! Chamamos o NOVO arquivo que criamos**
+        fetch('carrinho_atualizar.php', { 
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                
+                // **** AQUI ESTÁ A CORREÇÃO DO BADGE ****
+                if (data.totalItensCarrinho !== undefined) {
+                    // Chama a função global que está no footer.php!
+                    updateCartBadge(data.totalItensCarrinho); 
+                }
+                
+                // Remove o item da tela
+                if (action === 'remover') {
+                    itemRowElement.remove();
+                } else {
+                    itemRowElement.style.opacity = '1';
+                    // (Aqui você atualizaria o subtotal do item)
+                }
+                
+                // (Aqui você atualizaria o total geral da página)
+                // document.querySelector('.total-carrinho').textContent = data.novoTotalCarrinho;
+
+                // Se o carrinho ficou vazio, recarrega a página
+                if (data.totalItensCarrinho === 0) {
+                    location.reload();
+                }
+                
+            } else {
+                alert(data.message || 'Erro ao atualizar o carrinho.');
+                itemRowElement.style.opacity = '1';
+            }
+        })
+        .catch(error => {
+            console.error('Erro no fetch:', error);
+            itemRowElement.style.opacity = '1';
+        });
+    }
+});
 </script>
 
 <!-- Modal de confirmação de remoção do item do carrinho -->

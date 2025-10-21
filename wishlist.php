@@ -140,12 +140,6 @@ function calcularParcelas($preco, $parcelas = 3) {
                                     <i class="fas fa-tag"></i> <?= htmlspecialchars($produto['categoria']) ?>
                                 </div>
                             <?php endif; ?>
-                            
-                            <?php if (!empty($produto['descricao'])): ?>
-                                <p class="product-description">
-                                    <?= htmlspecialchars(substr($produto['descricao'], 0, 150)) ?>...
-                                </p>
-                            <?php endif; ?>
                         </div>
                         
                         <div class="product-pricing">
