@@ -91,7 +91,7 @@ try {
         </div>
     </div>
 </footer>
-<script>
+<!--<script>
 document.addEventListener('DOMContentLoaded', function() {
     // Procura todos os formulários com a nossa classe especial
     const allAddToCartForms = document.querySelectorAll('.add-to-cart-form');
@@ -152,9 +152,9 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 });
-</script>
+</script> -->
 <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
-<!--<script>
+<script>
 var swiper = new Swiper(".mySwiper", {
     slidesPerView: 5,
     spaceBetween: 20,
@@ -164,6 +164,85 @@ var swiper = new Swiper(".mySwiper", {
     },
     loop: true,
 });
-</script> -->
+document.addEventListener('DOMContentLoaded', function(){
+document.body.addEventListener('click', function(e) {
+        
+        // Procura pelo botão de wishlist mais próximo do clique
+        const btn = e.target.closest('.wishlist-toggle-btn');
+        
+        if (btn) {
+            e.preventDefault(); // Impede qualquer ação padrão
+            
+            // 1. Verificar se usuário está logado (usando a var global)
+            if (!window.isUserLoggedIn) {
+                // Você pode trocar o alert por um modal se preferir
+                alert('Você precisa estar logado para adicionar itens à lista de desejos.');
+                window.location.href = 'login.php?redirect=' + window.location.pathname;
+                return;
+            }
+
+            const productId = btn.dataset.productId;
+            const icon = btn.querySelector('i');
+            
+            // 2. Determinar a ação (adicionar ou remover)
+            // Checa se o ID já existe no nosso 'Set' de IDs
+            const isAdding = !window.wishlistProductIds.has(parseInt(productId));
+            const acao = isAdding ? 'adicionar' : 'remover';
+
+            const formData = new FormData();
+            formData.append('id_produto', productId);
+            formData.append('acao', acao);
+
+            // 3. Efeito visual de "carregando"
+            btn.disabled = true;
+            icon.classList.remove('fas', 'far', 'fa-heart');
+            icon.classList.add('fas', 'fa-spinner', 'fa-spin');
+
+            // 4. Fazer a requisição AJAX para wishlist.php
+            fetch('wishlist.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                const wishlistCounter = document.querySelector('.wishlist-count');
+                let currentCount = parseInt(wishlistCounter.textContent) || 0;
+                
+                if (data.success) {
+                    // 5. Atualizar o estado visual do botão e contador
+                    if (isAdding) {
+                        window.wishlistProductIds.add(parseInt(productId));
+                        btn.classList.add('active');
+                        btn.title = 'Remover dos favoritos';
+                        icon.classList.remove('fa-spinner', 'fa-spin');
+                        icon.classList.add('fas', 'fa-heart'); // Coração preenchido
+                        wishlistCounter.textContent = currentCount + 1;
+                    } else {
+                        window.wishlistProductIds.delete(parseInt(productId));
+                        btn.classList.remove('active');
+                        btn.title = 'Adicionar aos favoritos';
+                        icon.classList.remove('fa-spinner', 'fa-spin');
+                        icon.classList.add('far', 'fa-heart'); // Coração vazio
+                        wishlistCounter.textContent = Math.max(0, currentCount - 1);
+                    }
+                } else {
+                    alert('Erro: ' + (data.message || 'Tente novamente.'));
+                    // Reverte o ícone em caso de erro
+                    icon.classList.remove('fa-spinner', 'fa-spin');
+                    icon.classList.add(isAdding ? 'far' : 'fas', 'fa-heart');
+                }
+            })
+            .catch(error => {
+                console.error('Fetch Error:', error);
+                alert('Um erro de conexão ocorreu.');
+            })
+            .finally(() => {
+                // 6. Reabilitar o botão
+                btn.disabled = false;
+            });
+        }
+    });
+});
+</script>
 </body>
 </html>

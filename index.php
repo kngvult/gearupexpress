@@ -1,48 +1,131 @@
 <?php
-// O header.php já inicia o HTML, a sessão e a conexão com o banco.
 include 'includes/header.php'; 
 
-// A conexão $pdo já está disponível a partir do header.
-// Vamos buscar apenas os produtos em destaque para a página inicial.
+// Buscar produtos em destaque, mais vendidos e categorias
 try {
-    // Busca 8 produtos mais recentes para um grid mais completo.
-    $stmtProd = $pdo->query("SELECT id_produto, nome, preco, imagem FROM produtos ORDER BY id_produto DESC LIMIT 8");
-    $produtos = $stmtProd->fetchAll(PDO::FETCH_ASSOC);
+    // Sub-query de vendas otimizada
+    $sqlVendas = "(SELECT COALESCE(SUM(ip.quantidade), 0) 
+                    FROM itens_pedido ip 
+                    WHERE ip.id_produto = p.id_produto)";
+
+    // Produtos em Destaque (Mais recentes com estoque)
+    $stmtDestaque = $pdo->query("
+        SELECT 
+            p.id_produto, p.nome, p.preco, p.imagem, p.estoque, p.marca, 
+            $sqlVendas as vendas
+        FROM produtos p 
+        WHERE p.estoque > 0 
+        ORDER BY p.id_produto DESC 
+        LIMIT 9
+    ");
+    $produtosDestaque = $stmtDestaque->fetchAll(PDO::FETCH_ASSOC);
+    
+    // Produtos Mais Vendidos
+    $stmtMaisVendidos = $pdo->query("
+        SELECT 
+            p.id_produto, p.nome, p.preco, p.imagem, p.estoque, p.marca,
+            $sqlVendas as vendas
+        FROM produtos p 
+        WHERE p.estoque > 0 
+        ORDER BY vendas DESC, p.id_produto DESC 
+        LIMIT 9
+    ");
+    $produtosMaisVendidos = $stmtMaisVendidos->fetchAll(PDO::FETCH_ASSOC);
+    
+    // Categorias para quick access
+    $stmtCat = $pdo->query("SELECT id_categoria, nome FROM categorias WHERE nome != 'Todos os Departamentos' ORDER BY nome LIMIT 6");
+    $categorias = $stmtCat->fetchAll(PDO::FETCH_ASSOC);
+    
 } catch (PDOException $e) {
-    $produtos = []; // Em caso de erro, define um array vazio.
-    error_log("Erro ao buscar produtos em destaque: " . $e->getMessage());
+    $produtosDestaque = [];
+    $produtosMaisVendidos = [];
+    $categorias = [];
+    // Esta linha é crucial para debugar em ambiente local!
+    error_log("Erro ao buscar dados para página inicial: " . $e->getMessage());
+    // Você pode até adicionar um echo para ver o erro na tela enquanto desenvolve
+    // echo "Erro de banco de dados: " . $e->getMessage(); 
+}
+
+// Função para determinar badge baseado em vendas (Seu código aqui está perfeito)
+function getProductBadge($vendas, $estoque) {
+    if ($estoque <= 0) {
+        return ['type' => 'out-of-stock', 'text' => 'Esgotado'];
+    } elseif ($vendas > 10) { 
+        return ['type' => 'popular', 'text' => 'Mais Vendido'];
+    } elseif ($vendas > 5) {
+        return ['type' => 'hot', 'text' => 'Em Alta'];
+    } elseif ($vendas > 0) {
+        return ['type' => 'normal', 'text' => '']; // Para produtos com poucas vendas
+    } else {
+        return ['type' => 'new', 'text' => 'Novo'];
+    }
 }
 ?>
 
-<main>
-
+<main class="home-page">
+    <!-- Hero Banner -->
     <section class="hero-banner">
         <div class="hero-slides-container">
-            <div class="hero-slide active" style="background-image: url('assets/img/banner/banner-freios.avif');">
-                <div class="hero-text">
-                    <h1>Até 30% OFF em Freios</h1>
-                    <p>Garanta a segurança do seu carro com as melhores marcas de discos e pastilhas.</p>
-                    <a href="produtos.php?categoria=2" class="btn btn-primary">Ver Ofertas</a>
+            <div class="hero-slide active" style="background-image: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url('assets/img/banner/banner-freios.avif');">
+                <div class="container">
+                    <div class="hero-content">
+                        <div class="hero-badge">Oferta Especial</div>
+                        <h1 class="hero-title">Até 30% OFF em Freios</h1>
+                        <p class="hero-description">Garanta a segurança do seu carro com as melhores marcas de discos e pastilhas. Qualidade e preço imbatível!</p>
+                        <div class="hero-actions">
+                            <a href="produtos.php?categoria=2" class="btn btn-primary btn-hero">
+                                <i class="fas fa-bolt"></i> Ver Ofertas
+                            </a>
+                            <a href="produtos.php" class="btn btn-outline-white">
+                                <i class="fas fa-th-large"></i> Ver Todos
+                            </a>
+                        </div>
+                    </div>
                 </div>
             </div>
-            <div class="hero-slide" style="background-image: url('assets/img/banner/banner-pneus.avif');">
-                <div class="hero-text">
-                    <h1>Pneus Novos, Preços Velhos</h1>
-                    <p>As melhores condições para você trocar os pneus do seu veículo. Confira!</p>
-                    <a href="produtos.php?categoria=6" class="btn btn-primary">Conferir Pneus</a>
+            
+            <div class="hero-slide" style="background-image: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url('assets/img/banner/banner-pneus.avif');">
+                <div class="container">
+                    <div class="hero-content">
+                        <div class="hero-badge">Novidade</div>
+                        <h1 class="hero-title">Pneus Novos, Preços Imbatíveis</h1>
+                        <p class="hero-description">As melhores condições para você trocar os pneus do seu veículo. Marcas premium com garantia extendida.</p>
+                        <div class="hero-actions">
+                            <a href="produtos.php?categoria=6" class="btn btn-primary btn-hero">
+                                <i class="fas fa-tire"></i> Conferir Pneus
+                            </a>
+                            <a href="produtos.php" class="btn btn-outline-white">
+                                <i class="fas fa-th-large"></i> Ver Todos
+                            </a>
+                        </div>
+                    </div>
                 </div>
             </div>
-            <div class="hero-slide" style="background-image: url('assets/img/banner/banner-oleo.avif');">
-                <div class="hero-text">
-                    <h1>Troca de Óleo é Aqui!</h1>
-                    <p>Os melhores lubrificantes e aditivos para manter seu motor sempre novo.</p>
-                    <a href="produtos.php?categoria=15" class="btn btn-primary">Ver Lubrificantes</a>
-                </div>
-            </div>
-        </div>
 
-        <button class="hero-nav prev" aria-label="Slide Anterior">&#10094;</button>
-        <button class="hero-nav next" aria-label="Próximo Slide">&#10095;</button>
+            <div class="hero-slide" style="background-image: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url('assets/img/banner/banner-oleo.avif');">
+                <div class="container">
+                    <div class="hero-content">
+                        <div class="hero-badge">Novidade</div>
+                        <h1 class="hero-title">Troca de Óleo é Aqui!</h1>
+                        <p class="hero-description">Mantenha seu motor protegido com nossos óleos de alta performance. Qualidade que você confia!</p>
+                        <div class="hero-actions">
+                            <a href="produtos.php?categoria=15" class="btn btn-primary btn-hero">
+                                <i class="fas fa-oil-can"></i> Conferir Óleos
+                            </a>
+                            <a href="produtos.php" class="btn btn-outline-white">
+                                <i class="fas fa-th-large"></i> Ver Todos
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        <button class="hero-nav prev" aria-label="Slide Anterior">
+            <i class="fas fa-chevron-left"></i>
+        </button>
+        <button class="hero-nav next" aria-label="Próximo Slide">
+            <i class="fas fa-chevron-right"></i>
+        </button>
 
         <div class="hero-indicators">
             <span class="dot active" data-slide-to="0"></span>
@@ -51,55 +134,290 @@ try {
         </div>
     </section>
 
-    <div class="container">
-        <section class="featured-products-section">
-            <h2 class="section-title">Produtos em Destaque</h2>
+    <!-- Seção de Produtos em Destaque -->
+    <section class="products-section featured-products">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">Produtos em Destaque</h2>
+                <p class="section-subtitle">As novidades que chegaram para revolucionar</p>
+                <a href="produtos.php" class="section-link">
+                    Ver Todos <i class="fas fa-arrow-right"></i>
+                </a>
+            </div>
 
-            <?php if (empty($produtos)): ?>
-                <div class="info-box">
-                    <h3>Nenhum produto em destaque no momento.</h3>
-                    <p>Estamos preparando novidades para você. Volte em breve!</p>
+            <?php if (empty($produtosDestaque)): ?>
+                <div class="empty-state">
+                    <div class="empty-icon">
+                        <i class="fas fa-box-open"></i>
+                    </div>
+                    <h3>Nenhum produto em destaque no momento</h3>
+                    <p>Estamos preparando novidades incríveis para você. Volte em breve!</p>
+                    <a href="produtos.php" class="btn btn-primary">Explorar Produtos</a>
                 </div>
             <?php else: ?>
                 <div class="product-grid">
-                    <?php foreach($produtos as $produto): ?>
+                    <?php foreach($produtosDestaque as $produto): 
+                        $badge = getProductBadge($produto['vendas'] ?? 0, $produto['estoque']);
+                    ?>
                         <article class="product-card">
                             <div class="product-image-container">
-                                <a href="detalhes_produto.php?id=<?= $produto['id_produto'] ?>">
-                                    <img src="assets/img/produtos/<?= htmlspecialchars($produto['imagem'] ?: 'placeholder.jpg') ?>" alt="<?= htmlspecialchars($produto['nome']) ?>" class="product-image">
+                                <a href="detalhes_produto.php?id=<?= $produto['id_produto'] ?>" class="product-image-link">
+                                    <img src="assets/img/produtos/<?= htmlspecialchars($produto['imagem'] ?: 'placeholder.jpg') ?>" 
+                                        alt="<?= htmlspecialchars($produto['nome']) ?>" 
+                                        class="product-image"
+                                        loading="lazy">
                                 </a>
+                                <span class="product-badge <?= $badge['type'] ?>"><?= $badge['text'] ?></span>
+                                
+                                <?php
+                                    // Verifica se o ID do produto atual está na lista que buscamos no header
+                                    $isInWishlist = in_array($produto['id_produto'], $wishlistProductIds);
+                                    ?>
+
+                                    <button class="wishlist-btn" 
+                                            data-product-id="<?= $produto['id_produto'] ?>" 
+                                            title="Adicionar aos favoritos">
+                                        <i class="far fa-heart"></i>
+                                    </button>
+                                <!--<button class="wishlist-btn" 
+                                        data-product-id="<?= $produto['id_produto'] ?>" 
+                                        title="Adicionar aos favoritos">
+                                    <i class="far fa-heart"></i>
+                                </button> -->
                             </div>
+                            
                             <div class="product-info">
-                                <h4 class="product-name">
+                                <?php if (!empty($produto['marca'])): ?>
+                                    <div class="product-brand"><?= htmlspecialchars($produto['marca']) ?></div>
+                                <?php endif; ?>
+                                
+                                <h3 class="product-name">
                                     <a href="detalhes_produto.php?id=<?= $produto['id_produto'] ?>">
                                         <?= htmlspecialchars($produto['nome']) ?>
                                     </a>
-                                </h4>
-                                <p class="product-price">R$ <?= number_format($produto['preco'], 2, ',', '.') ?></p>
+                                </h3>
+                                
+                                <div class="product-price-section">
+                                    <p class="product-price">R$ <?= number_format($produto['preco'], 2, ',', '.') ?></p>
+                                    <div class="product-installments">
+                                        em até 3x de R$ <?= number_format($produto['preco'] / 3, 2, ',', '.') ?>
+                                    </div>
+                                </div>
+                                
+                                <div class="product-stock">
+                                    <?php if ($produto['estoque'] > 0): ?>
+                                        <i class="fas fa-check-circle"></i> Em estoque
+                                    <?php else: ?>
+                                        <i class="fas fa-times-circle"></i> Indisponível
+                                    <?php endif; ?>
+                                </div>
                                 
                                 <div class="product-card-actions">
-                                    <a href="detalhes_produto.php?id=<?= $produto['id_produto'] ?>" class="btn btn-secondary">Detalhes</a>
-                                    <form method="post" action="carrinho_adicionar.php" id="add-to-cart-form" class="add-to-cart-form">
-                                        <input type="hidden" name="id_produto" value="<?= $produto['id_produto'] ?>">
-                                        <button type="submit" class="btn btn-primary btn-block">Adicionar</button>
-                                    </form>
+                                    <a href="detalhes_produto.php?id=<?= $produto['id_produto'] ?>" class="btn btn-outline">
+                                        <i class="fas fa-eye"></i> Detalhes
+                                    </a>
+                                    <?php if ($produto['estoque'] > 0): ?>
+                                        <form method="post" action="carrinho_adicionar.php" class="ajax-add-to-cart-form">
+                                            <input type="hidden" name="id_produto" value="<?= $produto['id_produto'] ?>">
+                                            <input type="hidden" name="quantidade" value="1"> 
+                                            <button type="submit" class="btn btn-primary">
+                                                <i class="fas fa-cart-plus"></i> Adicionar
+                                            </button>
+                                        </form>
+                                    <?php else: ?>
+                                        <button class="btn btn-disabled" disabled>
+                                            <i class="fas fa-ban"></i> Indisponível
+                                        </button>
+                                    <?php endif; ?>
                                 </div>
                             </div>
                         </article>
                     <?php endforeach; ?>
                 </div>
             <?php endif; ?>
-        </section>
-    </div>
+        </div>
+    </section>
+
+    <!-- Seção de Produtos Mais Vendidos -->
+    <section class="products-section popular-products">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">Mais Vendidos</h2>
+                <p class="section-subtitle">Os produtos preferidos dos nossos clientes</p>
+                <a href="produtos.php?ordenar=popular" class="section-link">
+                    Ver Todos <i class="fas fa-arrow-right"></i>
+                </a>
+            </div>
+
+            <?php if (empty($produtosMaisVendidos)): ?>
+                <div class="empty-state">
+                    <div class="empty-icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <h3>Ainda não temos dados de vendas</h3>
+                    <p>Em breve teremos os produtos mais populares disponíveis aqui.</p>
+                    <a href="produtos.php" class="btn btn-primary">Explorar Produtos</a>
+                </div>
+            <?php else: ?>
+                <div class="product-grid">
+                    <?php foreach($produtosMaisVendidos as $produto): 
+                        $badge = getProductBadge($produto['vendas'] ?? 0, $produto['estoque']);
+                    ?>
+                        <article class="product-card">
+                            <div class="product-image-container">
+                                <a href="detalhes_produto.php?id=<?= $produto['id_produto'] ?>" class="product-image-link">
+                                    <img src="assets/img/produtos/<?= htmlspecialchars($produto['imagem'] ?: 'placeholder.jpg') ?>" 
+                                        alt="<?= htmlspecialchars($produto['nome']) ?>" 
+                                        class="product-image"
+                                        loading="lazy">
+                                </a>
+                                <span class="product-badge <?= $badge['type'] ?>">
+                                    <?php if ($badge['type'] == 'popular'): ?>
+                                        <i class="fas fa-fire"></i> 
+                                    <?php elseif ($badge['type'] == 'hot'): ?>
+                                        <i class="fas fa-bolt"></i>
+                                    <?php endif; ?>
+                                    <?= $badge['text'] ?>
+                                </span>
+                                
+                                <?php if (($produto['vendas'] ?? 0) > 0): ?>
+                                    <div class="sales-count">
+                                        <i class="fas fa-chart-line"></i>
+                                        <?= $produto['vendas'] ?> vendas
+                                    </div>
+                                <?php endif; ?>
+                            </div>
+                            
+                            <div class="product-info">
+                                <?php if (!empty($produto['marca'])): ?>
+                                    <div class="product-brand"><?= htmlspecialchars($produto['marca']) ?></div>
+                                <?php endif; ?>
+                                
+                                <h3 class="product-name">
+                                    <a href="detalhes_produto.php?id=<?= $produto['id_produto'] ?>">
+                                        <?= htmlspecialchars($produto['nome']) ?>
+                                    </a>
+                                </h3>
+                                
+                                <div class="product-price-section">
+                                    <p class="product-price">R$ <?= number_format($produto['preco'], 2, ',', '.') ?></p>
+                                    <div class="product-installments">
+                                        em até 3x de R$ <?= number_format($produto['preco'] / 3, 2, ',', '.') ?>
+                                    </div>
+                                </div>
+                                
+                                <div class="product-rating">
+                                    <div class="stars">
+                                        <i class="fas fa-star"></i>
+                                        <i class="fas fa-star"></i>
+                                        <i class="fas fa-star"></i>
+                                        <i class="fas fa-star"></i>
+                                        <i class="fas fa-star-half-alt"></i>
+                                    </div>
+                                    <span class="rating-count">(<?= rand(10, 50) ?>)</span>
+                                </div>
+                                
+                                <div class="product-card-actions">
+                                    <a href="detalhes_produto.php?id=<?= $produto['id_produto'] ?>" class="btn btn-outline">
+                                        <i class="fas fa-eye"></i> Detalhes
+                                    </a>
+                                    <?php if ($produto['estoque'] > 0): ?>
+                                        <form method="post" action="carrinho_adicionar.php" class="ajax-add-to-cart-form">
+                                            <input type="hidden" name="id_produto" value="<?= $produto['id_produto'] ?>">
+                                            <input type="hidden" name="quantidade" value="1"> 
+                                            <button type="submit" class="btn btn-primary">
+                                                <i class="fas fa-cart-plus"></i> Adicionar
+                                            </button>
+                                        </form>
+                                    <?php else: ?>
+                                        <button class="btn btn-disabled" disabled>
+                                            <i class="fas fa-ban"></i> Indisponível
+                                        </button>
+                                    <?php endif; ?>
+                                </div>
+                            </div>
+                        </article>
+                    <?php endforeach; ?>
+                </div>
+            <?php endif; ?>
+        </div>
+    </section>
+
+    <!-- Seção de Vantagens -->
+    <section class="benefits-section">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">Por que Escolher a GearUP Express?</h2>
+                <p class="section-subtitle">Tudo que você precisa em um só lugar</p>
+            </div>
+            
+            <div class="benefits-grid">
+                <div class="benefit-card">
+                    <div class="benefit-icon">
+                        <i class="fas fa-shipping-fast"></i>
+                    </div>
+                    <h3>Entrega Rápida</h3>
+                    <p>Receba seu pedido em até 48h na região metropolitana</p>
+                </div>
+                
+                <div class="benefit-card">
+                    <div class="benefit-icon">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <h3>Compra Segura</h3>
+                    <p>Seus dados protegidos com criptografia de última geração</p>
+                </div>
+                
+                <div class="benefit-card">
+                    <div class="benefit-icon">
+                        <i class="fas fa-credit-card"></i>
+                    </div>
+                    <h3>Parcele em até 4x</h3>
+                    <p>Parcele suas compras no cartão com juros baixos</p>
+                </div>
+                
+                <div class="benefit-card">
+                    <div class="benefit-icon">
+                        <i class="fas fa-headset"></i>
+                    </div>
+                    <h3>Suporte 24/7</h3>
+                    <p>Nossa equipe está sempre pronta para te ajudar</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Newsletter -->
+    <section class="newsletter-section">
+        <div class="container">
+            <div class="newsletter-content">
+                <div class="newsletter-text">
+                    <h2>Fique por Dentro das Ofertas</h2>
+                    <p>Receba descontos exclusivos e seja o primeiro a saber sobre novidades</p>
+                </div>
+                <form class="newsletter-form">
+                    <div class="input-group">
+                        <input type="email" placeholder="Seu melhor e-mail" required>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-paper-plane"></i> Assinar
+                        </button>
+                    </div>
+                    <div class="form-note">
+                        <i class="fas fa-lock"></i>
+                        Seus dados estão protegidos. Não compartilhamos suas informações.
+                    </div>
+                </form>
+            </div>
+        </div>
+    </section>
 
 </main>
 
-<?php include 'includes/footer.php'; ?>
-
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    // Hero Slider (código existente mantido)
     const slides = document.querySelectorAll('.hero-slide');
-    if (slides.length === 0) return; // Não executa se não houver slides
+    if (slides.length === 0) return;
 
     const dots = document.querySelectorAll('.dot');
     const prevBtn = document.querySelector('.hero-nav.prev');
@@ -130,7 +448,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     function startSlideShow() {
-        slideInterval = setInterval(nextSlide, 5000); // Troca a cada 5 segundos
+        slideInterval = setInterval(nextSlide, 6000);
     }
 
     function resetInterval() {
@@ -157,7 +475,202 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
+    // Pausar slider no hover
+    const heroBanner = document.querySelector('.hero-banner');
+    heroBanner.addEventListener('mouseenter', () => {
+        clearInterval(slideInterval);
+    });
+    
+    heroBanner.addEventListener('mouseleave', () => {
+        startSlideShow();
+    });
+
     showSlide(currentSlide);
     startSlideShow();
+
+    // Newsletter form (código existente mantido)
+    const newsletterForm = document.querySelector('.newsletter-form');
+    if (newsletterForm) {
+        newsletterForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const email = this.querySelector('input[type="email"]').value;
+            
+            // Simular cadastro
+            this.innerHTML = `
+                <div class="newsletter-success">
+                    <i class="fas fa-check-circle"></i>
+                    <h3>Inscrição realizada com sucesso!</h3>
+                    <p>Em breve você receberá nossas melhores ofertas no email ${email}</p>
+                </div>
+            `;
+        });
+    }
+
+    // AJAX para adicionar ao carrinho
+    document.querySelectorAll('.ajax-add-to-cart-form').forEach(form => {
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const submitBtn = this.querySelector('button[type="submit"]');
+            const originalText = submitBtn.innerHTML;
+            
+            // Feedback visual
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Adicionando...';
+            submitBtn.disabled = true;
+            
+            fetch('carrinho_adicionar.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Sucesso - mostrar feedback
+                    submitBtn.innerHTML = '<i class="fas fa-check"></i> Adicionado!';
+                    submitBtn.classList.add('btn-success');
+                    
+                    // Atualizar contador do carrinho se existir
+                    const cartCount = document.querySelector('.cart-count');
+                    if (cartCount && data.totalItensCarrinho !== undefined) {
+                        cartCount.textContent = data.totalItensCarrinho;
+                        cartCount.classList.add('pulse');
+                        setTimeout(() => cartCount.classList.remove('pulse'), 500);
+                    }
+                    
+                    // Restaurar botão após 2 segundos
+                    setTimeout(() => {
+                        submitBtn.innerHTML = originalText;
+                        submitBtn.classList.remove('btn-success');
+                        submitBtn.disabled = false;
+                    }, 2000);
+                    
+                } else {
+                    // Erro
+                    submitBtn.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Erro';
+                    submitBtn.classList.add('btn-error');
+                    
+                    setTimeout(() => {
+                        submitBtn.innerHTML = originalText;
+                        submitBtn.classList.remove('btn-error');
+                        submitBtn.disabled = false;
+                    }, 2000);
+                    
+                    console.error('Erro ao adicionar produto:', data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Erro na requisição:', error);
+                submitBtn.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Erro';
+                submitBtn.classList.add('btn-error');
+                
+                setTimeout(() => {
+                    submitBtn.innerHTML = originalText;
+                    submitBtn.classList.remove('btn-error');
+                    submitBtn.disabled = false;
+                }, 2000);
+            });
+        });
+    });
+
+    // Animação de entrada das seções (código existente mantido)
+    const observerOptions = {
+        threshold: 0.1,
+        rootMargin: '0px 0px -50px 0px'
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.style.opacity = '1';
+                entry.target.style.transform = 'translateY(0)';
+            }
+        });
+    }, observerOptions);
+
+    document.querySelectorAll('.products-section').forEach(section => {
+        section.style.opacity = '0';
+        section.style.transform = 'translateY(30px)';
+        section.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+        observer.observe(section);
+    });
 });
+
+// Wishlist functionality - VERSÃO COM DEBUG
+document.querySelectorAll('.wishlist-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+        const productId = this.dataset.productId;
+        const icon = this.querySelector('i');
+        
+        console.log('Clicou no wishlist, produto:', productId);
+        
+        // Alternar estado visual
+        const isActive = icon.classList.contains('fas');
+        
+        if (isActive) {
+            console.log('Removendo da wishlist');
+            icon.classList.replace('fas', 'far');
+            icon.style.color = '';
+            removeFromWishlist(productId);
+        } else {
+            console.log('Adicionando à wishlist');
+            icon.classList.replace('far', 'fas');
+            icon.style.color = '#e74c3c';
+            addToWishlist(productId);
+        }
+    });
+});
+
+function addToWishlist(productId) {
+    const formData = new FormData();
+    formData.append('id_produto', productId);
+    formData.append('acao', 'adicionar');
+    
+    console.log('Enviando requisição para adicionar...');
+    
+    fetch('wishlist.php', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => {
+        console.log('Resposta recebida:', response);
+        return response.json();
+    })
+    .then(data => {
+        console.log('Dados recebidos:', data);
+        if (!data.success) {
+            console.error('Erro ao adicionar:', data.message);
+            // Reverter visual se erro
+            const btn = document.querySelector(`.wishlist-btn[data-product-id="${productId}"]`);
+            const icon = btn.querySelector('i');
+            icon.classList.replace('fas', 'far');
+            icon.style.color = '';
+        } else {
+            console.log('Produto adicionado com sucesso!');
+        }
+    })
+    .catch(error => {
+        console.error('Erro na requisição:', error);
+    });
+}
+
+function removeFromWishlist(productId) {
+    const formData = new FormData();
+    formData.append('id_produto', productId);
+    formData.append('acao', 'remover');
+    
+    fetch('wishlist.php', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log('Resposta remoção:', data);
+    })
+    .catch(error => {
+        console.error('Erro:', error);
+    });
+}
 </script>
+
+<?php include 'includes/footer.php'; ?>

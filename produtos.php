@@ -110,7 +110,7 @@ try {
     <!-- Breadcrumb -->
     <nav class="breadcrumb" aria-label="Navegação estrutural">
         <ol>
-            <li><a href="index.php">Página Inicial</a></li>
+            <li><a href="index.php"><i class="fas fa-home"></i> Página Inicial</a></li>
             <li><a href="produtos.php">Produtos</a></li>
             <?php if ($id_categoria_selecionada): ?>
                 <li aria-current="page"><?= htmlspecialchars($nome_categoria_selecionada) ?></li>
@@ -227,9 +227,6 @@ try {
                                         <span class="low-stock-badge">Últimas unidades</span>
                                     <?php endif; ?>
                                 </a>
-                                <button class="wishlist-btn" aria-label="Adicionar aos favoritos">
-                                    <i class="far fa-heart"></i>
-                                </button>
                             </div>
                             
                             <div class="product-info">
