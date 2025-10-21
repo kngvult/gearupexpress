@@ -1,6 +1,5 @@
 <?php
 include 'includes/header.php'; 
-// A conexão $pdo já está disponível a partir do header
 
 // Inicializa as variáveis para evitar erros
 $termo_busca = '';
@@ -12,10 +11,8 @@ if (!empty($_GET['termo'])) {
     // Limpa e armazena o termo de busca
     $termo_busca = trim($_GET['termo']);
 
-    // Prepara a query para buscar no nome E na descrição dos produtos.
-    // ILIKE faz uma busca case-insensitive (não diferencia maiúsculas de minúsculas).
-    // Os '%' são wildcards, significando que o termo pode estar em qualquer parte do texto.
-    $sql = "SELECT id_produto, nome, preco, imagem 
+    // CORREÇÃO: Incluir a coluna estoque na query
+    $sql = "SELECT id_produto, nome, preco, imagem, COALESCE(estoque, 0) AS estoque 
             FROM public.produtos 
             WHERE nome ILIKE ? OR descricao ILIKE ?";
     
@@ -55,6 +52,10 @@ if (!empty($_GET['termo'])) {
         <?php else: ?>
             <div class="product-grid">
                 <?php foreach ($produtos as $produto): ?>
+                    <?php 
+                    // CORREÇÃO: Garantir que estoque seja um inteiro
+                    $estoque = (int)($produto['estoque'] ?? 0); 
+                    ?>
                     <article class="product-card">
                         <div class="product-image-container">
                             <a href="detalhes_produto.php?id=<?= $produto['id_produto'] ?>">
@@ -70,10 +71,17 @@ if (!empty($_GET['termo'])) {
                             <p class="product-price">R$ <?= number_format($produto['preco'], 2, ',', '.') ?></p>
                             <div class="product-card-actions">
                                 <a href="detalhes_produto.php?id=<?= $produto['id_produto'] ?>" class="btn btn-secondary">Detalhes</a>
-                                <form method="post" action="carrinho.php">
-                                    <input type="hidden" name="id_produto" value="<?= $produto['id_produto'] ?>">
-                                    <button type="submit" name="adicionar" class="btn btn-primary">Adicionar</button>
-                                </form>
+                                <?php if ($estoque > 0): ?>
+                                    <form method="post" action="carrinho_adicionar.php" class="add-to-cart-form">
+                                        <input type="hidden" name="id_produto" value="<?= $produto['id_produto'] ?>">
+                                        <input type="hidden" name="quantidade" value="1">
+                                        <button type="submit" class="btn btn-primary">
+                                            <i class="fas fa-cart-plus"></i> Adicionar
+                                        </button>
+                                    </form>
+                                <?php else: ?>
+                                    <button class="btn btn-disabled" disabled>Indisponível</button>
+                                <?php endif; ?>
                             </div>
                         </div>
                     </article>
@@ -91,15 +99,71 @@ if (!empty($_GET['termo'])) {
 </div>
 </main>
 
-<style>
-    /* Estilo para a contagem de resultados. Adicione ao seu style.css se preferir. */
-    .search-results-count {
-        text-align: center;
-        margin-top: -20px;
-        margin-bottom: 40px;
-        font-size: 1.1rem;
-        color: var(--light-text);
-    }
-</style>
+<script>
+// AJAX para adicionar ao carrinho na página de busca
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.add-to-cart-form').forEach(form => {
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const submitBtn = this.querySelector('button[type="submit"]');
+            const originalText = submitBtn.innerHTML;
+            
+            // Feedback visual
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Adicionando...';
+            submitBtn.disabled = true;
+            
+            fetch('carrinho_adicionar.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    submitBtn.innerHTML = '<i class="fas fa-check"></i> Adicionado!';
+                    submitBtn.classList.add('btn-success');
+                    
+                    // Atualizar contador do carrinho se existir
+                    const cartCount = document.querySelector('.cart-count');
+                    if (cartCount && data.totalItensCarrinho !== undefined) {
+                        cartCount.textContent = data.totalItensCarrinho;
+                        cartCount.classList.add('pulse');
+                        setTimeout(() => cartCount.classList.remove('pulse'), 500);
+                    }
+                    
+                    // Redirecionar para carrinho após sucesso (opcional)
+                    setTimeout(() => {
+                        window.location.href = 'carrinho.php';
+                    }, 1000);
+                    
+                } else {
+                    submitBtn.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Erro';
+                    submitBtn.classList.add('btn-error');
+                    
+                    setTimeout(() => {
+                        submitBtn.innerHTML = originalText;
+                        submitBtn.classList.remove('btn-error');
+                        submitBtn.disabled = false;
+                    }, 2000);
+                    
+                    alert(data.message || 'Erro ao adicionar produto ao carrinho');
+                }
+            })
+            .catch(error => {
+                console.error('Erro na requisição:', error);
+                submitBtn.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Erro';
+                submitBtn.classList.add('btn-error');
+                
+                setTimeout(() => {
+                    submitBtn.innerHTML = originalText;
+                    submitBtn.classList.remove('btn-error');
+                    submitBtn.disabled = false;
+                }, 2000);
+            });
+        });
+    });
+});
+</script>
 
 <?php include 'includes/footer.php'; ?>
