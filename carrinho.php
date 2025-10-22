@@ -215,157 +215,157 @@ if ($usuarioLogado) {
 </div>
 </main>
 
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const quantitySteppers = document.querySelectorAll('.quantity-stepper');
-    const cartForm = document.querySelector('.cart-layout').closest('form');
-    let updateTimeout;
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const quantitySteppers = document.querySelectorAll('.quantity-stepper');
+        const cartForm = document.querySelector('.cart-layout').closest('form');
+        let updateTimeout;
 
-    quantitySteppers.forEach(stepper => {
-        const input = stepper.querySelector('.quantity-input');
-        const btnMinus = stepper.querySelector('.quantity-btn.minus');
-        const btnPlus = stepper.querySelector('.quantity-btn.plus');
+        quantitySteppers.forEach(stepper => {
+            const input = stepper.querySelector('.quantity-input');
+            const btnMinus = stepper.querySelector('.quantity-btn.minus');
+            const btnPlus = stepper.querySelector('.quantity-btn.plus');
 
-        btnMinus.addEventListener('click', function() {
-            let currentValue = parseInt(input.value);
-            if (currentValue > 1) {
-                input.value = currentValue - 1;
+            btnMinus.addEventListener('click', function() {
+                let currentValue = parseInt(input.value);
+                if (currentValue > 1) {
+                    input.value = currentValue - 1;
+                    // Dispara o evento para o auto-update
+                    input.dispatchEvent(new Event('change'));
+                }
+            });
+
+            btnPlus.addEventListener('click', function() {
+                let currentValue = parseInt(input.value);
+                input.value = currentValue + 1;
                 // Dispara o evento para o auto-update
                 input.dispatchEvent(new Event('change'));
-            }
-        });
+            });
 
-        btnPlus.addEventListener('click', function() {
-            let currentValue = parseInt(input.value);
-            input.value = currentValue + 1;
-            // Dispara o evento para o auto-update
-            input.dispatchEvent(new Event('change'));
-        });
-
-        // Evento de 'change' para acionar o envio do formulário
-        input.addEventListener('change', function() {
-            // "Debounce": Cancela o envio anterior e agenda um novo
-            // Isso evita múltiplos envios se o usuário clicar rápido
-            clearTimeout(updateTimeout);
-            
-            updateTimeout = setTimeout(() => {
-                // Adiciona um name ao formulário para que o PHP saiba que é uma atualização
-                const updateInput = document.createElement('input');
-                updateInput.type = 'hidden';
-                updateInput.name = 'atualizar';
-                updateInput.value = '1';
-                cartForm.appendChild(updateInput);
+            // Evento de 'change' para acionar o envio do formulário
+            input.addEventListener('change', function() {
+                // "Debounce": Cancela o envio anterior e agenda um novo
+                // Isso evita múltiplos envios se o usuário clicar rápido
+                clearTimeout(updateTimeout);
                 
-                cartForm.submit();
-            }, 1000); // Espera 1 segundo após o último clique para atualizar
+                updateTimeout = setTimeout(() => {
+                    // Adiciona um name ao formulário para que o PHP saiba que é uma atualização
+                    const updateInput = document.createElement('input');
+                    updateInput.type = 'hidden';
+                    updateInput.name = 'atualizar';
+                    updateInput.value = '1';
+                    cartForm.appendChild(updateInput);
+                    
+                    cartForm.submit();
+                }, 1000); // Espera 1 segundo após o último clique para atualizar
+            });
         });
-    });
-document.querySelectorAll('.remove-btn').forEach(btn => {
-        btn.addEventListener('click', function(e) {
-            e.preventDefault();
-            document.getElementById('modalRemoverId').value = this.dataset.id;
-            document.getElementById('modal-remover-carrinho').style.display = 'flex';
+    document.querySelectorAll('.remove-btn').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+                document.getElementById('modalRemoverId').value = this.dataset.id;
+                document.getElementById('modal-remover-carrinho').style.display = 'flex';
+            });
         });
-    });
 
-    const cancelBtn = document.getElementById('confirmModalNo');
-    if (cancelBtn) {
-        cancelBtn.onclick = function() {
-            document.getElementById('modal-remover-carrinho').style.display = 'none';
-        };
-    }
-});
-
-document.addEventListener('DOMContentLoaded', function() {
-    
-    document.body.addEventListener('click', function(e) {
-        
-        if (e.target.closest('.remove-btn')) { 
-            e.preventDefault();
-            const itemRow = e.target.closest('.carrinho-item'); // (Use a classe da sua linha de item)
-            const productId = itemRow.dataset.productId; // (Assumindo que a linha tem data-product-id="123")
-            
-            if (confirm('Deseja realmente remover este item?')) {
-                handleCartUpdate(productId, 0, 'remover', itemRow);
-            }
+        const cancelBtn = document.getElementById('confirmModalNo');
+        if (cancelBtn) {
+            cancelBtn.onclick = function() {
+                document.getElementById('modal-remover-carrinho').style.display = 'none';
+            };
         }
     });
 
-    // Ouve todas as mudanças de quantidade
-    document.body.addEventListener('change', function(e) {
-        // (Confira se 'input-quantidade-item' é a classe do seu input de <input type="number">)
-        if (e.target.closest('.input-quantidade-item')) {
-            const itemRow = e.target.closest('.carrinho-item');
-            const productId = itemRow.dataset.productId;
-            const newQuantity = parseInt(e.target.value);
-            
-            handleCartUpdate(productId, newQuantity, 'atualizar', itemRow);
-        }
-    });
-
-    // Função central que faz o AJAX
-    function handleCartUpdate(productId, quantity, action, itemRowElement) {
+    document.addEventListener('DOMContentLoaded', function() {
         
-        itemRowElement.style.opacity = '0.5'; // Efeito de "carregando"
-        const formData = new FormData();
-        formData.append('id_produto', productId);
-        formData.append('quantidade', quantity);
-        formData.append('acao', action);
-
-        // **AQUI! Chamamos o NOVO arquivo que criamos**
-        fetch('carrinho_atualizar.php', { 
-            method: 'POST',
-            body: formData
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
+        document.body.addEventListener('click', function(e) {
+            
+            if (e.target.closest('.remove-btn')) { 
+                e.preventDefault();
+                const itemRow = e.target.closest('.carrinho-item'); // (Use a classe da sua linha de item)
+                const productId = itemRow.dataset.productId; // (Assumindo que a linha tem data-product-id="123")
                 
-                // **** AQUI ESTÁ A CORREÇÃO DO BADGE ****
-                if (data.totalItensCarrinho !== undefined) {
-                    // Chama a função global que está no footer.php!
-                    updateCartBadge(data.totalItensCarrinho); 
+                if (confirm('Deseja realmente remover este item?')) {
+                    handleCartUpdate(productId, 0, 'remover', itemRow);
                 }
+            }
+        });
+
+        // Ouve todas as mudanças de quantidade
+        document.body.addEventListener('change', function(e) {
+            // (Confira se 'input-quantidade-item' é a classe do seu input de <input type="number">)
+            if (e.target.closest('.input-quantidade-item')) {
+                const itemRow = e.target.closest('.carrinho-item');
+                const productId = itemRow.dataset.productId;
+                const newQuantity = parseInt(e.target.value);
                 
-                // Remove o item da tela
-                if (action === 'remover') {
-                    itemRowElement.remove();
+                handleCartUpdate(productId, newQuantity, 'atualizar', itemRow);
+            }
+        });
+
+        // Função central que faz o AJAX
+        function handleCartUpdate(productId, quantity, action, itemRowElement) {
+            
+            itemRowElement.style.opacity = '0.5'; // Efeito de "carregando"
+            const formData = new FormData();
+            formData.append('id_produto', productId);
+            formData.append('quantidade', quantity);
+            formData.append('acao', action);
+
+            // **AQUI! Chamamos o NOVO arquivo que criamos**
+            fetch('carrinho_atualizar.php', { 
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    
+                    // **** AQUI ESTÁ A CORREÇÃO DO BADGE ****
+                    if (data.totalItensCarrinho !== undefined) {
+                        // Chama a função global que está no footer.php!
+                        updateCartBadge(data.totalItensCarrinho); 
+                    }
+                    
+                    // Remove o item da tela
+                    if (action === 'remover') {
+                        itemRowElement.remove();
+                    } else {
+                        itemRowElement.style.opacity = '1';
+                        // (Aqui você atualizaria o subtotal do item)
+                    }
+                    
+                    // (Aqui você atualizaria o total geral da página)
+                    // document.querySelector('.total-carrinho').textContent = data.novoTotalCarrinho;
+
+                    // Se o carrinho ficou vazio, recarrega a página
+                    if (data.totalItensCarrinho === 0) {
+                        location.reload();
+                    }
+                    
                 } else {
+                    alert(data.message || 'Erro ao atualizar o carrinho.');
                     itemRowElement.style.opacity = '1';
-                    // (Aqui você atualizaria o subtotal do item)
                 }
-                
-                // (Aqui você atualizaria o total geral da página)
-                // document.querySelector('.total-carrinho').textContent = data.novoTotalCarrinho;
-
-                // Se o carrinho ficou vazio, recarrega a página
-                if (data.totalItensCarrinho === 0) {
-                    location.reload();
-                }
-                
-            } else {
-                alert(data.message || 'Erro ao atualizar o carrinho.');
+            })
+            .catch(error => {
+                console.error('Erro no fetch:', error);
                 itemRowElement.style.opacity = '1';
-            }
-        })
-        .catch(error => {
-            console.error('Erro no fetch:', error);
-            itemRowElement.style.opacity = '1';
-        });
-    }
-});
-</script>
+            });
+        }
+    });
+    </script>
 
-<!-- Modal de confirmação de remoção do item do carrinho -->
-<div id="modal-remover-carrinho" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.3); align-items:center; justify-content:center; z-index:9999;">
-    <div style="background:#fff; padding:30px; border-radius:12px; max-width:400px; margin:auto; text-align:center;">
-        <h4 style="margin-top:0;">Remover Item</h4>
-        <p>Tem certeza que deseja remover este item do carrinho?</p>
-        <form id="form-remover-carrinho" method="get" action="carrinho.php" style="margin-bottom:0;">
-        <input type="hidden" name="remover" id="modalRemoverId">
-        <button type="submit" id="confirmModalYes" class="btn btn-danger" style="margin-right:10px; background-color: #dc3545; color: #fff;">Confirmar</button>
-        <button type="button" id="confirmModalNo" class="btn btn-secondary">Cancelar</button>
-        </form>
+    <!-- Modal de confirmação de remoção do item do carrinho -->
+    <div id="modal-remover-carrinho" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.3); align-items:center; justify-content:center; z-index:9999;">
+        <div style="background:#fff; padding:30px; border-radius:12px; max-width:400px; margin:auto; text-align:center;">
+            <h4 style="margin-top:0;">Remover Item</h4>
+            <p>Tem certeza que deseja remover este item do carrinho?</p>
+            <form id="form-remover-carrinho" method="get" action="carrinho.php" style="margin-bottom:0;">
+            <input type="hidden" name="remover" id="modalRemoverId">
+            <button type="submit" id="confirmModalYes" class="btn btn-danger" style="margin-right:10px; background-color: #dc3545; color: #fff;">Confirmar</button>
+            <button type="button" id="confirmModalNo" class="btn btn-secondary">Cancelar</button>
+            </form>
+        </div>
     </div>
-</div>
 <?php include 'includes/footer.php'; ?>
