@@ -465,7 +465,7 @@ if (empty($_GET['id']) || !is_numeric($_GET['id'])) {
                                             <i class="fas fa-eye"></i> Detalhes
                                         </a>
                                         <?php if ($relacionado['estoque'] > 0): ?>
-                                            <form method="post" action="carrinho_adicionar.php" class="add-to-cart-form-card">
+                                            <form method="post" action="carrinho_adicionar.php" class="ajax-add-to-cart-form">
                                                 <input type="hidden" name="id_produto" value="<?= $relacionado['id_produto'] ?>">
                                                 <input type="hidden" name="quantidade" value="1">
                                                 <button type="submit" class="btn btn-primary btn-cart">

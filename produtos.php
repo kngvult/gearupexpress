@@ -259,7 +259,7 @@ try {
                                         class="btn btn-secondary">Detalhes</a>
                                     
                                     <?php if ($produto['estoque'] > 0): ?>
-                                        <form method="post" action="carrinho_adicionar.php" class="add-to-cart-form">
+                                        <form method="post" action="carrinho_adicionar.php" class="ajax-add-to-cart-form">
                                             <input type="hidden" name="id_produto" value="<?= $produto['id_produto'] ?>">
                                             <button type="submit" class="btn btn-primary" 
                                                     <?= $produto['estoque'] <= 0 ? 'disabled' : '' ?>>
