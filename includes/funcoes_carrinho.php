@@ -1,5 +1,9 @@
 <?php
-// includes/funcoes_carrinho.php
+if (session_status() === PHP_SESSION_NONE) {
+    // Inicia a sessão se ela ainda não foi iniciada.
+    // Isso torna o arquivo seguro para ser incluído em qualquer lugar.
+    session_start();
+}
 
 // CORREÇÃO: Função para inicializar o carrinho na sessão
 function inicializarCarrinhoSessao() {
@@ -40,40 +44,115 @@ function getCarrinhoTotalSessao() {
     return $total;
 }
 
-function sincronizarCarrinho($pdo, $id_usuario) {
-    // CORREÇÃO: Verificar se o carrinho da sessão existe e é um array
-    if (!isset($_SESSION['carrinho']) || !is_array($_SESSION['carrinho']) || empty($_SESSION['carrinho'])) {
-        return;
+
+
+/**
+ * Calcula o número total de itens no carrinho,
+ * seja para um usuário logado (via BD) ou um visitante (via Sessão).
+ *
+ * @param PDO $pdo A conexão com o banco de dados.
+ * @return int O número total de itens.
+ */
+function contarItensCarrinho($pdo) {
+    $totalItens = 0;
+    
+    // Use a sua variável de sessão correta aqui
+    $id_usuario = $_SESSION['usuario']['id'] ?? null; 
+
+    try {
+        if ($id_usuario) {
+            // --- USUÁRIO LOGADO ---
+            // Conta os itens no banco de dados
+            $stmt = $pdo->prepare("SELECT SUM(quantidade) FROM carrinho WHERE usuario_id = ?");
+            $stmt->execute([$id_usuario]);
+            $totalItens = (int)$stmt->fetchColumn();
+            
+        } else if (!empty($_SESSION['carrinho']) && is_array($_SESSION['carrinho'])) {
+            // --- VISITANTE ---
+            // Itera pelo array da sessão e soma as quantidades
+            // Esta é a lógica correta que faltava no header!
+            foreach ($_SESSION['carrinho'] as $item) {
+                if (isset($item['quantidade'])) {
+                    $totalItens += (int)$item['quantidade'];
+                }
+            }
+        }
+    } catch (PDOException $e) {
+        error_log("Erro ao contar itens no carrinho: " . $e->getMessage());
+        return 0; // Retorna 0 em caso de erro de banco
     }
     
-    foreach ($_SESSION['carrinho'] as $item) {
-        // CORREÇÃO: Verificar se $item é um array antes de acessar
-        if (!is_array($item)) continue;
-        
-        $id_produto = $item['id_produto'] ?? null;
-        $quantidade = $item['quantidade'] ?? 0;
-        $preco_unitario = $item['preco'] ?? 0; // CORREÇÃO: mudado de 'preco_unitario' para 'preco'
+    return (int)$totalItens;
+}
 
-        if (!$id_produto || $quantidade <= 0) continue;
-
-        // Verifica se já existe esse produto no carrinho do usuário
-        $stmt = $pdo->prepare("SELECT quantidade FROM carrinho WHERE usuario_id = ? AND id_produto = ?");
-        $stmt->execute([$id_usuario, $id_produto]);
-        $existente = $stmt->fetch(PDO::FETCH_ASSOC);
-
-        if ($existente) {
-            // Atualiza a quantidade
-            $nova_quantidade = $existente['quantidade'] + $quantidade;
-            $stmtUp = $pdo->prepare("UPDATE carrinho SET quantidade = ? WHERE usuario_id = ? AND id_produto = ?");
-            $stmtUp->execute([$nova_quantidade, $id_usuario, $id_produto]);
-        } else {
-            // Insere novo item
-            $stmtIn = $pdo->prepare("INSERT INTO carrinho (usuario_id, id_produto, quantidade, preco_unitario) VALUES (?, ?, ?, ?)");
-            $stmtIn->execute([$id_usuario, $id_produto, $quantidade, $preco_unitario]);
-        }
+/**
+ * Sincroniza o carrinho da sessão (visitante) com o carrinho do banco de dados (usuário logado).
+ * Esta função é chamada logo após o login.
+ *
+ * @param PDO $pdo A conexão com o banco de dados.
+ * @param string $id_usuario O ID (UUID) do usuário que acabou de logar.
+ */
+function sincronizarCarrinho($pdo, $id_usuario) {
+    // 1. Verifica se existe um carrinho de visitante na sessão
+    if (empty($_SESSION['carrinho']) || !is_array($_SESSION['carrinho'])) {
+        return; // Nada para sincronizar
     }
-    // Limpa o carrinho da sessão
-    unset($_SESSION['carrinho']);
+
+    try {
+        foreach ($_SESSION['carrinho'] as $id_produto_sessao => $item_sessao) {
+            
+            // --- INÍCIO DA CORREÇÃO DO BUG R$ 0,00 ---
+            
+            // 2. Obter dados básicos da sessão
+            $id_produto = $item_sessao['id_produto'] ?? 0;
+            $quantidade = $item_sessao['quantidade'] ?? 0;
+            
+            // 3. Verificar o preço (aqui está a causa do bug)
+            $preco = $item_sessao['preco_unitario'] ?? 0.0;
+            
+            // 4. Se o preço estiver faltando na sessão (R$ 0,00),
+            //    vamos buscá-lo diretamente no banco de dados.
+            if ($preco <= 0.0 && $id_produto > 0) {
+                $stmtPreco = $pdo->prepare("SELECT preco FROM produtos WHERE id_produto = ?");
+                $stmtPreco->execute([$id_produto]);
+                $produto_db = $stmtPreco->fetch(PDO::FETCH_ASSOC);
+                
+                if ($produto_db) {
+                    $preco = (float)$produto_db['preco'];
+                }
+            }
+            
+            // --- FIM DA CORREÇÃO ---
+
+            // 5. Pula o item se algum dado essencial ainda estiver faltando
+            if ($id_produto <= 0 || $quantidade <= 0 || $preco <= 0.0) {
+                continue; 
+            }
+
+            // 6. Verificar se o item já existe no carrinho do usuário (no BD)
+            $stmtCheck = $pdo->prepare("SELECT quantidade FROM carrinho WHERE usuario_id = ? AND id_produto = ?");
+            $stmtCheck->execute([$id_usuario, $id_produto]);
+            $item_existente = $stmtCheck->fetch(PDO::FETCH_ASSOC);
+
+            if ($item_existente) {
+                // Item existe: Somar quantidades
+                $nova_quantidade = $item_existente['quantidade'] + $quantidade;
+                $stmtUpdate = $pdo->prepare("UPDATE carrinho SET quantidade = ? WHERE usuario_id = ? AND id_produto = ?");
+                $stmtUpdate->execute([$nova_quantidade, $id_usuario, $id_produto]);
+            } else {
+                // Item não existe: Inserir novo (agora com o preço correto)
+                $stmtInsert = $pdo->prepare("INSERT INTO carrinho (usuario_id, id_produto, quantidade, preco_unitario) VALUES (?, ?, ?, ?)");
+                $stmtInsert->execute([$id_usuario, $id_produto, $quantidade, $preco]);
+            }
+        }
+        
+        // 7. Limpar o carrinho de visitante após a sincronização
+        unset($_SESSION['carrinho']);
+
+    } catch (PDOException $e) {
+        error_log("Erro ao sincronizar carrinho: " . $e->getMessage());
+        // Não limpa o carrinho de visitante se a sincronização falhar
+    }
 }
 
 function buscarCarrinhoBanco($pdo, $id_usuario) {

@@ -5,6 +5,7 @@ if (session_status() === PHP_SESSION_NONE) {
 }
 
 include_once 'includes/conexao.php';
+include_once 'includes/funcoes_carrinho.php';
 
 $usuarioLogado = $_SESSION['usuario']['nome'] ?? null;
 $idUsuarioLogado = $_SESSION['usuario']['id'] ?? null;
@@ -36,15 +37,7 @@ if (isset($idUsuarioLogado)) {
 // --- FIM DA LÓGICA DA WISHLIST ---
 
 // 2. Conta os itens no carrinho para o ícone
-$totalItensCarrinho = 0;
-if ($idUsuarioLogado) {
-    $stmtCount = $pdo->prepare("SELECT SUM(quantidade) FROM carrinho WHERE usuario_id = ?");
-    $stmtCount->execute([$idUsuarioLogado]);
-    $totalItensCarrinho = $stmtCount->fetchColumn();
-} else if (!empty($_SESSION['carrinho']) && is_array($_SESSION['carrinho'])) {
-    $totalItensCarrinho = array_sum($_SESSION['carrinho']);
-}
-$totalItensCarrinho = (int)$totalItensCarrinho;
+$totalItensCarrinho = contarItensCarrinho($pdo);
 ?>
 <!DOCTYPE html>
 <html lang="pt-BR">

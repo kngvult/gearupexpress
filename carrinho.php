@@ -13,7 +13,7 @@ $statusMessage = null; // Variável para armazenar mensagens de status
 /**
  * Busca os itens do carrinho de um usuário específico no banco de dados.
  */
-function buscarCarrinhoBanco($pdo, $id_usuario) {
+/*function buscarCarrinhoBanco($pdo, $id_usuario) {
     $stmt = $pdo->prepare("
         SELECT 
             c.id, 
@@ -29,12 +29,12 @@ function buscarCarrinhoBanco($pdo, $id_usuario) {
     ");
     $stmt->execute([$id_usuario]);
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
-}
+}*/
 
 /**
  * Adiciona um novo produto ao carrinho ou atualiza a quantidade se ele já existir.
  */
-function adicionarOuAtualizarBanco($pdo, $id_usuario, $id_produto, $quantidade) {
+/*function adicionarOuAtualizarBanco($pdo, $id_usuario, $id_produto, $quantidade) {
     // Primeiro, busca o preço atual do produto para garantir consistência.
     $stmtPreco = $pdo->prepare("SELECT preco FROM produtos WHERE id_produto = ?");
     $stmtPreco->execute([$id_produto]);
@@ -60,26 +60,26 @@ function adicionarOuAtualizarBanco($pdo, $id_usuario, $id_produto, $quantidade) 
         $stmtInsert->execute([$id_usuario, $id_produto, $quantidade, $preco]);
     }
     return true;
-}
+}*/
 
 /**
  * Remove um item específico do carrinho no banco de dados.
  */
-function removerBanco($pdo, $id_item_carrinho) {
+/*function removerBanco($pdo, $id_item_carrinho) {
     $stmt = $pdo->prepare("DELETE FROM carrinho WHERE id = ?");
     $stmt->execute([$id_item_carrinho]);
-}
+}*/
 
 /**
  * Atualiza as quantidades de múltiplos itens no carrinho.
  */
-function atualizarBanco($pdo, $quantidades) {
+/*function atualizarBanco($pdo, $quantidades) {
     $stmt = $pdo->prepare("UPDATE carrinho SET quantidade = ?, atualizado_em = NOW() WHERE id = ?");
     foreach ($quantidades as $id_item_carrinho => $quantidade) {
         $quantidade = max(1, (int)$quantidade); // Garante que a quantidade seja no mínimo 1.
         $stmt->execute([$quantidade, $id_item_carrinho]);
     }
-}
+}*/
 
 // ======================================================================
 // LÓGICA DE PROCESSAMENTO (nenhuma alteração necessária aqui)
