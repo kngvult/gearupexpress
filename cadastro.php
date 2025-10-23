@@ -57,8 +57,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         } else {
             $erro = "<strong>Erro:</strong> " . htmlspecialchars($response);
         }
-    /*} catch (Exception $e) {
-        $erro = "<strong>Erro de conexão:</strong> " . htmlspecialchars($e->getMessage());*/
     }
 }
 ?>
@@ -102,7 +100,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 </main>
 
 <style>
-/* ... seu CSS do formulário ... */
 .login-container, .register-container { max-width: 450px; margin: 60px auto; padding: 40px; background: var(--white); border-radius: 12px; box-shadow: var(--soft-shadow); }
 .form-layout .form-group { margin-bottom: 20px; }
 .form-layout label { display: block; margin-bottom: 8px; font-weight: 600; color: var(--dark-text); }

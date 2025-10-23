@@ -1,5 +1,5 @@
 <?php
-// Inclui o verificador de segurança e a conexão com o banco
+
 include 'includes/auth_check.php';
 include '../includes/conexao.php';
 
@@ -28,10 +28,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         // Move o arquivo enviado para o diretório de imagens
         if (move_uploaded_file($imagem_tmp, $caminho_destino)) {
-            // Se o upload for bem-sucedido, e se for uma edição com imagem antiga,
-            // podemos opcionalmente deletar a imagem antiga aqui para economizar espaço.
         } else {
-            // Se houver um erro no upload, podemos parar o processo
             die("Erro ao fazer upload da imagem.");
         }
     }

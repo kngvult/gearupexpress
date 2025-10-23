@@ -132,7 +132,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         setTimeout(() => cartCount.classList.remove('pulse'), 500);
                     }
                     
-                    // Redirecionar para carrinho após sucesso (opcional)
+                    // Redirecionar para carrinho após sucesso
                     setTimeout(() => {
                         window.location.href = 'carrinho.php';
                     }, 1000);

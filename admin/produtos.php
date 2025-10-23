@@ -1,5 +1,4 @@
 <?php
-// Inclui o cabeçalho, menu e verificador de segurança
 include 'includes/header.php';
 // Busca todos os produtos, juntando com o nome da categoria para exibição
 try {
@@ -188,6 +187,6 @@ $(document).ready(function() {
 </div>
 
 <?php
-// Inclui o rodapé, que irá carregar os scripts necessários
+
 include 'includes/footer.php';
 ?>

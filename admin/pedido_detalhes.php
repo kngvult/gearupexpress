@@ -22,7 +22,7 @@ if (!isset($_GET['id']) || !is_numeric($_GET['id'])) {
         $stmtStatusAtual->execute([$id_pedido]);
         $status_atual = $stmtStatusAtual->fetchColumn();
 
-        // Se o status está mudando para "cancelado" (e não era antes), restaura o estoque
+        // Se o status está mudando para "cancelado", restaura o estoque
         if ($novo_status === 'cancelado' && $status_atual !== 'cancelado') {
             $stmtItens = $pdo->prepare("SELECT id_produto, quantidade FROM public.itens_pedido WHERE id_pedido = ?");
             $stmtItens->execute([$id_pedido]);

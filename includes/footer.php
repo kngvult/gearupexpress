@@ -4,7 +4,6 @@ if (!isset($pdo)) {
     include_once 'includes/conexao.php';
 }
 
-// Busca 4 categorias para exibir no rodapé
 try {
     $stmtFooterCat = $pdo->query("SELECT id_categoria, nome FROM categorias WHERE nome != 'Todos os Departamentos' ORDER BY nome LIMIT 4");
     $categoriasFooter = $stmtFooterCat->fetchAll(PDO::FETCH_ASSOC);
@@ -119,7 +118,6 @@ var swiper = new Swiper(".mySwiper", {
             cartBadge.textContent = count;
             
             // 4. Adiciona ou remove a classe 'visible'
-            // (Requer a mudança no header.php e o CSS que sugeri antes)
             if (count > 0) {
                 cartBadge.classList.add('visible');
             } else {
@@ -156,9 +154,7 @@ var swiper = new Swiper(".mySwiper", {
                     if (data.success) {
                         submitBtn.innerHTML = '<i class="fas fa-check"></i> Adicionado';
                         submitBtn.classList.add('btn-success');
-                        
-                        // **** AQUI ESTÁ A CORREÇÃO PRINCIPAL ****
-                        // Chama a função global IMEDIATAMENTE
+
                         if (data.totalItensCarrinho !== undefined) {
                             updateCartBadge(data.totalItensCarrinho);
                         }
@@ -187,7 +183,6 @@ var swiper = new Swiper(".mySwiper", {
 document.addEventListener('DOMContentLoaded', function(){
 document.body.addEventListener('click', function(e) {
         
-        // Procura pelo botão de wishlist mais próximo do clique
         const btn = e.target.closest('.wishlist-toggle-btn');
         
         if (btn) {
@@ -205,7 +200,6 @@ document.body.addEventListener('click', function(e) {
             const icon = btn.querySelector('i');
             
             // 2. Determinar a ação (adicionar ou remover)
-            // Checa se o ID já existe no nosso 'Set' de IDs
             const isAdding = !window.wishlistProductIds.has(parseInt(productId));
             const acao = isAdding ? 'adicionar' : 'remover';
 

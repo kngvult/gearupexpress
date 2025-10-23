@@ -7,82 +7,7 @@ $usuarioLogado = $_SESSION['usuario']['id'] ?? null;
 $statusMessage = null; // Variável para armazenar mensagens de status
 
 // ======================================================================
-// FUNÇÕES PHP COMPLETAS E FUNCIONAIS
-// ======================================================================
-
-/**
- * Busca os itens do carrinho de um usuário específico no banco de dados.
- */
-/*function buscarCarrinhoBanco($pdo, $id_usuario) {
-    $stmt = $pdo->prepare("
-        SELECT 
-            c.id, 
-            c.id_produto,
-            p.nome, 
-            p.imagem, 
-            c.quantidade, 
-            c.preco_unitario,
-            (c.quantidade * c.preco_unitario) AS total_item
-        FROM carrinho c
-        JOIN produtos p ON c.id_produto = p.id_produto
-        WHERE c.usuario_id = ?
-    ");
-    $stmt->execute([$id_usuario]);
-    return $stmt->fetchAll(PDO::FETCH_ASSOC);
-}*/
-
-/**
- * Adiciona um novo produto ao carrinho ou atualiza a quantidade se ele já existir.
- */
-/*function adicionarOuAtualizarBanco($pdo, $id_usuario, $id_produto, $quantidade) {
-    // Primeiro, busca o preço atual do produto para garantir consistência.
-    $stmtPreco = $pdo->prepare("SELECT preco FROM produtos WHERE id_produto = ?");
-    $stmtPreco->execute([$id_produto]);
-    $preco = $stmtPreco->fetchColumn();
-
-    if (!$preco) {
-        return false; // Produto não encontrado, não faz nada.
-    }
-
-    // Verifica se o usuário já tem este produto no carrinho.
-    $stmt = $pdo->prepare("SELECT id, quantidade FROM carrinho WHERE usuario_id = ? AND id_produto = ?");
-    $stmt->execute([$id_usuario, $id_produto]);
-    $itemExistente = $stmt->fetch(PDO::FETCH_ASSOC);
-
-    if ($itemExistente) {
-        // Se já existe, atualiza a quantidade.
-        $novaQuantidade = $itemExistente['quantidade'] + $quantidade;
-        $stmtUpdate = $pdo->prepare("UPDATE carrinho SET quantidade = ?, atualizado_em = NOW() WHERE id = ?");
-        $stmtUpdate->execute([$novaQuantidade, $itemExistente['id']]);
-    } else {
-        // Se não existe, insere um novo registro.
-        $stmtInsert = $pdo->prepare("INSERT INTO carrinho (usuario_id, id_produto, quantidade, preco_unitario) VALUES (?, ?, ?, ?)");
-        $stmtInsert->execute([$id_usuario, $id_produto, $quantidade, $preco]);
-    }
-    return true;
-}*/
-
-/**
- * Remove um item específico do carrinho no banco de dados.
- */
-/*function removerBanco($pdo, $id_item_carrinho) {
-    $stmt = $pdo->prepare("DELETE FROM carrinho WHERE id = ?");
-    $stmt->execute([$id_item_carrinho]);
-}*/
-
-/**
- * Atualiza as quantidades de múltiplos itens no carrinho.
- */
-/*function atualizarBanco($pdo, $quantidades) {
-    $stmt = $pdo->prepare("UPDATE carrinho SET quantidade = ?, atualizado_em = NOW() WHERE id = ?");
-    foreach ($quantidades as $id_item_carrinho => $quantidade) {
-        $quantidade = max(1, (int)$quantidade); // Garante que a quantidade seja no mínimo 1.
-        $stmt->execute([$quantidade, $id_item_carrinho]);
-    }
-}*/
-
-// ======================================================================
-// LÓGICA DE PROCESSAMENTO (nenhuma alteração necessária aqui)
+// LÓGICA DE PROCESSAMENTO DO FORMULÁRIO
 // ======================================================================
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_POST['adicionar'])) {
@@ -120,7 +45,7 @@ if (isset($_GET['remover'])) {
 }
 
 // ======================================================================
-// LÓGICA DE BUSCA (nenhuma alteração necessária aqui)
+// LÓGICA DE BUSCA DOS ITENS DO CARRINHO
 // ======================================================================
 if ($usuarioLogado) {
     $itensCarrinho = buscarCarrinhoBanco($pdo, $usuarioLogado);
@@ -249,7 +174,6 @@ if ($usuarioLogado) {
                 clearTimeout(updateTimeout);
                 
                 updateTimeout = setTimeout(() => {
-                    // Adiciona um name ao formulário para que o PHP saiba que é uma atualização
                     const updateInput = document.createElement('input');
                     updateInput.type = 'hidden';
                     updateInput.name = 'atualizar';
@@ -282,8 +206,8 @@ if ($usuarioLogado) {
             
             if (e.target.closest('.remove-btn')) { 
                 e.preventDefault();
-                const itemRow = e.target.closest('.carrinho-item'); // (Use a classe da sua linha de item)
-                const productId = itemRow.dataset.productId; // (Assumindo que a linha tem data-product-id="123")
+                const itemRow = e.target.closest('.carrinho-item');
+                const productId = itemRow.dataset.productId;
                 
                 if (confirm('Deseja realmente remover este item?')) {
                     handleCartUpdate(productId, 0, 'remover', itemRow);
@@ -293,7 +217,6 @@ if ($usuarioLogado) {
 
         // Ouve todas as mudanças de quantidade
         document.body.addEventListener('change', function(e) {
-            // (Confira se 'input-quantidade-item' é a classe do seu input de <input type="number">)
             if (e.target.closest('.input-quantidade-item')) {
                 const itemRow = e.target.closest('.carrinho-item');
                 const productId = itemRow.dataset.productId;
@@ -312,7 +235,6 @@ if ($usuarioLogado) {
             formData.append('quantidade', quantity);
             formData.append('acao', action);
 
-            // **AQUI! Chamamos o NOVO arquivo que criamos**
             fetch('carrinho_atualizar.php', { 
                 method: 'POST',
                 body: formData
@@ -321,9 +243,8 @@ if ($usuarioLogado) {
             .then(data => {
                 if (data.success) {
                     
-                    // **** AQUI ESTÁ A CORREÇÃO DO BADGE ****
                     if (data.totalItensCarrinho !== undefined) {
-                        // Chama a função global que está no footer.php!
+                        // Chama a função global que está no footer.php
                         updateCartBadge(data.totalItensCarrinho); 
                     }
                     
@@ -332,11 +253,7 @@ if ($usuarioLogado) {
                         itemRowElement.remove();
                     } else {
                         itemRowElement.style.opacity = '1';
-                        // (Aqui você atualizaria o subtotal do item)
                     }
-                    
-                    // (Aqui você atualizaria o total geral da página)
-                    // document.querySelector('.total-carrinho').textContent = data.novoTotalCarrinho;
 
                     // Se o carrinho ficou vazio, recarrega a página
                     if (data.totalItensCarrinho === 0) {

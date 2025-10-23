@@ -24,7 +24,7 @@ if (empty($_GET['id']) || !is_numeric($_GET['id'])) {
     if (!$produto) {
         $erro = "Produto não encontrado.";
     } else {
-        // Busca produtos relacionados (da mesma categoria, excluindo o atual)
+        // Busca produtos relacionados
         $stmtRel = $pdo->prepare("
             SELECT id_produto, nome, preco, imagem, estoque, marca
             FROM public.produtos 
@@ -89,9 +89,11 @@ if (empty($_GET['id']) || !is_numeric($_GET['id'])) {
                     
                     <!-- Botões de Ação na Imagem -->
                     <div class="image-actions">
-                        <button class="image-action-btn wishlist-btn" title="Adicionar aos favoritos">
-                            <i class="far fa-heart"></i>
-                        </button>
+                        <button class="wishlist-btn" 
+                                            data-product-id="<?= $produto['id_produto'] ?>" 
+                                            title="Adicionar aos favoritos">
+                                        <i class="far fa-heart"></i>
+                                    </button>
                         <button class="image-action-btn zoom-btn" title="Ampliar imagem" onclick="openImageModal(this)">
                             <i class="fas fa-expand"></i>
                         </button>
@@ -105,7 +107,7 @@ if (empty($_GET['id']) || !is_numeric($_GET['id'])) {
                             alt="Miniatura 1"
                             onclick="changeMainImage(this)">
                     </div>
-                    <!-- Adicione mais miniaturas aqui quando tiver múltiplas imagens -->
+                    <!-- Adicionar mais miniaturas aqui para ter múltiplas imagens -->
                 </div>
             </div>
 
@@ -415,9 +417,7 @@ if (empty($_GET['id']) || !is_numeric($_GET['id'])) {
                                         <?php elseif ($relacionado['estoque'] <= 5): ?>
                                             <span class="product-badge low-stock">Últimas unidades</span>
                                         <?php endif; ?>
-                                        <!--<button class="wishlist-btn-card" title="Adicionar aos favoritos">
-                                            <i class="far fa-heart"></i>
-                                        </button>-->
+
                                         <?php
                                         // Verifica se o ID do produto atual está na lista que buscamos no header
                                         $isInWishlist = in_array($produto['id_produto'], $wishlistProductIds);
@@ -500,6 +500,85 @@ if (empty($_GET['id']) || !is_numeric($_GET['id'])) {
     <img class="modal-content" id="modalImage">
     <div class="modal-caption"></div>
 </div>
+
+<script>
+// Função Wishlist
+document.querySelectorAll('.wishlist-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+        const productId = this.dataset.productId;
+        const icon = this.querySelector('i');
+        
+        console.log('Clicou no wishlist, produto:', productId);
+        
+        // Alternar estado visual
+        const isActive = icon.classList.contains('fas');
+        
+        if (isActive) {
+            console.log('Removendo da wishlist');
+            icon.classList.replace('fas', 'far');
+            icon.style.color = '';
+            removeFromWishlist(productId);
+        } else {
+            console.log('Adicionando à wishlist');
+            icon.classList.replace('far', 'fas');
+            icon.style.color = '#e74c3c';
+            addToWishlist(productId);
+        }
+    });
+});
+
+function addToWishlist(productId) {
+    const formData = new FormData();
+    formData.append('id_produto', productId);
+    formData.append('acao', 'adicionar');
+    
+    console.log('Enviando requisição para adicionar...');
+    
+    fetch('wishlist.php', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => {
+        console.log('Resposta recebida:', response);
+        return response.json();
+    })
+    .then(data => {
+        console.log('Dados recebidos:', data);
+        if (!data.success) {
+            console.error('Erro ao adicionar:', data.message);
+            // Reverter visual se erro
+            const btn = document.querySelector(`.wishlist-btn[data-product-id="${productId}"]`);
+            const icon = btn.querySelector('i');
+            icon.classList.replace('fas', 'far');
+            icon.style.color = '';
+        } else {
+            console.log('Produto adicionado com sucesso!');
+        }
+    })
+    .catch(error => {
+        console.error('Erro na requisição:', error);
+    });
+}
+
+function removeFromWishlist(productId) {
+    const formData = new FormData();
+    formData.append('id_produto', productId);
+    formData.append('acao', 'remover');
+    
+    fetch('wishlist.php', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log('Resposta remoção:', data);
+    })
+    .catch(error => {
+        console.error('Erro:', error);
+    });
+}
+</script>
+
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     // Sistema de Abas

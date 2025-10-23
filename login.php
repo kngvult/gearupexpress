@@ -1,9 +1,8 @@
 <?php
-// login.php - VERSÃO FINAL
 
 session_start();
 include 'includes/conexao.php';
-include_once 'includes/funcoes_carrinho.php'; // Inclui as funções do carrinho
+include_once 'includes/funcoes_carrinho.php'; 
 
 // Redireciona se o usuário já estiver logado
 if (isset($_SESSION['usuario']['id'])) {
@@ -35,10 +34,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     'email' => $usuario['email']
                 ];
                 
-                // Chama a nossa função "gestora" corrigida para fundir os carrinhos
+                // Chama a função "gestora" para fundir os carrinhos
                 sincronizarCarrinho($pdo, $usuario['id']);
                 
-                // Redireciona para a página do carrinho para o utilizador ver os seus produtos
+                // Redireciona para a página do carrinho para o utilizador ver os produtos
                 header('Location: carrinho.php');
                 exit;
     

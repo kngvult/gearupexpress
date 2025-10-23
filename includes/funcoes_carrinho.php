@@ -1,18 +1,14 @@
 <?php
 if (session_status() === PHP_SESSION_NONE) {
-    // Inicia a sessão se ela ainda não foi iniciada.
-    // Isso torna o arquivo seguro para ser incluído em qualquer lugar.
     session_start();
 }
 
-// CORREÇÃO: Função para inicializar o carrinho na sessão
 function inicializarCarrinhoSessao() {
     if (!isset($_SESSION['carrinho']) || !is_array($_SESSION['carrinho'])) {
         $_SESSION['carrinho'] = [];
     }
 }
 
-// CORREÇÃO: Função para contar itens no carrinho da sessão
 function getCarrinhoCountSessao() {
     if (!isset($_SESSION['carrinho']) || !is_array($_SESSION['carrinho'])) {
         return 0;
@@ -28,7 +24,6 @@ function getCarrinhoCountSessao() {
     return $total;
 }
 
-// CORREÇÃO: Função para obter total do carrinho da sessão
 function getCarrinhoTotalSessao() {
     if (!isset($_SESSION['carrinho']) || !is_array($_SESSION['carrinho'])) {
         return 0;
@@ -43,7 +38,6 @@ function getCarrinhoTotalSessao() {
     }
     return $total;
 }
-
 
 
 /**
@@ -70,7 +64,6 @@ function contarItensCarrinho($pdo) {
         } else if (!empty($_SESSION['carrinho']) && is_array($_SESSION['carrinho'])) {
             // --- VISITANTE ---
             // Itera pelo array da sessão e soma as quantidades
-            // Esta é a lógica correta que faltava no header!
             foreach ($_SESSION['carrinho'] as $item) {
                 if (isset($item['quantidade'])) {
                     $totalItens += (int)$item['quantidade'];
@@ -87,7 +80,6 @@ function contarItensCarrinho($pdo) {
 
 /**
  * Sincroniza o carrinho da sessão (visitante) com o carrinho do banco de dados (usuário logado).
- * Esta função é chamada logo após o login.
  *
  * @param PDO $pdo A conexão com o banco de dados.
  * @param string $id_usuario O ID (UUID) do usuário que acabou de logar.
@@ -95,13 +87,11 @@ function contarItensCarrinho($pdo) {
 function sincronizarCarrinho($pdo, $id_usuario) {
     // 1. Verifica se existe um carrinho de visitante na sessão
     if (empty($_SESSION['carrinho']) || !is_array($_SESSION['carrinho'])) {
-        return; // Nada para sincronizar
+        return; 
     }
 
     try {
         foreach ($_SESSION['carrinho'] as $id_produto_sessao => $item_sessao) {
-            
-            // --- INÍCIO DA CORREÇÃO DO BUG R$ 0,00 ---
             
             // 2. Obter dados básicos da sessão
             $id_produto = $item_sessao['id_produto'] ?? 0;
@@ -109,9 +99,7 @@ function sincronizarCarrinho($pdo, $id_usuario) {
             
             // 3. Verificar o preço (aqui está a causa do bug)
             $preco = $item_sessao['preco_unitario'] ?? 0.0;
-            
-            // 4. Se o preço estiver faltando na sessão (R$ 0,00),
-            //    vamos buscá-lo diretamente no banco de dados.
+
             if ($preco <= 0.0 && $id_produto > 0) {
                 $stmtPreco = $pdo->prepare("SELECT preco FROM produtos WHERE id_produto = ?");
                 $stmtPreco->execute([$id_produto]);
@@ -122,14 +110,13 @@ function sincronizarCarrinho($pdo, $id_usuario) {
                 }
             }
             
-            // --- FIM DA CORREÇÃO ---
 
-            // 5. Pula o item se algum dado essencial ainda estiver faltando
+            // 4. Pula o item se algum dado essencial ainda estiver faltando
             if ($id_produto <= 0 || $quantidade <= 0 || $preco <= 0.0) {
                 continue; 
             }
 
-            // 6. Verificar se o item já existe no carrinho do usuário (no BD)
+            // 5. Verificar se o item já existe no carrinho do usuário (no BD)
             $stmtCheck = $pdo->prepare("SELECT quantidade FROM carrinho WHERE usuario_id = ? AND id_produto = ?");
             $stmtCheck->execute([$id_usuario, $id_produto]);
             $item_existente = $stmtCheck->fetch(PDO::FETCH_ASSOC);
@@ -146,7 +133,7 @@ function sincronizarCarrinho($pdo, $id_usuario) {
             }
         }
         
-        // 7. Limpar o carrinho de visitante após a sincronização
+        // 76. Limpar o carrinho de visitante após a sincronização
         unset($_SESSION['carrinho']);
 
     } catch (PDOException $e) {
@@ -174,7 +161,6 @@ function buscarCarrinhoBanco($pdo, $id_usuario) {
 }
 
 function adicionarOuAtualizarBanco($pdo, $id_usuario, $id_produto, $quantidade) {
-    // CORREÇÃO: Validações mais robustas
     if (is_array($id_usuario) || is_array($id_produto) || is_array($quantidade)) {
         error_log('Parâmetro array passado para adicionarOuAtualizarBanco');
         return false;
@@ -184,7 +170,6 @@ function adicionarOuAtualizarBanco($pdo, $id_usuario, $id_produto, $quantidade) 
     $id_produto = (int)$id_produto;
     $quantidade = (int)$quantidade;
 
-    // CORREÇÃO: Verificar se quantidade é válida
     if ($quantidade <= 0) {
         return false;
     }
@@ -227,7 +212,6 @@ function atualizarBanco($pdo, $quantidades) {
     }
 }
 
-// CORREÇÃO: Nova função para adicionar à sessão (usuários não logados)
 function adicionarAoSessao($id_produto, $nome, $preco, $quantidade = 1) {
     inicializarCarrinhoSessao();
     

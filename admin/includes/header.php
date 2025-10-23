@@ -60,7 +60,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const logoMini = document.querySelector('.sidebar-logo-mini');
     const mainContent = document.querySelector('.main-content');
     
-    // Deixamos de usar o toggleBtn, o clique na logo mini já faz a ação
     logoLarge.style.cursor = 'pointer';
     logoMini.style.cursor = 'pointer';
 
@@ -70,7 +69,6 @@ document.addEventListener('DOMContentLoaded', function() {
         logoLarge.style.display = 'none';
         logoMini.style.display = 'block';
         mainContent.classList.add('main-content-expanded');
-        // NOVO: Salva o estado no localStorage
         localStorage.setItem('sidebarCollapsed', 'true');
     }
 
@@ -91,7 +89,6 @@ document.addEventListener('DOMContentLoaded', function() {
     logoMini.addEventListener('click', expandSidebar);
     
     // --- LÓGICA DO LOCALSTORAGE ---
-    // NOVO: Ao carregar a página, verifica o estado guardado
     const isCollapsed = localStorage.getItem('sidebarCollapsed');
     if (isCollapsed === 'true') {
         // Se estava guardado como recolhido, já inicia a página nesse estado

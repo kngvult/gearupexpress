@@ -1,5 +1,4 @@
 <?php
-// Inclui o cabeçalho, menu e verificador de segurança
 include 'includes/header.php';
 
 // Busca todos os pedidos, juntando com o nome do cliente para exibição

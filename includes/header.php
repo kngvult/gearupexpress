@@ -26,7 +26,7 @@ $wishlistProductIds = []; // Guarda os IDs dos produtos na wishlist
 if (isset($idUsuarioLogado)) {
     try {
         $stmt = $pdo->prepare("SELECT id_produto FROM wishlist WHERE id_usuario = ?");
-        // MUDANÇA 2: Usar a variável $idUsuarioLogado
+
         $stmt->execute([$idUsuarioLogado]);
         $wishlistProductIds = $stmt->fetchAll(PDO::FETCH_COLUMN); 
         $wishlistCount = count($wishlistProductIds);
@@ -200,9 +200,7 @@ $totalItensCarrinho = contarItensCarrinho($pdo);
 </header>
 
 <script>
-    // Variáveis globais para o JavaScript
-    // MUDANÇA 3: Verificar a variável $idUsuarioLogado
     window.isUserLoggedIn = <?= isset($idUsuarioLogado) ? 'true' : 'false' ?>;
-    // Cria um 'Set' (lista de alta performance) com os IDs da wishlist
+
     window.wishlistProductIds = new Set(<?= json_encode($wishlistProductIds) ?>);
 </script>

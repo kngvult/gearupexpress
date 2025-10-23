@@ -40,13 +40,10 @@ try {
     $produtosDestaque = [];
     $produtosMaisVendidos = [];
     $categorias = [];
-    // Esta linha é crucial para debugar em ambiente local!
     error_log("Erro ao buscar dados para página inicial: " . $e->getMessage());
-    // Você pode até adicionar um echo para ver o erro na tela enquanto desenvolve
-    // echo "Erro de banco de dados: " . $e->getMessage(); 
 }
 
-// Função para determinar badge baseado em vendas (Seu código aqui está perfeito)
+// Função para determinar badge baseado em vendas
 function getProductBadge($vendas, $estoque) {
     if ($estoque <= 0) {
         return ['type' => 'out-of-stock', 'text' => 'Esgotado'];
@@ -170,7 +167,7 @@ function getProductBadge($vendas, $estoque) {
                                 <span class="product-badge <?= $badge['type'] ?>"><?= $badge['text'] ?></span>
                                 
                                 <?php
-                                    // Verifica se o ID do produto atual está na lista que buscamos no header
+                                    // Verifica se o ID do produto atual está na lista de favoritos do usuário
                                     $isInWishlist = in_array($produto['id_produto'], $wishlistProductIds);
                                     ?>
 
@@ -179,17 +176,17 @@ function getProductBadge($vendas, $estoque) {
                                             title="Adicionar aos favoritos">
                                         <i class="far fa-heart"></i>
                                     </button>
-                                <!--<button class="wishlist-btn" 
-                                        data-product-id="<?= $produto['id_produto'] ?>" 
-                                        title="Adicionar aos favoritos">
-                                    <i class="far fa-heart"></i>
-                                </button> -->
                             </div>
                             
                             <div class="product-info">
-                                <?php if (!empty($produto['marca'])): ?>
-                                    <div class="product-brand"><?= htmlspecialchars($produto['marca']) ?></div>
-                                <?php endif; ?>
+                                <div class="product-meta">
+                                    <?php if (!empty($produto['marca'])): ?>
+                                        <span class="product-brand"><?= htmlspecialchars($produto['marca']) ?></span>
+                                    <?php endif; ?>
+                                    <?php if (!empty($produto['categoria_nome'])): ?>
+                                        <span class="product-category"><?= htmlspecialchars($produto['categoria_nome']) ?></span>
+                                    <?php endif; ?>
+                                </div>
                                 
                                 <h3 class="product-name">
                                     <a href="detalhes_produto.php?id=<?= $produto['id_produto'] ?>">
@@ -206,9 +203,9 @@ function getProductBadge($vendas, $estoque) {
                                 
                                 <div class="product-stock">
                                     <?php if ($produto['estoque'] > 0): ?>
-                                        <i class="fas fa-check-circle"></i> Em estoque
+                                        <i></i> Em estoque
                                     <?php else: ?>
-                                        <i class="fas fa-times-circle"></i> Indisponível
+                                        <i></i> Indisponível
                                     <?php endif; ?>
                                 </div>
                                 
@@ -488,7 +485,7 @@ document.addEventListener('DOMContentLoaded', function() {
     showSlide(currentSlide);
     startSlideShow();
 
-    // Newsletter form (código existente mantido)
+    // Newsletter form 
     const newsletterForm = document.querySelector('.newsletter-form');
     if (newsletterForm) {
         newsletterForm.addEventListener('submit', function(e) {
@@ -506,74 +503,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    /* // AJAX para adicionar ao carrinho
-    document.querySelectorAll('.ajax-add-to-cart-form').forEach(form => {
-        form.addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            const formData = new FormData(this);
-            const submitBtn = this.querySelector('button[type="submit"]');
-            const originalText = submitBtn.innerHTML;
-            
-            // Feedback visual
-            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Adicionando...';
-            submitBtn.disabled = true;
-            
-            fetch('carrinho_adicionar.php', {
-                method: 'POST',
-                body: formData
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    // Sucesso - mostrar feedback
-                    submitBtn.innerHTML = '<i class="fas fa-check"></i> Adicionado!';
-                    submitBtn.classList.add('btn-success');
-                    
-                    // Atualizar contador do carrinho se existir
-                    const cartCount = document.querySelector('.cart-count');
-                    if (cartCount && data.totalItensCarrinho !== undefined) {
-                        cartCount.textContent = data.totalItensCarrinho;
-                        cartCount.classList.add('pulse');
-                        setTimeout(() => cartCount.classList.remove('pulse'), 500);
-                    }
-                    
-                    // Restaurar botão após 2 segundos
-                    setTimeout(() => {
-                        submitBtn.innerHTML = originalText;
-                        submitBtn.classList.remove('btn-success');
-                        submitBtn.disabled = false;
-                    }, 2000);
-                    
-                } else {
-                    // Erro
-                    submitBtn.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Erro';
-                    submitBtn.classList.add('btn-error');
-                    
-                    setTimeout(() => {
-                        submitBtn.innerHTML = originalText;
-                        submitBtn.classList.remove('btn-error');
-                        submitBtn.disabled = false;
-                    }, 2000);
-                    
-                    console.error('Erro ao adicionar produto:', data.message);
-                }
-            })
-            .catch(error => {
-                console.error('Erro na requisição:', error);
-                submitBtn.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Erro';
-                submitBtn.classList.add('btn-error');
-                
-                setTimeout(() => {
-                    submitBtn.innerHTML = originalText;
-                    submitBtn.classList.remove('btn-error');
-                    submitBtn.disabled = false;
-                }, 2000);
-            });
-        });
-    }); */
-
-    // Animação de entrada das seções (código existente mantido)
+    // Animação de entrada das seções
     const observerOptions = {
         threshold: 0.1,
         rootMargin: '0px 0px -50px 0px'
@@ -596,7 +526,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 
-// Wishlist functionality - VERSÃO COM DEBUG
+// Função Wishlist
 document.querySelectorAll('.wishlist-btn').forEach(btn => {
     btn.addEventListener('click', function() {
         const productId = this.dataset.productId;

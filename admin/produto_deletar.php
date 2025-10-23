@@ -1,5 +1,4 @@
 <?php
-// Inclui o verificador de segurança e a conexão com o banco
 include 'includes/auth_check.php';
 include '../includes/conexao.php';
 
@@ -18,7 +17,6 @@ header("Location: produtos.php?status=danger&msg={$mensagem}");
         exit;
     } catch (PDOException $e) {
         // Em caso de erro, exibe uma mensagem
-        // (Por exemplo, se o produto estiver associado a um pedido, pode dar erro de chave estrangeira)
         die("Erro ao excluir produto: " . $e->getMessage());
     }
 } else {

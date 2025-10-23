@@ -1,9 +1,8 @@
 <?php
 include 'includes/header.php';
 
-// --- LÓGICA ATUALIZADA PARA O DASHBOARD ---
 try {
-    // --- LÓGICA DO GRÁFICO DE VENDAS (AGORA DINÂMICO) ---
+    // --- LÓGICA DO GRÁFICO DE VENDAS ---
     $periodo = $_GET['periodo'] ?? '7dias'; // Padrão: últimos 7 dias
     $mes_selecionado = $_GET['mes'] ?? ''; // Para o filtro mensal
     $sales_chart_title = 'Vendas nos Últimos 7 Dias';
@@ -52,13 +51,13 @@ try {
     $stmtMeses = $pdo->query("SELECT DISTINCT TO_CHAR(data_pedido, 'YYYY-MM') as mes_ano FROM pedidos ORDER BY mes_ano DESC");
     $meses_disponiveis = $stmtMeses->fetchAll(PDO::FETCH_ASSOC);
 
-    // --- LÓGICA DO GRÁFICO DE STATUS (SEM ALTERAÇÃO NA QUERY) ---
+    // --- LÓGICA DO GRÁFICO DE STATUS ---
     $status_sql = "SELECT status, COUNT(*) as count FROM public.pedidos GROUP BY status";
     $stmtStatus = $pdo->query($status_sql);
     $status_data = $stmtStatus->fetchAll(PDO::FETCH_ASSOC);
     // Os dados serão processados no JavaScript para incluir as novas cores/legendas
 
-    // --- LÓGICA DOS CARDS ADICIONAIS (SEUS CARDS) ---
+    // --- LÓGICA DOS CARDS ADICIONAIS ---
     $limite_estoque = 5;
     $stmtEstoque = $pdo->prepare("SELECT id_produto, nome, estoque, imagem FROM produtos WHERE estoque <= ? AND estoque > 0 ORDER BY estoque ASC");
     $stmtEstoque->execute([$limite_estoque]);

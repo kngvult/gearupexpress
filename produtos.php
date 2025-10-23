@@ -221,6 +221,18 @@ try {
                                         alt="<?= htmlspecialchars($produto['nome']) ?>" 
                                         class="product-image"
                                         loading="lazy">
+                                        
+                                        <?php
+                                    // Verifica se o ID do produto atual está na lista que buscamos no header
+                                    $isInWishlist = in_array($produto['id_produto'], $wishlistProductIds);
+                                    ?>
+
+                                    <button class="wishlist-btn" 
+                                            data-product-id="<?= $produto['id_produto'] ?>" 
+                                            title="Adicionar aos favoritos">
+                                        <i class="far fa-heart"></i>
+                                    </button>
+
                                     <?php if ($produto['estoque'] <= 0): ?>
                                         <span class="out-of-stock-badge">Esgotado</span>
                                     <?php elseif ($produto['estoque'] <= 5): ?>
@@ -352,5 +364,82 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 });
+</script>
+<script>
+// Função Wishlist
+document.querySelectorAll('.wishlist-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+        const productId = this.dataset.productId;
+        const icon = this.querySelector('i');
+        
+        console.log('Clicou no wishlist, produto:', productId);
+        
+        // Alternar estado visual
+        const isActive = icon.classList.contains('fas');
+        
+        if (isActive) {
+            console.log('Removendo da wishlist');
+            icon.classList.replace('fas', 'far');
+            icon.style.color = '';
+            removeFromWishlist(productId);
+        } else {
+            console.log('Adicionando à wishlist');
+            icon.classList.replace('far', 'fas');
+            icon.style.color = '#e74c3c';
+            addToWishlist(productId);
+        }
+    });
+});
+
+function addToWishlist(productId) {
+    const formData = new FormData();
+    formData.append('id_produto', productId);
+    formData.append('acao', 'adicionar');
+    
+    console.log('Enviando requisição para adicionar...');
+    
+    fetch('wishlist.php', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => {
+        console.log('Resposta recebida:', response);
+        return response.json();
+    })
+    .then(data => {
+        console.log('Dados recebidos:', data);
+        if (!data.success) {
+            console.error('Erro ao adicionar:', data.message);
+            // Reverter visual se erro
+            const btn = document.querySelector(`.wishlist-btn[data-product-id="${productId}"]`);
+            const icon = btn.querySelector('i');
+            icon.classList.replace('fas', 'far');
+            icon.style.color = '';
+        } else {
+            console.log('Produto adicionado com sucesso!');
+        }
+    })
+    .catch(error => {
+        console.error('Erro na requisição:', error);
+    });
+}
+
+function removeFromWishlist(productId) {
+    const formData = new FormData();
+    formData.append('id_produto', productId);
+    formData.append('acao', 'remover');
+    
+    fetch('wishlist.php', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log('Resposta remoção:', data);
+    })
+    .catch(error => {
+        console.error('Erro:', error);
+    });
+}
 </script>
 <?php include 'includes/footer.php'; ?>

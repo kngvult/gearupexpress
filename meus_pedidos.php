@@ -1,6 +1,5 @@
 <?php
-// ETAPA 1: LÓGICA DE BACKEND E VERIFICAÇÕES (ANTES DE QUALQUER HTML)
-// session_start() será chamado pelo header.php, mas podemos garantir aqui.
+// ETAPA 1: LÓGICA DE BACKEND
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
@@ -44,7 +43,7 @@ try {
     error_log("Erro ao buscar pedidos: " . $e->getMessage());
 }
 
-// ETAPA 2: RENDERIZAÇÃO DO HTML (SÓ AGORA COMEÇAMOS A ENVIAR CONTEÚDO)
+// ETAPA 2: RENDERIZAÇÃO DO HTML
 include 'includes/header.php';
 ?>
 

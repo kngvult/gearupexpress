@@ -57,7 +57,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <div class="brand-logo">
                     <img src="../assets/img/GUPX-logo-v2.ico" alt="Logo GearUp Express" style="max-width: 350px; display: block; margin: 0 auto 16px;">
                 </div>
-                <!--<h1 class="brand-title">GearUp Express</h1> -->
                 <p class="brand-subtitle">Sistema de Gerenciamento e Controle de Peças Automotivas</p>
                 
                 <div class="brand-features">

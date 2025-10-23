@@ -1,5 +1,5 @@
 <?php
-// ETAPA 1: LÓGICA DE BACKEND (ANTES DE QUALQUER HTML)
+// ETAPA 1: LÓGICA DE BACKEND
 session_start(); 
 include 'includes/conexao.php';
 

@@ -1,5 +1,5 @@
 <?php
-// Inicia a sessão e inclui o header no início do arquivo
+
 include 'includes/header.php';
 
 $produto = ['id_produto' => '', 'nome' => '', 'descricao' => '', 'preco' => '', 'estoque' => '', 'id_categoria' => '', 'imagem' => '', 'marca' => '', 'codigo_produto' => ''];
@@ -69,7 +69,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmt = $pdo->prepare($sql);
         $stmt->execute($params);
         
-        // Redirecionamento seguro - usando JavaScript para evitar problemas de header
+        // Redirecionamento seguro
         echo '<script>window.location.href = "produtos.php?status=success";</script>';
         exit;
     } catch (PDOException $e) {

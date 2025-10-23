@@ -2,7 +2,7 @@
 include 'includes/header.php'; 
 include 'includes/conexao.php';
 
-// Verifica se o usuário está logado de forma consistente
+// Verifica se o usuário está logado
 if (!isset($_SESSION['usuario']['id'])) {
     header('Location: login.php');
     exit;

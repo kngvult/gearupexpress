@@ -2,17 +2,6 @@
     DESIGN SYSTEM DO PAINEL ADMINISTRATIVO GEARUP EXPRESS
    ========================================================================== */
 
-/* * ÍNDICE:
- * 1. Fontes Externas e Variáveis
- * 2. Estilos Globais e Reset
- * 3. Estrutura Principal do Layout
- * 4. Componentes Reutilizáveis
- * 5. Componentes de Interação
- * 6. Estilos de Páginas Específicas
- * 7. Utilitários e Estados
- * 8. Responsividade
-*/
-
 /* ==========================================================================
     1. FONTES EXTERNAS E VARIÁVEIS
    ========================================================================== */
@@ -1061,8 +1050,6 @@ h1, h2, h3, h4, h5, h6 {
 .brand-logo {
     width: 120px;
     height: 120px;
-    /*background: white; 
-    border-radius: 50%;*/
     display: flex;
     align-items: center;
     justify-content: center;
