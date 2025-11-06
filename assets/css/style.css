@@ -1830,100 +1830,143 @@ body {
     transform: translateY(-2px);
 }
 /* Informações do Produto */
-.product-info {
-    padding: 20px;
+/* Adicione/atualize estas regras no seu CSS */
+
+/* Container da marca - background apenas no texto */
+.product-brand {
+    display: inline-block;
+    background: #f8f9fa;
+    color: #666;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    margin-bottom: 8px;
+    max-width: fit-content;
 }
+
+/* Meta informações do produto */
 .product-meta {
     display: flex;
     flex-wrap: wrap;
     gap: 8px;
-    margin-bottom: 12px;
+    margin-bottom: 8px;
 }
-.product-brand, .product-category {
-    font-size: 0.8rem;
+
+/* Categoria */
+.product-category {
+    display: inline-block;
+    background: #e9ecef;
+    color: #495057;
     padding: 4px 8px;
     border-radius: 4px;
+    font-size: 0.75rem;
     font-weight: 500;
 }
-.product-brand {
-    background: #e7f3ff;
-    color: #0056b3;
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
+
+/* Informações de produto - layout melhorado */
+.product-info {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    padding: 16px;
 }
-.product-brand-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 6px 12px;
-    background: #e7f3ff;
-    color: #0056b3;
-    border-radius: 20px;
-    font-size: 0.85rem;
-    font-weight: 600;
-    margin-bottom: 15px;
-}
-.product-category {
-    background: #f8f9fa;
-    color: #6c757d;
-    display: -webkit-inline-box;
-}
+
 .product-name {
-    margin: 0 0 15px 0;
-    font-size: 1.1rem;
-    font-weight: 600;
-    line-height: 1.4;
+    margin: 0 0 12px 0;
+    font-size: 1rem;
+    line-height: 1.3;
+    flex-shrink: 0;
 }
+
 .product-name a {
-    color: #2c3e50;
+    color: #333;
     text-decoration: none;
-    transition: color 0.2s ease;
+    transition: color 0.2s;
 }
+
 .product-name a:hover {
-    color: #007bff;
+    color: #e74c3c;
 }
+
+/* Seção de preço */
 .product-price-section {
+    margin-bottom: 12px;
+    flex-shrink: 0;
+}
+
+.product-price {
+    font-size: 1.25rem;
+    font-weight: bold;
+    color: #e74c3c;
+    margin: 0 0 4px 0;
+}
+
+.product-installments {
+    color: #666;
+    font-size: 0.85rem;
+}
+
+/* Rating e stock - lado a lado */
+.product-meta-info {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 20px;
-    padding: 12px 0;
+    margin-bottom: 16px;
+    flex-shrink: 0;
 }
-.product-price {
-    font-size: 1.4rem;
-    font-weight: 700;
-    color: #28a745;
-    margin: 0;
+
+/* Rating */
+.product-rating {
+    display: flex;
+    align-items: center;
+    gap: 6px;
 }
-.stock-info {
-    font-size: 0.85rem;
-    font-weight: 500;
+
+.stars {
+    color: #ffc107;
+    font-size: 0.8rem;
+}
+
+.rating-count {
+    color: #666;
+    font-size: 0.75rem;
+}
+
+/* Stock */
+.product-stock {
     display: flex;
     align-items: center;
     gap: 4px;
+    font-size: 0.8rem;
+    font-weight: 500;
 }
-.stock-available {
+
+.product-stock i {
+    font-size: 0.7rem;
+}
+
+.product-stock:not(.out-of-stock) {
     color: #28a745;
 }
-.stock-unavailable {
+
+.product-stock.out-of-stock {
     color: #dc3545;
 }
-/* Ações do Cartão */
+
+/* Ações do card */
 .product-card-actions {
     display: flex;
-    gap: 10px;
+    gap: 8px;
+    margin-top: auto;
+    flex-shrink: 0;
 }
+
 .product-card-actions .btn {
     flex: 1;
-    padding: 10px 15px;
-    font-size: 0.9rem;
-    font-weight: 600;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
-    transition: all 0.3s ease;
+    padding: 8px 12px;
+    font-size: 0.85rem;
+    text-align: center;
 }
 .btn-outline {
     background: transparent;
@@ -2413,7 +2456,7 @@ body {
 }
 .product-image-container {
     width: 100%;
-    height: 220px;
+    height: auto;
     overflow: hidden;
     display: flex;
     align-items: center;
@@ -4470,7 +4513,7 @@ body {
 .product-stock {
     font-size: 0.85rem;
     font-weight: 500;
-    display: contents;
+    display: inline-block;
     align-items: center;
     gap: 6px;
     margin-bottom: 15px;

@@ -252,19 +252,38 @@ try {
                                 </div>
                                 
                                 <h3 class="product-name">
-                                    <a href="detalhes_produto.php?id=<?= $produto['id_produto'] ?>">
-                                        <?= htmlspecialchars($produto['nome']) ?>
-                                    </a>
-                                </h3>
+                                <a href="detalhes_produto.php?id=<?= $produto['id_produto'] ?>">
+                                    <?= htmlspecialchars($produto['nome']) ?>
+                                </a>
+                            </h3>
+                            
+                            <div class="product-price-section">
+                                <p class="product-price">R$ <?= number_format($produto['preco'], 2, ',', '.') ?></p>
+                                <div class="product-installments">
+                                    em até 3x de R$ <?= number_format($produto['preco'] / 3, 2, ',', '.') ?>
+                                </div>
+                            </div>
+                            
+                            <div class="product-meta-info">
+                                <div class="product-rating">
+                                    <div class="stars">
+                                        <i class="fas fa-star"></i>
+                                        <i class="fas fa-star"></i>
+                                        <i class="fas fa-star"></i>
+                                        <i class="fas fa-star"></i>
+                                        <i class="fas fa-star-half-alt"></i>
+                                    </div>
+                                    <span class="rating-count">(<?= rand(10, 50) ?>)</span>
+                                </div>
                                 
-                                <div class="product-price-section">
-                                    <p class="product-price">R$ <?= number_format($produto['preco'], 2, ',', '.') ?></p>
+                                <div class="product-stock <?= $produto['estoque'] <= 0 ? 'out-of-stock' : '' ?>">
                                     <?php if ($produto['estoque'] > 0): ?>
-                                        <span class="stock-info">Em estoque</span>
+                                        <i class="fas fa-check-circle"></i> Em estoque
                                     <?php else: ?>
-                                        <span class="stock-info out-of-stock">Indisponível</span>
+                                        <i class="fas fa-times-circle"></i> Indisponível
                                     <?php endif; ?>
                                 </div>
+                            </div>
                                 
                                 <div class="product-card-actions">
                                     <a href="detalhes_produto.php?id=<?= $produto['id_produto'] ?>" 

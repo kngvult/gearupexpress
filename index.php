@@ -89,7 +89,7 @@ function getProductBadge($vendas, $estoque) {
                         <p class="hero-description">As melhores condições para você trocar os pneus do seu veículo. Marcas premium com garantia extendida.</p>
                         <div class="hero-actions">
                             <a href="produtos.php?categoria=6" class="btn btn-primary btn-hero">
-                                <i class="fas fa-tire"></i> Conferir Pneus
+                                <i class="fas fa-car"></i> Conferir Pneus
                             </a>
                             <a href="produtos.php" class="btn btn-outline-white">
                                 <i class="fas fa-th-large"></i> Ver Todos
@@ -132,177 +132,77 @@ function getProductBadge($vendas, $estoque) {
     </section>
 
     <!-- Seção de Produtos em Destaque -->
-    <section class="products-section featured-products">
-        <div class="container">
-            <div class="section-header">
-                <h2 class="section-title">Produtos em Destaque</h2>
-                <p class="section-subtitle">As novidades que chegaram para revolucionar</p>
-                <a href="produtos.php" class="section-link">
-                    Ver Todos <i class="fas fa-arrow-right"></i>
-                </a>
-            </div>
-
-            <?php if (empty($produtosDestaque)): ?>
-                <div class="empty-state">
-                    <div class="empty-icon">
-                        <i class="fas fa-box-open"></i>
-                    </div>
-                    <h3>Nenhum produto em destaque no momento</h3>
-                    <p>Estamos preparando novidades incríveis para você. Volte em breve!</p>
-                    <a href="produtos.php" class="btn btn-primary">Explorar Produtos</a>
-                </div>
-            <?php else: ?>
-                <div class="product-grid">
-                    <?php foreach($produtosDestaque as $produto): 
-                        $badge = getProductBadge($produto['vendas'] ?? 0, $produto['estoque']);
-                    ?>
-                        <article class="product-card">
-                            <div class="product-image-container">
-                                <a href="detalhes_produto.php?id=<?= $produto['id_produto'] ?>" class="product-image-link">
-                                    <img src="assets/img/produtos/<?= htmlspecialchars($produto['imagem'] ?: 'placeholder.jpg') ?>" 
-                                        alt="<?= htmlspecialchars($produto['nome']) ?>" 
-                                        class="product-image"
-                                        loading="lazy">
-                                </a>
-                                <span class="product-badge <?= $badge['type'] ?>"><?= $badge['text'] ?></span>
-                                
-                                <?php
-                                    // Verifica se o ID do produto atual está na lista de favoritos do usuário
-                                    $isInWishlist = in_array($produto['id_produto'], $wishlistProductIds);
-                                    ?>
-
-                                    <button class="wishlist-btn" 
-                                            data-product-id="<?= $produto['id_produto'] ?>" 
-                                            title="Adicionar aos favoritos">
-                                        <i class="far fa-heart"></i>
-                                    </button>
-                            </div>
-                            
-                            <div class="product-info">
-                                <div class="product-meta">
-                                    <?php if (!empty($produto['marca'])): ?>
-                                        <span class="product-brand"><?= htmlspecialchars($produto['marca']) ?></span>
-                                    <?php endif; ?>
-                                    <?php if (!empty($produto['categoria_nome'])): ?>
-                                        <span class="product-category"><?= htmlspecialchars($produto['categoria_nome']) ?></span>
-                                    <?php endif; ?>
-                                </div>
-                                
-                                <h3 class="product-name">
-                                    <a href="detalhes_produto.php?id=<?= $produto['id_produto'] ?>">
-                                        <?= htmlspecialchars($produto['nome']) ?>
-                                    </a>
-                                </h3>
-                                
-                                <div class="product-price-section">
-                                    <p class="product-price">R$ <?= number_format($produto['preco'], 2, ',', '.') ?></p>
-                                    <div class="product-installments">
-                                        em até 3x de R$ <?= number_format($produto['preco'] / 3, 2, ',', '.') ?>
-                                    </div>
-                                </div>
-                                
-                                <div class="product-stock">
-                                    <?php if ($produto['estoque'] > 0): ?>
-                                        <i></i> Em estoque
-                                    <?php else: ?>
-                                        <i></i> Indisponível
-                                    <?php endif; ?>
-                                </div>
-                                
-                                <div class="product-card-actions">
-                                    <a href="detalhes_produto.php?id=<?= $produto['id_produto'] ?>" class="btn btn-outline">
-                                        <i class="fas fa-eye"></i> Detalhes
-                                    </a>
-                                    <?php if ($produto['estoque'] > 0): ?>
-                                        <form method="post" action="carrinho_adicionar.php" class="ajax-add-to-cart-form">
-                                            <input type="hidden" name="id_produto" value="<?= $produto['id_produto'] ?>">
-                                            <input type="hidden" name="quantidade" value="1"> 
-                                            <button type="submit" class="btn btn-primary">
-                                                <i class="fas fa-cart-plus"></i> Adicionar
-                                            </button>
-                                        </form>
-                                    <?php else: ?>
-                                        <button class="btn btn-disabled" disabled>
-                                            <i class="fas fa-ban"></i> Indisponível
-                                        </button>
-                                    <?php endif; ?>
-                                </div>
-                            </div>
-                        </article>
-                    <?php endforeach; ?>
-                </div>
-            <?php endif; ?>
+<section class="products-section featured-products">
+    <div class="container">
+        <div class="section-header">
+            <h2 class="section-title">Produtos em Destaque</h2>
+            <p class="section-subtitle">As novidades que chegaram para revolucionar</p>
+            <a href="produtos.php" class="section-link">
+                Ver Todos <i class="fas fa-arrow-right"></i>
+            </a>
         </div>
-    </section>
 
-    <!-- Seção de Produtos Mais Vendidos -->
-    <section class="products-section popular-products">
-        <div class="container">
-            <div class="section-header">
-                <h2 class="section-title">Mais Vendidos</h2>
-                <p class="section-subtitle">Os produtos preferidos dos nossos clientes</p>
-                <a href="produtos.php?ordenar=popular" class="section-link">
-                    Ver Todos <i class="fas fa-arrow-right"></i>
-                </a>
-            </div>
-
-            <?php if (empty($produtosMaisVendidos)): ?>
-                <div class="empty-state">
-                    <div class="empty-icon">
-                        <i class="fas fa-chart-line"></i>
-                    </div>
-                    <h3>Ainda não temos dados de vendas</h3>
-                    <p>Em breve teremos os produtos mais populares disponíveis aqui.</p>
-                    <a href="produtos.php" class="btn btn-primary">Explorar Produtos</a>
+        <?php if (empty($produtosDestaque)): ?>
+            <div class="empty-state">
+                <div class="empty-icon">
+                    <i class="fas fa-box-open"></i>
                 </div>
-            <?php else: ?>
-                <div class="product-grid">
-                    <?php foreach($produtosMaisVendidos as $produto): 
-                        $badge = getProductBadge($produto['vendas'] ?? 0, $produto['estoque']);
-                    ?>
-                        <article class="product-card">
-                            <div class="product-image-container">
-                                <a href="detalhes_produto.php?id=<?= $produto['id_produto'] ?>" class="product-image-link">
-                                    <img src="assets/img/produtos/<?= htmlspecialchars($produto['imagem'] ?: 'placeholder.jpg') ?>" 
-                                        alt="<?= htmlspecialchars($produto['nome']) ?>" 
-                                        class="product-image"
-                                        loading="lazy">
-                                </a>
-                                <span class="product-badge <?= $badge['type'] ?>">
-                                    <?php if ($badge['type'] == 'popular'): ?>
-                                        <i class="fas fa-fire"></i> 
-                                    <?php elseif ($badge['type'] == 'hot'): ?>
-                                        <i class="fas fa-bolt"></i>
-                                    <?php endif; ?>
-                                    <?= $badge['text'] ?>
-                                </span>
-                                
-                                <?php if (($produto['vendas'] ?? 0) > 0): ?>
-                                    <div class="sales-count">
-                                        <i class="fas fa-chart-line"></i>
-                                        <?= $produto['vendas'] ?> vendas
-                                    </div>
+                <h3>Nenhum produto em destaque no momento</h3>
+                <p>Estamos preparando novidades incríveis para você. Volte em breve!</p>
+                <a href="produtos.php" class="btn btn-primary">Explorar Produtos</a>
+            </div>
+        <?php else: ?>
+            <div class="product-grid">
+                <?php foreach($produtosDestaque as $produto): 
+                    $badge = getProductBadge($produto['vendas'] ?? 0, $produto['estoque']);
+                ?>
+                    <article class="product-card">
+                        <div class="product-image-container">
+                            <a href="detalhes_produto.php?id=<?= $produto['id_produto'] ?>" class="product-image-link">
+                                <img src="assets/img/produtos/<?= htmlspecialchars($produto['imagem'] ?: 'placeholder.jpg') ?>" 
+                                    alt="<?= htmlspecialchars($produto['nome']) ?>" 
+                                    class="product-image"
+                                    loading="lazy">
+                            </a>
+                            <span class="product-badge <?= $badge['type'] ?>"><?= $badge['text'] ?></span>
+                            
+                            <?php
+                                // Verifica se o ID do produto atual está na lista de favoritos do usuário
+                                $isInWishlist = in_array($produto['id_produto'], $wishlistProductIds);
+                            ?>
+
+                            <button class="wishlist-btn" 
+                                    data-product-id="<?= $produto['id_produto'] ?>" 
+                                    title="Adicionar aos favoritos">
+                                <i class="far fa-heart"></i>
+                            </button>
+                        </div>
+                        
+                        <div class="product-info">
+                            <div class="product-meta">
+                                <?php if (!empty($produto['marca'])): ?>
+                                    <span class="product-brand"><?= htmlspecialchars($produto['marca']) ?></span>
+                                <?php endif; ?>
+                                <?php if (!empty($produto['categoria_nome'])): ?>
+                                    <span class="product-category"><?= htmlspecialchars($produto['categoria_nome']) ?></span>
                                 <?php endif; ?>
                             </div>
                             
-                            <div class="product-info">
-                                <?php if (!empty($produto['marca'])): ?>
-                                    <div class="product-brand"><?= htmlspecialchars($produto['marca']) ?></div>
-                                <?php endif; ?>
-                                
-                                <h3 class="product-name">
-                                    <a href="detalhes_produto.php?id=<?= $produto['id_produto'] ?>">
-                                        <?= htmlspecialchars($produto['nome']) ?>
-                                    </a>
-                                </h3>
-                                
-                                <div class="product-price-section">
-                                    <p class="product-price">R$ <?= number_format($produto['preco'], 2, ',', '.') ?></p>
-                                    <div class="product-installments">
-                                        em até 3x de R$ <?= number_format($produto['preco'] / 3, 2, ',', '.') ?>
-                                    </div>
+                            <h3 class="product-name">
+                                <a href="detalhes_produto.php?id=<?= $produto['id_produto'] ?>">
+                                    <?= htmlspecialchars($produto['nome']) ?>
+                                </a>
+                            </h3>
+                            
+                            <div class="product-price-section">
+                                <p class="product-price">R$ <?= number_format($produto['preco'], 2, ',', '.') ?></p>
+                                <div class="product-installments">
+                                    em até 3x de R$ <?= number_format($produto['preco'] / 3, 2, ',', '.') ?>
                                 </div>
-                                
+                            </div>
+                            
+                            <!-- NOVO: Rating e Stock lado a lado -->
+                            <div class="product-meta-info">
                                 <div class="product-rating">
                                     <div class="stars">
                                         <i class="fas fa-star"></i>
@@ -314,31 +214,162 @@ function getProductBadge($vendas, $estoque) {
                                     <span class="rating-count">(<?= rand(10, 50) ?>)</span>
                                 </div>
                                 
-                                <div class="product-card-actions">
-                                    <a href="detalhes_produto.php?id=<?= $produto['id_produto'] ?>" class="btn btn-outline">
-                                        <i class="fas fa-eye"></i> Detalhes
-                                    </a>
+                                <div class="product-stock <?= $produto['estoque'] <= 0 ? 'out-of-stock' : '' ?>">
                                     <?php if ($produto['estoque'] > 0): ?>
-                                        <form method="post" action="carrinho_adicionar.php" class="ajax-add-to-cart-form">
-                                            <input type="hidden" name="id_produto" value="<?= $produto['id_produto'] ?>">
-                                            <input type="hidden" name="quantidade" value="1"> 
-                                            <button type="submit" class="btn btn-primary">
-                                                <i class="fas fa-cart-plus"></i> Adicionar
-                                            </button>
-                                        </form>
+                                        <i class="fas fa-check-circle"></i> Em estoque
                                     <?php else: ?>
-                                        <button class="btn btn-disabled" disabled>
-                                            <i class="fas fa-ban"></i> Indisponível
-                                        </button>
+                                        <i class="fas fa-times-circle"></i> Indisponível
                                     <?php endif; ?>
                                 </div>
                             </div>
-                        </article>
-                    <?php endforeach; ?>
-                </div>
-            <?php endif; ?>
+                            
+                            <div class="product-card-actions">
+                                <a href="detalhes_produto.php?id=<?= $produto['id_produto'] ?>" class="btn btn-outline">
+                                    <i class="fas fa-eye"></i> Detalhes
+                                </a>
+                                <?php if ($produto['estoque'] > 0): ?>
+                                    <form method="post" action="carrinho_adicionar.php" class="ajax-add-to-cart-form">
+                                        <input type="hidden" name="id_produto" value="<?= $produto['id_produto'] ?>">
+                                        <input type="hidden" name="quantidade" value="1"> 
+                                        <button type="submit" class="btn btn-primary">
+                                            <i class="fas fa-cart-plus"></i> Adicionar
+                                        </button>
+                                    </form>
+                                <?php else: ?>
+                                    <button class="btn btn-disabled" disabled>
+                                        <i class="fas fa-ban"></i> Indisponível
+                                    </button>
+                                <?php endif; ?>
+                            </div>
+                        </div>
+                    </article>
+                <?php endforeach; ?>
+            </div>
+        <?php endif; ?>
+    </div>
+</section>
+
+<!-- Seção de Produtos Mais Vendidos -->
+<section class="products-section popular-products">
+    <div class="container">
+        <div class="section-header">
+            <h2 class="section-title">Mais Vendidos</h2>
+            <p class="section-subtitle">Os produtos preferidos dos nossos clientes</p>
+            <a href="produtos.php?ordenar=popular" class="section-link">
+                Ver Todos <i class="fas fa-arrow-right"></i>
+            </a>
         </div>
-    </section>
+
+        <?php if (empty($produtosMaisVendidos)): ?>
+            <div class="empty-state">
+                <div class="empty-icon">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+                <h3>Ainda não temos dados de vendas</h3>
+                <p>Em breve teremos os produtos mais populares disponíveis aqui.</p>
+                <a href="produtos.php" class="btn btn-primary">Explorar Produtos</a>
+            </div>
+        <?php else: ?>
+            <div class="product-grid">
+                <?php foreach($produtosMaisVendidos as $produto): 
+                    $badge = getProductBadge($produto['vendas'] ?? 0, $produto['estoque']);
+                ?>
+                    <article class="product-card">
+                        <div class="product-image-container">
+                            <a href="detalhes_produto.php?id=<?= $produto['id_produto'] ?>" class="product-image-link">
+                                <img src="assets/img/produtos/<?= htmlspecialchars($produto['imagem'] ?: 'placeholder.jpg') ?>" 
+                                    alt="<?= htmlspecialchars($produto['nome']) ?>" 
+                                    class="product-image"
+                                    loading="lazy">
+                            </a>
+                            <span class="product-badge <?= $badge['type'] ?>">
+                                <?php if ($badge['type'] == 'popular'): ?>
+                                    <i class="fas fa-fire"></i> 
+                                <?php elseif ($badge['type'] == 'hot'): ?>
+                                    <i class="fas fa-bolt"></i>
+                                <?php endif; ?>
+                                <?= $badge['text'] ?>
+                            </span>
+                            
+                            <?php if (($produto['vendas'] ?? 0) > 0): ?>
+                                <div class="sales-count">
+                                    <i class="fas fa-chart-line"></i>
+                                    <?= $produto['vendas'] ?> vendas
+                                </div>
+                            <?php endif; ?>
+                        </div>
+                        
+                        <div class="product-info">
+                            <!-- CORREÇÃO: Marca com background apenas no texto -->
+                            <div class="product-meta">
+                                <?php if (!empty($produto['marca'])): ?>
+                                    <span class="product-brand"><?= htmlspecialchars($produto['marca']) ?></span>
+                                <?php endif; ?>
+                                <?php if (!empty($produto['categoria_nome'])): ?>
+                                    <span class="product-category"><?= htmlspecialchars($produto['categoria_nome']) ?></span>
+                                <?php endif; ?>
+                            </div>
+                            
+                            <h3 class="product-name">
+                                <a href="detalhes_produto.php?id=<?= $produto['id_produto'] ?>">
+                                    <?= htmlspecialchars($produto['nome']) ?>
+                                </a>
+                            </h3>
+                            
+                            <div class="product-price-section">
+                                <p class="product-price">R$ <?= number_format($produto['preco'], 2, ',', '.') ?></p>
+                                <div class="product-installments">
+                                    em até 3x de R$ <?= number_format($produto['preco'] / 3, 2, ',', '.') ?>
+                                </div>
+                            </div>
+                            
+                            <!-- Rating e Stock lado a lado -->
+                            <div class="product-meta-info">
+                                <div class="product-rating">
+                                    <div class="stars">
+                                        <i class="fas fa-star"></i>
+                                        <i class="fas fa-star"></i>
+                                        <i class="fas fa-star"></i>
+                                        <i class="fas fa-star"></i>
+                                        <i class="fas fa-star-half-alt"></i>
+                                    </div>
+                                    <span class="rating-count">(<?= rand(10, 50) ?>)</span>
+                                </div>
+                                
+                                <div class="product-stock <?= $produto['estoque'] <= 0 ? 'out-of-stock' : '' ?>">
+                                    <?php if ($produto['estoque'] > 0): ?>
+                                        <i class="fas fa-check-circle"></i> Em estoque
+                                    <?php else: ?>
+                                        <i class="fas fa-times-circle"></i> Indisponível
+                                    <?php endif; ?>
+                                </div>
+                            </div>
+                            
+                            <div class="product-card-actions">
+                                <a href="detalhes_produto.php?id=<?= $produto['id_produto'] ?>" class="btn btn-outline">
+                                    <i class="fas fa-eye"></i> Detalhes
+                                </a>
+                                <?php if ($produto['estoque'] > 0): ?>
+                                    <form method="post" action="carrinho_adicionar.php" class="ajax-add-to-cart-form">
+                                        <input type="hidden" name="id_produto" value="<?= $produto['id_produto'] ?>">
+                                        <input type="hidden" name="quantidade" value="1"> 
+                                        <button type="submit" class="btn btn-primary">
+                                            <i class="fas fa-cart-plus"></i> Adicionar
+                                        </button>
+                                    </form>
+                                <?php else: ?>
+                                    <button class="btn btn-disabled" disabled>
+                                        <i class="fas fa-ban"></i> Indisponível
+                                    </button>
+                                <?php endif; ?>
+                            </div>
+                        </div>
+                    </article>
+                <?php endforeach; ?>
+            </div>
+        <?php endif; ?>
+    </div>
+</section>
 
     <!-- Seção de Vantagens -->
     <section class="benefits-section">

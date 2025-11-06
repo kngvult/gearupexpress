@@ -106,7 +106,7 @@ $totalItensCarrinho = contarItensCarrinho($pdo);
             <ul class="nav-links">
                 <!-- MENU DROPDOWN DEPARTAMENTOS -->
                 <li class="dropdown">
-                    <a href="produtos.php" class="nav-link-dropdown">
+                    <a href="#" class="nav-link-dropdown">
                         <i class="fas fa-th-large"></i>
                         <span class="nav-text">Departamentos</span>
                         <i class="fas fa-chevron-down dropdown-arrow"></i>
@@ -123,7 +123,6 @@ $totalItensCarrinho = contarItensCarrinho($pdo);
                         <div class="dropdown-divider"></div>
                         <?php foreach ($categoriasNav as $categoria): ?>
                             <a href="produtos.php?categoria=<?= $categoria['id_categoria'] ?>" class="dropdown-item">
-                                <i class="fas fa-cog"></i>
                                 <span><?= htmlspecialchars($categoria['nome']) ?></span>
                             </a>
                         <?php endforeach; ?>

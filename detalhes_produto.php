@@ -13,7 +13,7 @@ if (empty($_GET['id']) || !is_numeric($_GET['id'])) {
 
     // Busca o produto principal e o nome da sua categoria
     $stmt = $pdo->prepare("
-        SELECT p.*, c.nome AS nome_categoria
+        SELECT p.*, c.nome AS categoria_nome
         FROM public.produtos p
         JOIN public.categorias c ON p.id_categoria = c.id_categoria
         WHERE p.id_produto = ?
@@ -61,7 +61,7 @@ if (empty($_GET['id']) || !is_numeric($_GET['id'])) {
             <ol>
                 <li><a href="index.php">Página Inicial</a></li>
                 <li><a href="produtos.php">Produtos</a></li>
-                <li><a href="produtos.php?categoria=<?= $produto['id_categoria'] ?>"><?= htmlspecialchars($produto['nome_categoria']) ?></a></li>
+                <li><a href="produtos.php?categoria=<?= $produto['id_categoria'] ?>"><?= htmlspecialchars($produto['categoria_nome']) ?></a></li>
                 <li aria-current="page"><?= htmlspecialchars($produto['nome']) ?></li>
             </ol>
         </nav>
@@ -117,7 +117,7 @@ if (empty($_GET['id']) || !is_numeric($_GET['id'])) {
                 <div class="product-header">
                     <div class="product-category-badge">
                         <i class="fas fa-tag"></i>
-                        <?= htmlspecialchars($produto['nome_categoria']) ?>
+                        <?= htmlspecialchars($produto['categoria_nome']) ?>
                     </div>
                     <h1 class="product-title"><?= htmlspecialchars($produto['nome']) ?></h1>
                     <div class="product-rating">
@@ -318,7 +318,7 @@ if (empty($_GET['id']) || !is_numeric($_GET['id'])) {
                                         </tr>
                                         <tr>
                                             <td>Categoria</td>
-                                            <td><?= htmlspecialchars($produto['nome_categoria']) ?></td>
+                                            <td><?= htmlspecialchars($produto['categoria_nome']) ?></td>
                                         </tr>
                                         <tr>
                                             <td>Garantia</td>
@@ -432,10 +432,15 @@ if (empty($_GET['id']) || !is_numeric($_GET['id'])) {
                                         </button>
                                     </div>
                                     
-                                    <div class="product-card-info">
-                                        <?php if (!empty($relacionado['marca'])): ?>
-                                            <div class="product-brand"><?= htmlspecialchars($relacionado['marca']) ?></div>
-                                        <?php endif; ?>
+                                    <div class="product-info">
+                                <div class="product-meta">
+                                    <?php if (!empty($produto['marca'])): ?>
+                                        <span class="product-brand"><?= htmlspecialchars($produto['marca']) ?></span>
+                                    <?php endif; ?>
+                                    <?php if (!empty($produto['categoria_nome'])): ?>
+                                        <span class="product-category"><?= htmlspecialchars($produto['categoria_nome']) ?></span>
+                                    <?php endif; ?>
+                                </div>
                                         
                                         <h4 class="product-card-title">
                                             <a href="detalhes_produto.php?id=<?= $relacionado['id_produto'] ?>">
@@ -451,14 +456,14 @@ if (empty($_GET['id']) || !is_numeric($_GET['id'])) {
                                             em até 3x de R$ <?= number_format($relacionado['preco']/3, 2, ',', '.') ?>
                                         </div>
                                         
-                                        <div class="product-card-stock">
-                                            <?php if ($relacionado['estoque'] > 0): ?>
-                                                <i class="fas fa-check"></i> Em estoque
-                                            <?php else: ?>
-                                                <i class="fas fa-times"></i> Indisponível
-                                            <?php endif; ?>
-                                        </div>
-                                    </div>
+                                        <div class="product-stock <?= $produto['estoque'] <= 0 ? 'out-of-stock' : '' ?>">
+                                    <?php if ($produto['estoque'] > 0): ?>
+                                        <i class="fas fa-check-circle"></i> Em estoque
+                                    <?php else: ?>
+                                        <i class="fas fa-times-circle"></i> Indisponível
+                                    <?php endif; ?>
+                                </div>
+                            </div>
                                     
                                     <div class="product-card-actions">
                                         <a href="detalhes_produto.php?id=<?= $relacionado['id_produto'] ?>" class="btn btn-outline btn-details">

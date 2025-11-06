@@ -37,8 +37,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 // Chama a função "gestora" para fundir os carrinhos
                 sincronizarCarrinho($pdo, $usuario['id']);
                 
-                // Redireciona para a página do carrinho para o utilizador ver os produtos
-                header('Location: carrinho.php');
+                // Redireciona para a página inicial após o login bem-sucedido
+                header('Location: index.php');
                 exit;
     
             } else {
