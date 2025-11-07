@@ -23,12 +23,21 @@ try {
     // Produtos Mais Vendidos
     $stmtMaisVendidos = $pdo->query("
         SELECT 
-            p.id_produto, p.nome, p.preco, p.imagem, p.estoque, p.marca,
-            $sqlVendas as vendas
-        FROM produtos p 
-        WHERE p.estoque > 0 
-        ORDER BY vendas DESC, p.id_produto DESC 
-        LIMIT 9
+        p.id_produto, 
+        p.nome, 
+        p.preco, 
+        p.imagem, 
+        p.estoque, 
+        p.marca,
+        COALESCE(SUM(i.quantidade), 0) AS vendas
+    FROM produtos p
+    LEFT JOIN itens_pedido i ON p.id_produto = i.id_produto
+    LEFT JOIN pedidos ped ON ped.id_pedido = i.id_pedido
+    WHERE p.estoque > 0
+        AND ped.status IN ('enviado', 'entregue')
+    GROUP BY p.id_produto, p.nome, p.preco, p.imagem, p.estoque, p.marca
+    ORDER BY vendas DESC, p.id_produto DESC
+    LIMIT 9
     ");
     $produtosMaisVendidos = $stmtMaisVendidos->fetchAll(PDO::FETCH_ASSOC);
     
@@ -157,7 +166,7 @@ function getProductBadge($vendas, $estoque) {
                     $badge = getProductBadge($produto['vendas'] ?? 0, $produto['estoque']);
                 ?>
                     <article class="product-card">
-                        <div class="product-image-container">
+                        <div class="product-image">
                             <a href="detalhes_produto.php?id=<?= $produto['id_produto'] ?>" class="product-image-link">
                                 <img src="assets/img/produtos/<?= htmlspecialchars($produto['imagem'] ?: 'placeholder.jpg') ?>" 
                                     alt="<?= htmlspecialchars($produto['nome']) ?>" 
@@ -271,36 +280,38 @@ function getProductBadge($vendas, $estoque) {
             </div>
         <?php else: ?>
             <div class="product-grid">
-                <?php foreach($produtosMaisVendidos as $produto): 
-                    $badge = getProductBadge($produto['vendas'] ?? 0, $produto['estoque']);
-                ?>
-                    <article class="product-card">
-                        <div class="product-image-container">
-                            <a href="detalhes_produto.php?id=<?= $produto['id_produto'] ?>" class="product-image-link">
-                                <img src="assets/img/produtos/<?= htmlspecialchars($produto['imagem'] ?: 'placeholder.jpg') ?>" 
-                                    alt="<?= htmlspecialchars($produto['nome']) ?>" 
-                                    class="product-image"
-                                    loading="lazy">
-                            </a>
-                            <span class="product-badge <?= $badge['type'] ?>">
-                                <?php if ($badge['type'] == 'popular'): ?>
-                                    <i class="fas fa-fire"></i> 
-                                <?php elseif ($badge['type'] == 'hot'): ?>
-                                    <i class="fas fa-bolt"></i>
-                                <?php endif; ?>
-                                <?= $badge['text'] ?>
-                            </span>
-                            
-                            <?php if (($produto['vendas'] ?? 0) > 0): ?>
-                                <div class="sales-count">
-                                    <i class="fas fa-chart-line"></i>
-                                    <?= $produto['vendas'] ?> vendas
-                                </div>
+            <?php 
+            // Garantir que temos no máximo 9 produtos
+            $produtosExibidos = array_slice($produtosMaisVendidos, 0, 9);
+            
+            foreach($produtosExibidos as $index => $produto): 
+                $badge = getProductBadge($produto['vendas'] ?? 0, $produto['estoque']);
+                $posicao = $index + 1;
+            ?>
+                <article class="product-card">
+                    <div class="product-image">
+                        <a href="detalhes_produto.php?id=<?= $produto['id_produto'] ?>" class="product-image-link">
+                            <img src="assets/img/produtos/<?= htmlspecialchars($produto['imagem'] ?: 'placeholder.jpg') ?>" 
+                                alt="<?= htmlspecialchars($produto['nome']) ?>" 
+                                class="product-image"
+                                loading="lazy">
+                        </a>
+                        <span class="product-badge <?= $badge['type'] ?>">
+                            <?php if ($badge['type'] == 'popular'): ?>
+                                <i class="fas fa-fire"></i> 
+                            <?php elseif ($badge['type'] == 'hot'): ?>
+                                <i class="fas fa-bolt"></i>
                             <?php endif; ?>
+                            <?= $badge['text'] ?>
+                        </span>
+                        
+                        <div class="sales-count ranking-badge rank-<?= $posicao ?>">
+                            <i class="fas fa-trophy"></i>
+                            <?= $posicao ?>º em vendas
                         </div>
+                    </div>
                         
                         <div class="product-info">
-                            <!-- CORREÇÃO: Marca com background apenas no texto -->
                             <div class="product-meta">
                                 <?php if (!empty($produto['marca'])): ?>
                                     <span class="product-brand"><?= htmlspecialchars($produto['marca']) ?></span>

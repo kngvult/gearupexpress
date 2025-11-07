@@ -215,7 +215,7 @@ try {
                 <div class="product-grid" id="product-grid" data-view="grid">
                     <?php foreach ($produtos as $produto): ?>
                         <article class="product-card">
-                            <div class="product-image-container">
+                            <div class="product-image">
                                 <a href="detalhes_produto.php?id=<?= $produto['id_produto'] ?>">
                                     <img src="assets/img/produtos/<?= htmlspecialchars($produto['imagem'] ?: 'placeholder.jpg') ?>" 
                                         alt="<?= htmlspecialchars($produto['nome']) ?>" 

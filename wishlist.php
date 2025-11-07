@@ -231,16 +231,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Animação de remoção
                 element.style.opacity = '0';
                 element.style.transform = 'translateX(100px)';
-                element.style.transition = 'all 0.3s ease';
+                element.style.transition = 'all 0.25s ease';
                 
                 setTimeout(() => {
-                    element.remove();
-                    
-                    // Verificar se lista ficou vazia
-                    if (document.querySelectorAll('.wishlist-item').length === 0) {
-                        location.reload();
-                    }
-                }, 300);
+                    location.reload();
+                }, 250);
             } else {
                 alert('Erro ao remover produto: ' + data.message);
             }
@@ -250,6 +245,7 @@ document.addEventListener('DOMContentLoaded', function() {
             alert('Erro ao remover produto da lista de desejos');
         });
     }
+    
     
     // AJAX para adicionar ao carrinho
     document.querySelectorAll('.ajax-add-to-cart-form').forEach(form => {
