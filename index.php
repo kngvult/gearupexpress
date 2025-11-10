@@ -436,7 +436,7 @@ function getProductBadge($vendas, $estoque) {
                 </div>
                 <form class="newsletter-form">
                     <div class="input-group">
-                        <input type="email" placeholder="Seu melhor e-mail" required>
+                        <input type="email" placeholder="Insira seu e-mail" required>
                         <button type="submit" class="btn btn-primary">
                             <i class="fas fa-paper-plane"></i> Assinar
                         </button>

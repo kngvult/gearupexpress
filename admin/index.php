@@ -3,10 +3,9 @@ include 'includes/header.php';
 
 try {
     // --- LÓGICA DO GRÁFICO DE VENDAS ---
-    $periodo = $_GET['periodo'] ?? '7dias'; // Padrão: últimos 7 dias
+    $periodo = $_GET['periodo'] ?? 'hoje'; // Padrão: hoje
     $mes_selecionado = $_GET['mes'] ?? ''; // Para o filtro mensal
-    $sales_chart_title = 'Vendas nos Últimos 7 Dias';
-    
+    $sales_chart_title = 'Vendas de Hoje (por hora)';
     $vendas_sql = "";
     $params = [];
 
@@ -89,7 +88,6 @@ $status_valores = json_encode(array_column($status_data ?? [], 'count'));
                 <div class="chart-filters">
                     <a href="index.php?periodo=hoje" class="filter-btn <?= $periodo == 'hoje' ? 'active' : '' ?>">Hoje</a>
                     <a href="index.php?periodo=semana" class="filter-btn <?= $periodo == 'semana' ? 'active' : '' ?>">Semana</a>
-                    <a href="index.php?periodo=7dias" class="filter-btn <?= $periodo == '7dias' ? 'active' : '' ?>">7 Dias</a>
                     <form id="month-filter-form" method="GET" class="filter-form">
                         <input type="hidden" name="periodo" value="mes">
                         <select name="mes" id="month-select" class="filter-select">

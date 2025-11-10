@@ -84,9 +84,9 @@ $totalItensCarrinho = contarItensCarrinho($pdo);
                         <span>Buscas recentes</span>
                     </div>
                     <div class="suggestions-list">
-                        <a href="busca.php?termo=motor" class="suggestion-item">
+                        <a href="busca.php?termo=pneu" class="suggestion-item">
                             <i class="fas fa-search"></i>
-                            <span>motor</span>
+                            <span>pneu</span>
                         </a>
                         <a href="busca.php?termo=freio" class="suggestion-item">
                             <i class="fas fa-search"></i>

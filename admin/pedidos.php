@@ -62,10 +62,10 @@ $(document).ready(function() {
     <div class="page-header">
         <h1 class="page-title">Gerenciar Pedidos</h1>
         <div class="header-actions">
-            <button class="btn-admin-secondary" onclick="window.print()">
-                <i class="fas fa-print"></i> Imprimir Relatório
-            </button>
-        </div>
+    <button class="btn-admin-secondary" id="btn-exportar-pdf">
+        <i class="fas fa-file-pdf"></i> Exportar Relatório
+    </button>
+</div>
     </div>
 
     <!-- Cards de Estatísticas -->
@@ -176,3 +176,36 @@ $(document).ready(function() {
         </div>
     </div>
 </div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+
+$scripts_adicionais .= "
+<script>
+document.getElementById('btn-exportar-pdf').addEventListener('click', function () {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+
+    doc.text('Relatório de Pedidos', 14, 15);
+    doc.autoTable({
+        html: '#tabela-pedidos',
+        startY: 25,
+        styles: { fontSize: 9 },
+        headStyles: { fillColor: [41, 128, 185] },
+        columnStyles: {
+            0: { halign: 'center' },
+            3: { halign: 'center' },
+            4: { halign: 'center' },
+            5: { halign: 'center' }
+        },
+        didDrawCell: function (data) {
+            // Remove botões da última coluna
+            if (data.column.index === 5 && data.cell.section === 'body') {
+                data.cell.text = '';
+            }
+        }
+    });
+
+    doc.save('relatorio_pedidos.pdf');
+});
+</script>

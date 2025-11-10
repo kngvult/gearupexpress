@@ -160,10 +160,10 @@ function calcularParcelas($preco, $parcelas = 3) {
                             </button>
                             
                             <?php if ($produto['estoque'] > 0): ?>
-                                <form method="post" action="carrinho_adicionar.php" class="ajax-add-to-cart-form">
+                                <form method="post" action="carrinho_adicionar.php" class="ajax-add-to-cart-form" data-submitting="false">
                                     <input type="hidden" name="id_produto" value="<?= $produto['id_produto'] ?>">
                                     <input type="hidden" name="quantidade" value="1">
-                                    <button type="submit" class="btn btn-primary">
+                                    <button type="button" class="btn btn-primary ajax-add-to-cart-btn">
                                         <i class="fas fa-cart-plus"></i> Adicionar ao Carrinho
                                     </button>
                                 </form>
@@ -249,58 +249,59 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // AJAX para adicionar ao carrinho
     document.querySelectorAll('.ajax-add-to-cart-form').forEach(form => {
-        form.addEventListener('submit', function(e) {
-            e.preventDefault();
+        const btn = form.querySelector('.ajax-add-to-cart-btn');
+        if (!btn) return;
+
+        btn.addEventListener('click', function(e) {
             
-            const formData = new FormData(this);
-            const submitBtn = this.querySelector('button[type="submit"]');
-            const originalText = submitBtn.innerHTML;
+            if (form.dataset.submitting === 'true') return;
+            form.dataset.submitting = 'true';
             
+            const formData = new FormData(form);
+            const submitBtn = btn;
+            const originalHTML = submitBtn.innerHTML;
+
             submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
             submitBtn.disabled = true;
             
-            fetch('carrinho_adicionar.php', {
+            fetch(form.action, {
                 method: 'POST',
-                body: formData
+                body: formData,
+                credentials: 'same-origin'
             })
-            .then(response => response.json())
+            .then(response => {
+                if (!response.ok) throw new Error('Resposta inválida do servidor');
+                return response.json();
+            })
             .then(data => {
-                if (data.success) {
+                if (data && data.success) {
                     submitBtn.innerHTML = '<i class="fas fa-check"></i>';
                     submitBtn.classList.add('btn-success');
-                    
-                    // Atualizar contador do carrinho
+
+                    // Atualizar contador do carrinho se enviado pelo servidor
                     const cartCount = document.querySelector('.cart-count');
-                    if (cartCount && data.totalItensCarrinho !== undefined) {
+                    if (cartCount && typeof data.totalItensCarrinho !== 'undefined') {
                         cartCount.textContent = data.totalItensCarrinho;
                     }
-                    
-                    setTimeout(() => {
-                        submitBtn.innerHTML = originalText;
-                        submitBtn.classList.remove('btn-success');
-                        submitBtn.disabled = false;
-                    }, 2000);
                 } else {
                     submitBtn.innerHTML = '<i class="fas fa-times"></i>';
                     submitBtn.classList.add('btn-error');
-                    
-                    setTimeout(() => {
-                        submitBtn.innerHTML = originalText;
-                        submitBtn.classList.remove('btn-error');
-                        submitBtn.disabled = false;
-                    }, 2000);
+                    console.error('Adicionar ao carrinho falhou:', data && data.message ? data.message : data);
                 }
             })
             .catch(error => {
-                console.error('Erro:', error);
+                console.error('Erro ao adicionar ao carrinho:', error);
                 submitBtn.innerHTML = '<i class="fas fa-times"></i>';
                 submitBtn.classList.add('btn-error');
-                
+            })
+            .finally(() => {
+                // garante reset do botão mesmo se ocorrer erro/parsing
+                form.dataset.submitting = 'false';
                 setTimeout(() => {
-                    submitBtn.innerHTML = originalText;
-                    submitBtn.classList.remove('btn-error');
+                    submitBtn.innerHTML = originalHTML;
                     submitBtn.disabled = false;
-                }, 2000);
+                    submitBtn.classList.remove('btn-success', 'btn-error');
+                }, 800);
             });
         });
     });

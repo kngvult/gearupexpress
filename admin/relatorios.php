@@ -63,10 +63,10 @@ try {
     <div class="page-header">
         <h1 class="page-title">Relatórios de Vendas</h1>
         <div class="header-actions">
-            <button class="btn-admin-secondary" onclick="window.print()">
-                <i class="fas fa-print"></i> Imprimir Relatório
-            </button>
-        </div>
+    <button class="btn-admin-secondary" id="btn-exportar-relatorio">
+        <i class="fas fa-file-pdf"></i> Exportar Relatório
+    </button>
+</div>
     </div>
 
     <!-- Cards de Estatísticas Rápidas -->
@@ -270,6 +270,109 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 });
 </script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const btn = document.getElementById('btn-exportar-relatorio');
+    if (!btn) return;
+
+    btn.addEventListener('click', async function () {
+        // verifica se namespace do jsPDF está disponível
+        const jsPDFLib = window.jspdf && window.jspdf.jsPDF ? window.jspdf.jsPDF : (window.jsPDF || null);
+        if (!jsPDFLib) {
+            alert('Biblioteca jsPDF não encontrada. Verifique os includes.');
+            return;
+        }
+
+        const doc = new jsPDFLib('p', 'mm', 'a4');
+        let y = 15;
+        doc.setFontSize(16);
+        doc.text('Relatório de Vendas', 14, y);
+        y += 10;
+
+        // Captura dos gráficos (se existirem)
+        const chartIds = ['monthlyRevenueChart', 'topProductsChart'];
+        for (const id of chartIds) {
+            const canvas = document.getElementById(id);
+            if (canvas && canvas.toDataURL) {
+                try {
+                    const imgData = canvas.toDataURL('image/png');
+                    // ajusta altura mantendo proporção aproximada na página A4
+                    const imgWidth = 180;
+                    const imgHeight = (canvas.height / canvas.width) * imgWidth;
+                    if (y + imgHeight > 280) { doc.addPage(); y = 15; }
+                    doc.addImage(imgData, 'PNG', 14, y, imgWidth, imgHeight);
+                    y += imgHeight + 8;
+                } catch (e) {
+                    console.warn('Erro ao capturar canvas', id, e);
+                }
+            }
+        }
+
+        // Captura da tabela com autoTable (se disponível)
+        const tabela = document.querySelector('.data-table');
+        if (tabela && typeof doc.autoTable === 'function') {
+            if (y > 250) { doc.addPage(); y = 15; }
+            doc.text('Produtos Mais Vendidos', 14, y);
+            y += 6;
+            doc.autoTable({
+                html: tabela,
+                startY: y,
+                styles: { fontSize: 9 },
+                headStyles: { fillColor: [0, 123, 255] },
+                columnStyles: {
+                    0: { halign: 'center' },
+                    2: { halign: 'center' },
+                    3: { halign: 'center' }
+                },
+                didParseCell: function (data) {
+                    // remove HTML dentro das células antes de imprimir
+                    if (data.cell && typeof data.cell.raw === 'string') {
+                        data.cell.text = data.cell.raw.replace(/<[^>]*>?/gm, '').trim().split('\n');
+                    }
+                }
+            });
+        } else if (tabela) {
+            // fallback: renderiza tabela manualmente se autoTable não estiver disponível
+            if (y > 240) { doc.addPage(); y = 15; }
+            doc.text('Produtos Mais Vendidos', 14, y);
+            y += 6;
+            const rows = [];
+            const headers = Array.from(tabela.querySelectorAll('thead th')).map(th => th.textContent.trim());
+            const trs = tabela.querySelectorAll('tbody tr');
+            trs.forEach(tr => {
+                const cols = Array.from(tr.children).map(td => td.textContent.trim());
+                rows.push(cols);
+            });
+            // escreve uma tabela simples
+            doc.setFontSize(9);
+            // cabeçalho
+            let x = 14;
+            headers.forEach((h, i) => {
+                doc.text(h, x, y);
+                x += 50;
+            });
+            y += 6;
+            rows.forEach(r => {
+                x = 14;
+                r.forEach((c, i) => {
+                    doc.text(c, x, y);
+                    x += 50;
+                });
+                y += 6;
+                if (y > 270) { doc.addPage(); y = 15; }
+            });
+        }
+
+        doc.save('relatorio_vendas.pdf');
+    });
+});
+</script>
+
 
 <?php
 include 'includes/footer.php';

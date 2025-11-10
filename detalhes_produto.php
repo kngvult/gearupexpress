@@ -1,6 +1,7 @@
 <?php
 include 'includes/header.php'; 
 include 'includes/conexao.php';
+include 'includes/funcoes_avaliacoes.php';
 
 $produto = null;
 $produtos_relacionados = [];
@@ -35,6 +36,73 @@ if (empty($_GET['id']) || !is_numeric($_GET['id'])) {
         $produtos_relacionados = $stmtRel->fetchAll(PDO::FETCH_ASSOC);
     }
 }
+
+// INICIALIZAR VARIÁVEIS PARA EVITAR WARNINGS
+$avaliacao_usuario = null;
+$avaliacao_geral = ['media_rating' => 0, 'total_avaliacoes' => 0, 'total_comentarios' => 0];
+$avaliacoes_recentes = [];
+
+try {
+    $stmt = $pdo->prepare("
+        SELECT p.*, c.nome as categoria_nome 
+        FROM produtos p 
+        LEFT JOIN categorias c ON p.id_categoria = c.id_categoria 
+        WHERE p.id_produto = ?
+    ");
+    $stmt->execute([$id_produto]);
+    $produto = $stmt->fetch(PDO::FETCH_ASSOC);
+    
+    if (!$produto) {
+        header('Location: produtos.php');
+        exit;
+    }
+    
+    // Buscar avaliações do produto
+    $avaliacao_geral = getAvaliacaoProduto($pdo, $id_produto) ?? $avaliacao_geral;
+    $avaliacoes_recentes = getAvaliacoesRecentes($pdo, $id_produto) ?? [];
+    
+    // Verificar se usuário está logado e se já avaliou
+    if (isset($_SESSION['usuario']['id'])) {
+        $avaliacao_usuario = getAvaliacaoUsuario($pdo, $id_produto, $_SESSION['usuario']['id']);
+    }
+    
+} catch (PDOException $e) {
+    error_log("Erro ao carregar produto: " . $e->getMessage());
+    $produto = null;
+}
+
+// Processar envio de avaliação
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['avaliar'])) {
+    if (!isset($_SESSION['usuario']['id'])) {
+        $_SESSION['erro'] = "Você precisa estar logado para avaliar produtos.";
+        header("Location: login.php?redirect=detalhes_produto.php?id=" . $id_produto);
+        exit;
+    }
+    
+    $rating = (int)$_POST['rating'];
+    $comentario = trim($_POST['comentario'] ?? '');
+    
+    if ($rating >= 1 && $rating <= 5) {
+        try {
+            $sucesso = salvarAvaliacao($pdo, $id_produto, $_SESSION['usuario']['id'], $rating, $comentario);
+            
+            if ($sucesso) {
+                $_SESSION['sucesso'] = "Avaliação enviada com sucesso!";
+                // Recarregar os dados da avaliação do usuário
+                $avaliacao_usuario = getAvaliacaoUsuario($pdo, $id_produto, $_SESSION['usuario']['id']);
+                $avaliacao_geral = getAvaliacaoProduto($pdo, $id_produto) ?? $avaliacao_geral;
+                $avaliacoes_recentes = getAvaliacoesRecentes($pdo, $id_produto) ?? [];
+            } else {
+                $_SESSION['erro'] = "Erro ao enviar avaliação.";
+            }
+        } catch (PDOException $e) {
+            $_SESSION['erro'] = "Erro ao salvar avaliação: " . $e->getMessage();
+        }
+    } else {
+        $_SESSION['erro'] = "Por favor, selecione uma avaliação entre 1 e 5 estrelas.";
+    }
+}
+
 ?>
 
 <main class="page-content">
@@ -273,7 +341,7 @@ if (empty($_GET['id']) || !is_numeric($_GET['id'])) {
                         <button class="tab-link" data-tab="tab-avaliacoes">
                             <i class="fas fa-star"></i>
                             Avaliações
-                            <span class="tab-badge">12</span>
+                            <span class="tab-badge"><?= $avaliacao_geral['total_avaliacoes'] ?? 0 ?></span>
                         </button>
                     </li>
                     
@@ -352,38 +420,102 @@ if (empty($_GET['id']) || !is_numeric($_GET['id'])) {
                         </div>
                     </div>
 
-                    <!-- Avaliações -->
+                    <!-- Seção de Avaliações -->
                     <div id="tab-avaliacoes" class="tab-pane">
                         <div class="tab-content-inner">
-                            <div class="reviews-header">
-                                <div class="reviews-summary">
-                                    <div class="average-rating">
-                                        <div class="rating-score">4.5</div>
-                                        <div class="rating-stars">
-                                            <i class="fas fa-star"></i>
-                                            <i class="fas fa-star"></i>
-                                            <i class="fas fa-star"></i>
-                                            <i class="fas fa-star"></i>
-                                            <i class="fas fa-star-half-alt"></i>
+                            <div class="section-header">
+                                <h2>Avaliações do Produto</h2>
+                            </div>
+                            
+                            <div class="avaliacoes-container">
+                                <!-- Resumo das Avaliações -->
+                                <div class="avaliacao-resumo">
+                                    <div class="rating-geral">
+                                        <div class="rating-numero">
+                                            <span class="nota"><?= number_format($avaliacao_geral['media_rating'] ?? 0, 1) ?></span>
+                                            <div class="stars">
+                                                <?= gerarStars(round($avaliacao_geral['media_rating'] ?? 0), 'lg') ?>
+                                            </div>
+                                            <span class="total-avaliacoes">
+                                                (<?= $avaliacao_geral['total_avaliacoes'] ?? 0 ?> avaliações)
+                                            </span>
                                         </div>
-                                        <div class="rating-count">Baseado em 12 avaliações</div>
+                                    </div>
+                                    
+                                    <div class="rating-distribuicao">
+                                        <!-- Aqui pode adicionar distribuição por estrelas se quiser -->
+                                        <p><?= $avaliacao_geral['total_comentarios'] ?? 0 ?> comentários</p>
                                     </div>
                                 </div>
                                 
-                                <button class="btn btn-primary btn-write-review">
-                                    <i class="fas fa-pen"></i> Escrever Avaliação
-                                </button>
-                            </div>
-
-                            <div class="reviews-placeholder">
-                                <div class="placeholder-icon">
-                                    <i class="fas fa-comments"></i>
-                                </div>
-                                <h4>Ainda não há avaliações para este produto</h4>
-                                <p>Seja o primeiro a compartilhar sua experiência!</p>
-                                <button class="btn btn-outline">
-                                    <i class="fas fa-pen"></i> Escrever Primeira Avaliação
-                                </button>
+                                <!-- Formulário de Avaliação (apenas para usuários logados) -->
+                                <?php if (isset($_SESSION['usuario']['id'])): ?>
+                                    <div class="avaliacao-form-container" >
+                                        <h4><?= $avaliacao_usuario ? 'Editar sua Avaliação' : 'Deixe sua Avaliação' ?></h4>
+                                        
+                                        <form method="post" class="avaliacao-form">
+                                            <div class="rating-input">
+                                                <label>Sua avaliação:</label>
+                                                <div class="stars-input">
+                                                    <?php for ($i = 1; $i <= 5; $i++): ?>
+                                                        <input type="radio" id="star<?= $i ?>" name="rating" value="<?= $i ?>" 
+                                                            <?= ($avaliacao_usuario && $avaliacao_usuario['rating'] == $i) ? 'checked' : '' ?>>
+                                                        <label for="star<?= $i ?>" class="star-label">
+                                                            <i class="far fa-star"></i>
+                                                        </label>
+                                                    <?php endfor; ?>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="comentario-input">
+                                                <label for="comentario">Comentário (opcional):</label>
+                                                <textarea name="comentario" id="comentario" rows="4" 
+                                                        placeholder="Compartilhe sua experiência com este produto..."><?= htmlspecialchars($avaliacao_usuario['comentario'] ?? '') ?></textarea>
+                                            </div>
+                                            
+                                            <button type="submit" name="avaliar" class="btn btn-primary">
+                                                <?= $avaliacao_usuario ? 'Atualizar Avaliação' : 'Enviar Avaliação' ?>
+                                            </button>
+                                        </form>
+                                    </div>
+                                <?php else: ?>
+                                    <div class="avaliacao-login-required">
+                                        <p>💡 <a href="login.php?redirect=detalhes_produto.php?id=<?= $id_produto ?>" class="btn btn-outline">Faça login</a> para deixar sua avaliação</p>
+                                    </div>
+                                <?php endif; ?>
+                                
+                                <!-- Lista de Avaliações Recentes -->
+                                <?php if (!empty($avaliacoes_recentes)): ?>
+                                    <div class="avaliacoes-lista">
+                                        <h4>Avaliações Recentes</h4>
+                                        
+                                        <?php foreach($avaliacoes_recentes as $avaliacao): ?>
+                                            <div class="avaliacao-item">
+                                                <div class="avaliacao-header">
+                                                    <div class="usuario-info">
+                                                        <strong><?= htmlspecialchars($avaliacao['usuario_nome']) ?></strong>
+                                                        <div class="rating">
+                                                            <?= gerarStars($avaliacao['rating']) ?>
+                                                        </div>
+                                                    </div>
+                                                    <span class="data-avaliacao">
+                                                        <?= date('d/m/Y', strtotime($avaliacao['data_avaliacao'])) ?>
+                                                    </span>
+                                                </div>
+                                                
+                                                <?php if (!empty($avaliacao['comentario'])): ?>
+                                                    <div class="comentario">
+                                                        <p><?= nl2br(htmlspecialchars($avaliacao['comentario'])) ?></p>
+                                                    </div>
+                                                <?php endif; ?>
+                                            </div>
+                                        <?php endforeach; ?>
+                                    </div>
+                                <?php else: ?>
+                                    <div class="sem-avaliacoes">
+                                        <p>Seja o primeiro a avaliar este produto! 📝</p>
+                                    </div>
+                                <?php endif; ?>
                             </div>
                         </div>
                     </div>
@@ -434,11 +566,11 @@ if (empty($_GET['id']) || !is_numeric($_GET['id'])) {
                                     
                                     <div class="product-info">
                                 <div class="product-meta">
-                                    <?php if (!empty($produto['marca'])): ?>
-                                        <span class="product-brand"><?= htmlspecialchars($produto['marca']) ?></span>
+                                    <?php if (!empty($relacionado['marca'])): ?>
+                                        <span class="product-brand"><?= htmlspecialchars($relacionado['marca']) ?></span>
                                     <?php endif; ?>
-                                    <?php if (!empty($produto['categoria_nome'])): ?>
-                                        <span class="product-category"><?= htmlspecialchars($produto['categoria_nome']) ?></span>
+                                    <?php if (!empty($relacionado['categoria_nome'])): ?>
+                                        <span class="product-category"><?= htmlspecialchars($relacionado['categoria_nome']) ?></span>
                                     <?php endif; ?>
                                 </div>
                                         
@@ -592,15 +724,15 @@ document.addEventListener('DOMContentLoaded', function() {
 
     tabLinks.forEach(link => {
         link.addEventListener('click', function() {
-            const tabId = this.dataset.tab;
+            const targetId = this.getAttribute('data-tab');
 
             // Desativa todos os links e painéis
-            tabLinks.forEach(l => l.classList.remove('active'));
-            tabPanes.forEach(p => p.classList.remove('active'));
+            tabLinks.forEach(btn => btn.classList.remove('active'));
+            tabPanes.forEach(pane => pane.classList.remove('active'));
 
             // Ativa o link clicado e o painel correspondente
             this.classList.add('active');
-            document.getElementById(tabId).classList.add('active');
+            document.getElementById(targetId).classList.add('active');
         });
     });
 
@@ -776,6 +908,59 @@ function changeMainImage(thumbnail) {
         mainImage.style.opacity = '1';
     }, 150);
 }
+
+// Avaliação por estrelas
+document.addEventListener('DOMContentLoaded', function() {
+    // Sistema de estrelas interativo
+    const starInputs = document.querySelectorAll('.stars-input input[type="radio"]');
+    const starLabels = document.querySelectorAll('.star-label');
+    
+    starLabels.forEach((label, index) => {
+        label.addEventListener('mouseenter', function() {
+            // Preencher estrelas até esta
+            for (let i = 0; i <= index; i++) {
+                starLabels[i].querySelector('i').className = 'fas fa-star';
+            }
+            // Esvaziar as restantes
+            for (let i = index + 1; i < starLabels.length; i++) {
+                starLabels[i].querySelector('i').className = 'far fa-star';
+            }
+        });
+        
+        label.addEventListener('click', function() {
+            // Manter seleção após clique
+            const selectedIndex = index;
+            for (let i = 0; i < starLabels.length; i++) {
+                if (i <= selectedIndex) {
+                    starLabels[i].querySelector('i').className = 'fas fa-star';
+                } else {
+                    starLabels[i].querySelector('i').className = 'far fa-star';
+                }
+            }
+        });
+    });
+    
+    // Reset ao sair do container (se nenhum estiver selecionado)
+    const starsContainer = document.querySelector('.stars-input');
+    starsContainer.addEventListener('mouseleave', function() {
+        const checkedInput = document.querySelector('.stars-input input[type="radio"]:checked');
+        if (!checkedInput) {
+            starLabels.forEach(label => {
+                label.querySelector('i').className = 'far fa-star';
+            });
+        } else {
+            // Manter a seleção atual
+            const checkedIndex = Array.from(starInputs).indexOf(checkedInput);
+            for (let i = 0; i < starLabels.length; i++) {
+                if (i <= checkedIndex) {
+                    starLabels[i].querySelector('i').className = 'fas fa-star';
+                } else {
+                    starLabels[i].querySelector('i').className = 'far fa-star';
+                }
+            }
+        }
+    });
+});
 </script>
 
 <?php include 'includes/footer.php'; ?>
