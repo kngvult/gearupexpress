@@ -28,12 +28,17 @@ if (isset($idUsuarioLogado)) {
         $stmt = $pdo->prepare("SELECT id_produto FROM wishlist WHERE id_usuario = ?");
 
         $stmt->execute([$idUsuarioLogado]);
-        $wishlistProductIds = $stmt->fetchAll(PDO::FETCH_COLUMN); 
+        $wishlistProductIds = $stmt->fetchAll(PDO::FETCH_COLUMN) ?: []; 
         $wishlistCount = count($wishlistProductIds);
     } catch (PDOException $e) {
+        $wishlistProductIds = [];
         error_log("Erro ao buscar wishlist header: " . $e->getMessage());
     }
+} else {
+    $wishlistProductIds = $_SESSION['wishlist'] ?? [];
 }
+
+echo "<script>window.WISHLIST_IDS = " . json_encode($wishlistProductIds) . ";</script>";
 // --- FIM DA LÓGICA DA WISHLIST ---
 
 // 2. Conta os itens no carrinho para o ícone
@@ -202,4 +207,24 @@ $totalItensCarrinho = contarItensCarrinho($pdo);
     window.isUserLoggedIn = <?= isset($idUsuarioLogado) ? 'true' : 'false' ?>;
 
     window.wishlistProductIds = new Set(<?= json_encode($wishlistProductIds) ?>);
+</script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const wishlistIds = (window.WISHLIST_IDS || []).map(i => Number(i));
+    document.querySelectorAll('.wishlist-btn').forEach(btn => {
+        const pid = Number(btn.dataset.productId);
+        const icon = btn.querySelector('i');
+        if (!icon) return;
+        if (wishlistIds.includes(pid)) {
+            icon.classList.remove('far'); icon.classList.add('fas');
+            icon.style.color = '#e74c3c';
+            btn.title = 'Remover dos favoritos';
+        } else {
+            icon.classList.remove('fas'); icon.classList.add('far');
+            icon.style.color = '';
+            btn.title = 'Adicionar aos favoritos';
+        }
+    });
+});
 </script>

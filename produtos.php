@@ -226,19 +226,17 @@ try {
                                     // Verifica se o ID do produto atual está na lista que buscamos no header
                                     $isInWishlist = in_array($produto['id_produto'], $wishlistProductIds);
                                     ?>
-
-                                    <button class="wishlist-btn" 
-                                            data-product-id="<?= $produto['id_produto'] ?>" 
-                                            title="Adicionar aos favoritos">
-                                        <i class="far fa-heart"></i>
-                                    </button>
-
                                     <?php if ($produto['estoque'] <= 0): ?>
                                         <span class="out-of-stock-badge">Esgotado</span>
                                     <?php elseif ($produto['estoque'] <= 5): ?>
                                         <span class="low-stock-badge">Últimas unidades</span>
                                     <?php endif; ?>
                                 </a>
+                                <button class="wishlist-btn" 
+                                            data-product-id="<?= $produto['id_produto'] ?>" 
+                                            title="Adicionar aos favoritos">
+                                        <i class="far fa-heart"></i>
+                                    </button>
                             </div>
                             
                             <div class="product-info">

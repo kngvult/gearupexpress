@@ -1953,7 +1953,7 @@ body {
     width: 100%;
     aspect-ratio: 1 / 1; 
     overflow: hidden;
-    display: flex;
+    display: contents;
     align-items: center;
     justify-content: center;
     transition: background 0.3s ease;
@@ -2704,7 +2704,6 @@ body {
 
 .quantity-input {
     width: 30px;
-    height: 30px;
     border: none;
     text-align: center;
     font-size: 1.2rem;
@@ -3399,6 +3398,98 @@ body {
     justify-content: center;
     gap: 6px;
     transition: var(--transition-default);
+}
+
+.related-products-carousel .swiper-wrapper,
+.related-products-section .swiper-wrapper {
+    height: auto !important;
+    align-items: flex-start;
+}
+
+.related-products-carousel .swiper-slide,
+.related-products-section .swiper-slide {
+    display: flex;
+    align-items: flex-start;
+}
+
+.related-products-section .product-card,
+.related-products-carousel .product-card {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    min-height: 320px;
+}
+
+.related-products-section .product-card-image,
+.related-products-carousel .product-card-image {
+    height: 180px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px;
+}
+
+.related-products-section .product-card-actions .btn,
+.related-products-carousel .product-card-actions .btn,
+.swiper-slide .product-card-actions .btn {
+    flex: 1 1 0;
+    height: 44px;
+    min-height: 44px;
+    padding: 0 12px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    line-height: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: 0.95rem;
+}
+
+.related-products-section .product-card-actions .btn-outline,
+.related-products-carousel .product-card-actions .btn-outline {
+    padding: 0 12px;
+    border-width: 2px;
+    height: 44px;
+}
+
+.related-products-section .product-card-actions .btn i,
+.related-products-carousel .product-card-actions .btn i {
+    margin-right: 8px;
+    line-height: 1;
+    display: inline-block;
+    vertical-align: middle;
+}
+
+.product-card-actions .btn {
+    box-sizing: border-box;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 44px;
+    min-height: 44px;
+    padding: 0 12px;
+    line-height: 1;
+    font-size: 0.95rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.product-card-actions .btn-outline {
+    box-sizing: border-box;
+    border-width: 2px;
+    padding: 0 10px;
+    height: 44px;
+    min-height: 44px;
+}
+
+.product-card-actions .btn i {
+    margin-right: 8px;
+    line-height: 1;
+    display: inline-block;
+    vertical-align: middle;
 }
 
 /* Modal de Imagem */

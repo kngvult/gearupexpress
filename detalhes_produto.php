@@ -552,13 +552,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['avaliar'])) {
 
                                         <?php
                                         // Verifica se o ID do produto atual está na lista que buscamos no header
-                                        $isInWishlist = in_array($produto['id_produto'], $wishlistProductIds);
+                                        $isInWishlist = in_array($relacionado['id_produto'], $wishlistProductIds ?? []);
                                         ?>
 
                                         <button 
                                             class="wishlist-btn wishlist-toggle-btn <?= $isInWishlist ? 'active' : '' ?>" 
                                             title="<?= $isInWishlist ? 'Remover dos favoritos' : 'Adicionar aos favoritos' ?>"
-                                            data-product-id="<?= $produto['id_produto'] ?>">
+                                            data-product-id="<?= $relacionado['id_produto'] ?>">
                                             
                                             <i class="<?= $isInWishlist ? 'fas fa-heart' : 'far fa-heart' ?>"></i>
                                         </button>
@@ -588,8 +588,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['avaliar'])) {
                                             em até 3x de R$ <?= number_format($relacionado['preco']/3, 2, ',', '.') ?>
                                         </div>
                                         
-                                        <div class="product-stock <?= $produto['estoque'] <= 0 ? 'out-of-stock' : '' ?>">
-                                    <?php if ($produto['estoque'] > 0): ?>
+                                        <div class="product-stock <?= $relacionado['estoque'] <= 0 ? 'out-of-stock' : '' ?>">
+                                    <?php if ($relacionado['estoque'] > 0): ?>
                                         <i class="fas fa-check-circle"></i> Em estoque
                                     <?php else: ?>
                                         <i class="fas fa-times-circle"></i> Indisponível
