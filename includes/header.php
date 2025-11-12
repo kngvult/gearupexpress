@@ -1,4 +1,11 @@
 <?php
+ini_set('session.save_path', __DIR__ . '/sessions');
+
+ini_set('session.cookie_lifetime', 3600 * 24); // 1 dia
+ini_set('session.cookie_secure', false); // true se usar HTTPS
+ini_set('session.cookie_httponly', true);
+ini_set('session.use_strict_mode', 1);
+ini_set('session.use_only_cookies', 1);
 
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
