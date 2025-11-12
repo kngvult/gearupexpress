@@ -1,19 +1,17 @@
 <?php
 ini_set('session.save_path', __DIR__ . '/sessions');
 
-ini_set('session.cookie_lifetime', 3600 * 24); // 1 dia
-ini_set('session.cookie_secure', false); // true se usar HTTPS
-ini_set('session.cookie_httponly', true);
+ini_set('session.gc_maxlifetime', 86400); // 24h
+ini_set('session.cookie_lifetime', 86400);
 ini_set('session.use_strict_mode', 1);
 ini_set('session.use_only_cookies', 1);
+ini_set('session.cookie_httponly', 1);
+
+ini_set('session.cookie_secure', isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on');
 
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
-
-header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
-header('Pragma: no-cache');
-header('Expires: Sat, 01 Jan 2000 00:00:00 GMT');
 
 include_once 'includes/conexao.php';
 include_once 'includes/funcoes_carrinho.php';
