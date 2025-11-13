@@ -36,6 +36,33 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 
                 // Chama a função "gestora" para fundir os carrinhos
                 sincronizarCarrinho($pdo, $usuario['id']);
+
+                function carregarCarrinhoNaSessao($pdo, $id_usuario) {
+                $stmt = $pdo->prepare("
+                    SELECT 
+                        c.id_produto, 
+                        p.nome, 
+                        c.preco_unitario AS preco,
+                        c.quantidade
+                    FROM carrinho c
+                    JOIN produtos p ON c.id_produto = p.id_produto
+                    WHERE c.usuario_id = ?
+                ");
+                $stmt->execute([$id_usuario]);
+                $itens = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+                $_SESSION['carrinho'] = []; // Limpa carrinho atual
+                
+                foreach ($itens as $item) {
+                    $_SESSION['carrinho'][] = [
+                        'id_produto' => $item['id_produto'],
+                        'nome' => $item['nome'],
+                        'preco' => $item['preco'],
+                        'quantidade' => $item['quantidade']
+                    ];
+                }
+            }
+
                 
                 // Redireciona para a página inicial após o login bem-sucedido
                 header('Location: index.php');
