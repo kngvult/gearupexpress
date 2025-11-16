@@ -1,6 +1,8 @@
 <?php
 
-include_once __DIR__ . '/session_config.php';
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 
 // Verifica se o usuário NÃO está logado
 if (!isset($_SESSION['id_usuario'])) { 
