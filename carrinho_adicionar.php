@@ -1,8 +1,5 @@
 <?php
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
-include 'includes/conexao.php';
+include 'includes/session_config.php';
 
 header('Content-Type: application/json');
 $response = ['success' => false, 'message' => 'Erro desconhecido.'];

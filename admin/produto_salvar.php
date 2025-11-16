@@ -1,7 +1,6 @@
 <?php
 
 include 'includes/auth_check.php';
-include '../includes/conexao.php';
 
 // Verifica se o formulário foi enviado
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {

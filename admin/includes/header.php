@@ -1,6 +1,5 @@
 <?php
 include_once 'auth_check.php';
-include_once '../includes/conexao.php';
 
 $admin_nome = $_SESSION['admin_nome'] ?? 'Admin';
 

@@ -1,7 +1,5 @@
 <?php
 
-include_once __DIR__ . '/session_config.php';
-
 function inicializarCarrinhoSessao() {
     if (!isset($_SESSION['carrinho']) || !is_array($_SESSION['carrinho'])) {
         $_SESSION['carrinho'] = [];

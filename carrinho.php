@@ -1,7 +1,6 @@
 <?php
 
 include 'includes/header.php';
-include 'session_config.php';
 
 $usuarioLogado = $_SESSION['usuario']['id'] ?? null;
 $statusMessage = null; // Variável para armazenar mensagens de status

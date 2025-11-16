@@ -1,6 +1,6 @@
 <?php
 
-include 'session_config.php';
+include 'includes/session_config.php';
 include_once 'includes/funcoes_carrinho.php'; 
 
 // Redireciona se o usuário já estiver logado

@@ -1,5 +1,5 @@
 <?php
-include '../includes/conexao.php';
+include '../includes/session_config.php';
 // --- LÓGICA DA PÁGINA ---
 $pedido = null;
 $itens_pedido = [];

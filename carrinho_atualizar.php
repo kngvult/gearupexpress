@@ -1,7 +1,5 @@
 <?php
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
+
 include 'session_config.php';
 // PUXA AS FUNÇÕES GLOBAIS DO CARRINHO
 include 'includes/funcoes_carrinho.php';

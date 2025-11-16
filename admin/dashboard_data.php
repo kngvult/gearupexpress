@@ -1,5 +1,5 @@
 <?php
-include '../includes/conexao.php';
+include '../includes/session_config.php';
 
 $periodo = $_GET['periodo'] ?? 'semana';
 $mes_selecionado = $_GET['mes'] ?? date('Y-m');

@@ -1,7 +1,7 @@
 
 <?php
 include 'includes/header.php'; 
-include 'session_config.php';
+include 'includes/session_config.php';
 // --- LÓGICA DE BUSCA E FILTROS ---
 // 1. Busca todas as categorias para a barra lateral de navegação
 $categorias = [];

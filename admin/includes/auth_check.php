@@ -1,8 +1,6 @@
 <?php
 // Inicia a sessão para acessar os dados do admin
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
+include_once __DIR__ . '/../../includes/session_config.php';
 
 // Verifica se o ID do admin não está definido na sessão
 if (!isset($_SESSION['admin_id'])) {
