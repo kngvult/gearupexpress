@@ -1,6 +1,6 @@
 <?php
 
-include 'session_config.php';
+include 'includes/session_config.php';
 // PUXA AS FUNÇÕES GLOBAIS DO CARRINHO
 include 'includes/funcoes_carrinho.php';
 

@@ -1,5 +1,5 @@
 <?php
-include 'includes/header.php';
+include 'includes/session_config.php';
 
 // Verifica se o usuário está logado usando a chave correta da sessão
 if (!isset($_SESSION['usuario']['id'])) {

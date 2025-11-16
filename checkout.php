@@ -1,5 +1,5 @@
 <?php
-include 'includes/header.php';
+include 'includes/session_config.php';
 // Verifica se o usuário está logado
 if (!isset($_SESSION['usuario']['id'])) {
     header('Location: login.php');
