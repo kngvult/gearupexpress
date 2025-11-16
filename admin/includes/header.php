@@ -1,7 +1,12 @@
 <?php
-include_once 'auth_check.php';
+include_once __DIR__ . '/auth_check.php';
+
+header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
+header('Pragma: no-cache');
+header('Expires: Sat, 01 Jan 2000 00:00:00 GMT');
 
 $admin_nome = $_SESSION['admin_nome'] ?? 'Admin';
+
 
 // Pega o nome do arquivo atual para destacar o link no menu
 $pagina_atual = basename($_SERVER['PHP_SELF']);
