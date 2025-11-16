@@ -105,12 +105,12 @@ if ($usuarioLogado) {
                                 <span class="cart-item-price">R$ <?= number_format($item['preco_unitario'], 2, ',', '.') ?></span>
                             </div>
                             <div class="cart-item-quantity">
-    <div class="quantity-stepper">
-        <button type="button" class="quantity-btn minus" aria-label="Diminuir quantidade">-</button>
-        <input type="number" id="qtd_<?= $itemId ?>" name="quantidades[<?= $itemId ?>]" value="<?= $item['quantidade'] ?>" min="1" class="quantity-input" readonly>
-        <button type="button" class="quantity-btn plus" aria-label="Aumentar quantidade">+</button>
-    </div>
-</div>
+                            <div class="quantity-stepper">
+                                <button type="button" class="quantity-btn minus" aria-label="Diminuir quantidade">-</button>
+                                <input type="number" id="qtd_<?= $itemId ?>" name="quantidades[<?= $itemId ?>]" value="<?= $item['quantidade'] ?>" min="1" class="quantity-input" readonly>
+                                <button type="button" class="quantity-btn plus" aria-label="Aumentar quantidade">+</button>
+                            </div>
+                        </div>
                             <div class="cart-item-total">
                                 <span>R$ <?= number_format($item['total_item'], 2, ',', '.') ?></span>
                             </div>
