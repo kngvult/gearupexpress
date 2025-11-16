@@ -1,6 +1,6 @@
 <?php
 include 'includes/header.php';
-include 'includes/conexao.php';
+include 'session_config.php';
 
 // Verifica se o usuário está logado
 if (!isset($_SESSION['usuario']['id'])) {

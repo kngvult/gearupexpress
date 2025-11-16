@@ -1,6 +1,6 @@
 <?php
 include 'includes/header.php'; 
-include 'includes/conexao.php';
+include 'session_config.php';
 include 'includes/funcoes_avaliacoes.php';
 
 $produto = null;

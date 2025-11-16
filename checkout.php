@@ -1,7 +1,7 @@
 <?php
 // ETAPA 1: LÓGICA DE BACKEND
 session_start(); 
-include 'includes/conexao.php';
+include 'session_config.php';
 
 // Verifica se o usuário está logado
 if (!isset($_SESSION['usuario']['id'])) {

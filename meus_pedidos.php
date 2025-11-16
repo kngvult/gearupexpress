@@ -1,8 +1,6 @@
 <?php
 // ETAPA 1: LÓGICA DE BACKEND
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
+include 'session_config.php';
 
 // Verifica se o usuário está logado usando a chave correta da sessão
 if (!isset($_SESSION['usuario']['id'])) {
@@ -10,7 +8,7 @@ if (!isset($_SESSION['usuario']['id'])) {
     exit;
 }
 
-include 'includes/conexao.php';
+include 'session_config.php';
 
 $id_usuario = $_SESSION['usuario']['id'];
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['id_pedido'], $_POST['acao'])) {

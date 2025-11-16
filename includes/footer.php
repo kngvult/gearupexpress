@@ -1,7 +1,7 @@
 <?php
 
 if (!isset($pdo)) {
-    include_once 'includes/conexao.php';
+    include_once 'session_config.php';
 }
 
 try {

@@ -1,5 +1,7 @@
 <?php
-session_start();
+
+include 'includes/header.php';
+include 'session_config.php';
 
 // Verificar se usuário está logado
 if (!isset($_SESSION['usuario']['id'])) {
@@ -42,9 +44,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['id_produto'])) {
         exit;
     }
 }
-
-include 'includes/header.php';
-include 'includes/conexao.php';
 
 // Buscar produtos da wishlist
 try {

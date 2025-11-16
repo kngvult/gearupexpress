@@ -1,7 +1,6 @@
 <?php
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
+
+include_once __DIR__ . '/session_config.php';
 
 function inicializarCarrinhoSessao() {
     if (!isset($_SESSION['carrinho']) || !is_array($_SESSION['carrinho'])) {
