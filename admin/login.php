@@ -1,5 +1,5 @@
 <?php
-include '../includes/session_config.php'
+include '../includes/session_config.php';
 
 // Se o admin já estiver logado, redireciona para o painel
 if (isset($_SESSION['admin_id'])) {
