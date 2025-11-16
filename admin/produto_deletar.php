@@ -1,5 +1,5 @@
 <?php
-include 'includes/auth_check.php';;
+include 'includes/auth_check.php';
 
 // Verifica se um ID foi passado pela URL
 if (isset($_GET['id']) && is_numeric($_GET['id'])) {
