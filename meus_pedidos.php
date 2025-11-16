@@ -1,6 +1,5 @@
 <?php
-// ETAPA 1: LÓGICA DE BACKEND
-include 'includes/session_config.php';
+include 'includes/header.php';
 
 // Verifica se o usuário está logado usando a chave correta da sessão
 if (!isset($_SESSION['usuario']['id'])) {
@@ -40,7 +39,7 @@ try {
 }
 
 // ETAPA 2: RENDERIZAÇÃO DO HTML
-include 'includes/header.php';
+
 ?>
 
 <main class="page-content">

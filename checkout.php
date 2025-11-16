@@ -1,7 +1,5 @@
 <?php
-// ETAPA 1: LÓGICA DE BACKEND
-include 'includes/session_config.php';
-
+include 'includes/header.php';
 // Verifica se o usuário está logado
 if (!isset($_SESSION['usuario']['id'])) {
     header('Location: login.php');
@@ -118,7 +116,7 @@ foreach ($itensCarrinho as $item) {
     $total_carrinho += $item['total_item'];
 }
 
-include 'includes/header.php';
+
 ?>
 
 <main class="page-content">

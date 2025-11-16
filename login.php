@@ -1,6 +1,5 @@
 <?php
-
-include 'includes/session_config.php';
+include 'includes/header.php';
 include_once 'includes/funcoes_carrinho.php'; 
 
 // Redireciona se o usuário já estiver logado
@@ -50,7 +49,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-include 'includes/header.php';
+
 ?>
 
 <main class="page-content">
