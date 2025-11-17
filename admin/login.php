@@ -7,7 +7,6 @@ if (isset($_SESSION['admin_id'])) {
     exit;
 }
 
-include '../includes/conexao.php'; // Usa '..' para voltar um nível e encontrar a pasta includes
 $erro = "";
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
