@@ -39,7 +39,7 @@ try {
 }
 
 // ETAPA 2: RENDERIZAÇÃO DO HTML
-
+include 'includes/header.php';
 ?>
 
 <main class="page-content">

@@ -97,26 +97,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-// ETAPA 2: PREPARAÇÃO DOS DADOS PARA EXIBIÇÃO (se a página não foi submetida ou se deu erro)
-$stmtCarrinho = $pdo->prepare("
-    SELECT p.nome, p.imagem, c.quantidade, c.preco_unitario, (c.quantidade * c.preco_unitario) AS total_item
-    FROM carrinho c
-    JOIN produtos p ON c.id_produto = p.id_produto
-    WHERE c.usuario_id = ?
-");
-$stmtCarrinho->execute([$id_usuario]);
-$itensCarrinho = $stmtCarrinho->fetchAll(PDO::FETCH_ASSOC);
+        // ETAPA 2: PREPARAÇÃO DOS DADOS PARA EXIBIÇÃO (se a página não foi submetida ou se deu erro)
+        $stmtCarrinho = $pdo->prepare("
+            SELECT p.nome, p.imagem, c.quantidade, c.preco_unitario, (c.quantidade * c.preco_unitario) AS total_item
+            FROM carrinho c
+            JOIN produtos p ON c.id_produto = p.id_produto
+            WHERE c.usuario_id = ?
+        ");
+        $stmtCarrinho->execute([$id_usuario]);
+        $itensCarrinho = $stmtCarrinho->fetchAll(PDO::FETCH_ASSOC);
 
-if (empty($itensCarrinho)) {
-    header('Location: carrinho.php');
-    exit;
-}
-$total_carrinho = 0;
-foreach ($itensCarrinho as $item) {
-    $total_carrinho += $item['total_item'];
-}
+        if (empty($itensCarrinho)) {
+            header('Location: carrinho.php');
+            exit;
+        }
+        $total_carrinho = 0;
+        foreach ($itensCarrinho as $item) {
+            $total_carrinho += $item['total_item'];
+        }
 
-
+        include 'includes/header.php';
 ?>
 
 <main class="page-content">
