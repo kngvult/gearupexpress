@@ -1,14 +1,17 @@
 <?php
 
-include 'includes/header.php';
+include 'includes/auth_check.php';
 
+include 'includes/upload_manager.php';
+
+// Inicialização
 $produto = ['id_produto' => '', 'nome' => '', 'descricao' => '', 'preco' => '', 'estoque' => '', 'id_categoria' => '', 'imagem' => '', 'marca' => '', 'codigo_produto' => ''];
 $categorias = [];
 $erro = '';
 $titulo_pagina = 'Adicionar Novo Produto';
 $success_message = '';
 
-// Busca todas as categorias para o seletor
+// Busca categorias
 try {
     $stmtCat = $pdo->query("SELECT id_categoria, nome FROM categorias ORDER BY nome ASC");
     $categorias = $stmtCat->fetchAll(PDO::FETCH_ASSOC);
@@ -16,12 +19,12 @@ try {
     $erro = "Erro ao buscar categorias.";
 }
 
-// Lógica de Edição (se um ID for passado)
+// Carrega dados para edição
 if (isset($_GET['id'])) {
-    $id_produto = (int)$_GET['id'];
+    $id_produto_get = (int)$_GET['id'];
     $titulo_pagina = 'Editar Produto';
     $stmt = $pdo->prepare("SELECT * FROM produtos WHERE id_produto = ?");
-    $stmt->execute([$id_produto]);
+    $stmt->execute([$id_produto_get]);
     $produto = $stmt->fetch(PDO::FETCH_ASSOC);
     if (!$produto) {
         header('Location: produtos.php');
@@ -29,53 +32,73 @@ if (isset($_GET['id'])) {
     }
 }
 
-// Lógica para Salvar (Adicionar ou Atualizar)
+// PROCESSAMENTO DO FORMULÁRIO
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    
+    // Recebe "498,50" ou "1.200,00"
+    $preco_bruto = $_POST['preco'];
+    // 1. Remove pontos de milhar (1.200,00 -> 1200,00)
+    $preco_limpo = str_replace('.', '', $preco_bruto);
+    // 2. Troca a vírgula por ponto (1200,00 -> 1200.00)
+    $preco_limpo = str_replace(',', '.', $preco_limpo);
+    // 3. Remove qualquer coisa que não seja número ou ponto
+    $preco_limpo = preg_replace('/[^\d.]/', '', $preco_limpo);
+    $preco = (float)$preco_limpo;
+
     $id_produto = $_POST['id_produto'] ? (int)$_POST['id_produto'] : null;
-    $nome = $_POST['nome'];
-    $descricao = $_POST['descricao'];
-    $preco = $_POST['preco'];
-    $estoque = $_POST['estoque'];
-    $id_categoria = $_POST['id_categoria'];
-    $marca = $_POST['marca'];
-    $codigo_produto = $_POST['codigo_produto'];
-    $imagem_nome = $produto['imagem'] ?? ''; // Mantém a imagem atual por padrão
+    $nome = trim($_POST['nome']);
+    $descricao = trim($_POST['descricao']);
+    $estoque = (int)$_POST['estoque'];
+    $id_categoria = (int)$_POST['id_categoria'];
+    $marca = trim($_POST['marca']);
+    $codigo_produto = trim($_POST['codigo_produto']);
 
-    if (isset($_FILES['imagem']) && $_FILES['imagem']['error'] === UPLOAD_ERR_OK) {
-    $ext = strtolower(pathinfo($_FILES['imagem']['name'], PATHINFO_EXTENSION));
-    $permitidas = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
-    if (in_array($ext, $permitidas)) {
-        $novo_nome = uniqid('prod_') . '.' . $ext;
-        $destino = __DIR__ . '/../assets/img/produtos/' . $novo_nome;
-        if (move_uploaded_file($_FILES['imagem']['tmp_name'], $destino)) {
-            $imagem_nome = $novo_nome;
-        } else {
-            $erro = "Erro ao salvar a imagem.";
-        }
-    } else {
-        $erro = "Formato de imagem não permitido.";
+    if (empty($nome)) {
+        $erro = "O nome do produto é obrigatório.";
     }
-}
 
-    if ($id_produto) { // Atualizar
-        $sql = "UPDATE produtos SET nome = ?, descricao = ?, preco = ?, estoque = ?, id_categoria = ?, marca = ?, codigo_produto = ?, imagem = ? WHERE id_produto = ?";
-        $params = [$nome, $descricao, $preco, $estoque, $id_categoria, $marca, $codigo_produto, $imagem_nome, $id_produto];
-    } else { // Inserir
-        $sql = "INSERT INTO produtos (nome, descricao, preco, estoque, id_categoria, marca, codigo_produto, imagem) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
-        $params = [$nome, $descricao, $preco, $estoque, $id_categoria, $marca, $codigo_produto, $imagem_nome];
+    // --- UPLOAD DE IMAGEM ---
+    // Começa com a imagem atual (que já é uma URL completa ou null)
+    $caminho_imagem_db = $_POST['imagem_atual'] ?? $produto['imagem'] ?? null; 
+
+    // Se uma nova imagem foi enviada...
+    if (empty($erro) && isset($_FILES['imagem']) && $_FILES['imagem']['error'] === UPLOAD_ERR_OK) {
+        // Chama a função do upload_manager.php
+        $nova_url = enviarImagemSupabase($_FILES['imagem'], 'imagens-produtos');
+        
+        if ($nova_url) {
+            $caminho_imagem_db = $nova_url; // Salva a URL completa (https://...)
+        } else {
+            $erro = "Falha no upload da imagem. Tente novamente.";
+        }
     }
     
-    try {
-        $stmt = $pdo->prepare($sql);
-        $stmt->execute($params);
-        
-        // Redirecionamento seguro
-        echo '<script>window.location.href = "produtos.php?status=success";</script>';
-        exit;
-    } catch (PDOException $e) {
-        $erro = "Erro ao salvar produto: " . $e->getMessage();
+    // --- SALVAR NO BANCO ---
+    if (empty($erro)) {
+        try {
+            if ($id_produto) {
+                // UPDATE
+                $sql = "UPDATE produtos SET nome = ?, descricao = ?, preco = ?, estoque = ?, id_categoria = ?, marca = ?, codigo_produto = ?, imagem = ? WHERE id_produto = ?";
+                $params = [$nome, $descricao, $preco, $estoque, $id_categoria, $marca, $codigo_produto, $caminho_imagem_db, $id_produto];
+            } else {
+                // INSERT
+                $sql = "INSERT INTO produtos (nome, descricao, preco, estoque, id_categoria, marca, codigo_produto, imagem) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+                $params = [$nome, $descricao, $preco, $estoque, $id_categoria, $marca, $codigo_produto, $caminho_imagem_db];
+            }
+            
+            $stmt = $pdo->prepare($sql);
+            $stmt->execute($params);
+            
+            header('Location: produtos.php?sucesso=1');
+            exit;
+            
+        } catch (PDOException $e) {
+            $erro = "Erro ao salvar: " . $e->getMessage();
+        }
     }
 }
+
+include 'includes/header.php';
 ?>
 
 <div class="container-fluid">
@@ -211,7 +234,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <input type="file" id="imagem" name="imagem" class="form-control">
                         <?php if (!empty($produto['imagem'])): ?>
                             <div style="margin-top:10px;">
-                                <img src="../assets/img/produtos/<?= htmlspecialchars($produto['imagem']) ?>" alt="Imagem do produto" style="max-width:120px; border-radius:8px;">
+                                <img src="<?= htmlspecialchars($produto['imagem']) ?>" alt="Imagem do produto" style="max-width:120px; border-radius:8px;">
                                 <br>
                                 <small>Imagem atual</small>
                             </div>
