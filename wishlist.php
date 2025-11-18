@@ -116,7 +116,7 @@ function calcularParcelas($preco, $parcelas = 3) {
                     <div class="wishlist-item" data-product-id="<?= $produto['id_produto'] ?>">
                         <div class="product-image">
                             <a href="detalhes_produto.php?id=<?= $produto['id_produto'] ?>">
-                                <img src="assets/img/produtos/<?= htmlspecialchars($produto['imagem'] ?: 'placeholder.jpg') ?>" 
+                                <img src="<?= htmlspecialchars($produto['imagem'] ?: 'placeholder.jpg') ?>" 
                                     alt="<?= htmlspecialchars($produto['nome']) ?>"
                                     loading="lazy">
                             </a>

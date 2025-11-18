@@ -155,7 +155,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <h4>Resumo do Pedido</h4>
                     <?php foreach ($itensCarrinho as $item): ?>
                         <div class="summary-item">
-                            <img src="assets/img/produtos/<?= htmlspecialchars($item['imagem']) ?>" alt="<?= htmlspecialchars($item['nome']) ?>" class="summary-item-image">
+                            <img src="<?= htmlspecialchars($item['imagem'] ?: 'placeholder.jpg') ?>" alt="<?= htmlspecialchars($item['nome']) ?>" class="summary-item-image">
                             <div class="summary-item-details">
                                 <span class="summary-item-name"><?= htmlspecialchars($item['nome']) ?> (x<?= $item['quantidade'] ?>)</span>
                                 <span class="summary-item-price">R$ <?= number_format($item['total_item'], 2, ',', '.') ?></span>

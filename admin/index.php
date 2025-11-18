@@ -144,7 +144,7 @@ $status_valores = json_encode(array_column($status_data ?? [], 'count'));
                 <ul class="low-stock-list">
                     <?php foreach ($produtos_baixo_estoque as $produto): ?>
                         <li class="low-stock-item">
-                            <img src="../assets/img/produtos/<?= htmlspecialchars($produto['imagem']) ?>" alt="<?= htmlspecialchars($produto['nome']) ?>" class="table-img">
+                            <img src="<?= htmlspecialchars($produto['imagem'] ?: 'placeholder.jpg') ?>" alt="<?= htmlspecialchars($produto['nome']) ?>" class="table-img">
                             <div class="item-details">
                                 <span class="item-name"><?= htmlspecialchars($produto['nome']) ?></span>
                                 <span class="item-stock">Restam apenas <strong><?= $produto['estoque'] ?></strong> unidades</span>

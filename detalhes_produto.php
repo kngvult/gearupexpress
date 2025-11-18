@@ -138,7 +138,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['avaliar'])) {
             <!-- Galeria de Imagens -->
             <div class="product-gallery">
                 <div class="main-image-container">
-                    <img src="assets/img/produtos/<?= htmlspecialchars($produto['imagem'] ?: 'placeholder.jpg') ?>" 
+                    <img src="<?= htmlspecialchars($produto['imagem'] ?: 'placeholder.jpg') ?>" 
                         alt="<?= htmlspecialchars($produto['nome']) ?>" 
                         id="main-product-image"
                         class="product-main-image">
@@ -170,7 +170,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['avaliar'])) {
                 <!-- Miniaturas (para quando tiver múltiplas imagens) -->
                 <div class="image-thumbnails">
                     <div class="thumbnail active">
-                        <img src="assets/img/produtos/<?= htmlspecialchars($produto['imagem'] ?: 'placeholder.jpg') ?>" 
+                        <img src="<?= htmlspecialchars($produto['imagem'] ?: 'placeholder.jpg') ?>" 
                             alt="Miniatura 1"
                             onclick="changeMainImage(this)">
                     </div>
@@ -540,7 +540,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['avaliar'])) {
                                 <div class="product-card">
                                     <div class="product-card-image">
                                         <a href="detalhes_produto.php?id=<?= $relacionado['id_produto'] ?>">
-                                            <img src="assets/img/produtos/<?= htmlspecialchars($relacionado['imagem']) ?>" 
+                                            <img src="<?= htmlspecialchars($relacionado['imagem'] ?: 'placeholder.jpg') ?>" 
                                                 alt="<?= htmlspecialchars($relacionado['nome']) ?>">
                                         </a>
                                         <?php if ($relacionado['estoque'] <= 0): ?>
