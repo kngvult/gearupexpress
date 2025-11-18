@@ -59,7 +59,7 @@ if (!empty($_GET['termo'])) {
                     <article class="product-card">
                         <div class="product-image-container">
                             <a href="detalhes_produto.php?id=<?= $produto['id_produto'] ?>">
-                                <img src="assets/img/produtos/<?= htmlspecialchars($produto['imagem'] ?: 'placeholder.jpg') ?>" alt="<?= htmlspecialchars($produto['nome']) ?>" class="product-image">
+                                <img src="<?= htmlspecialchars($produto['imagem'] ?: 'placeholder.jpg') ?>" alt="<?= htmlspecialchars($produto['nome']) ?>" class="product-image">
                             </a>
                         </div>
                         <div class="product-info">

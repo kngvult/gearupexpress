@@ -34,24 +34,14 @@ if (isset($_GET['id'])) {
 
 // PROCESSAMENTO DO FORMULÁRIO
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    
-    // Recebe "498,50" ou "1.200,00"
-    $preco_bruto = $_POST['preco'];
-    // 1. Remove pontos de milhar (1.200,00 -> 1200,00)
-    $preco_limpo = str_replace('.', '', $preco_bruto);
-    // 2. Troca a vírgula por ponto (1200,00 -> 1200.00)
-    $preco_limpo = str_replace(',', '.', $preco_limpo);
-    // 3. Remove qualquer coisa que não seja número ou ponto
-    $preco_limpo = preg_replace('/[^\d.]/', '', $preco_limpo);
-    $preco = (float)$preco_limpo;
-
     $id_produto = $_POST['id_produto'] ? (int)$_POST['id_produto'] : null;
-    $nome = trim($_POST['nome']);
-    $descricao = trim($_POST['descricao']);
-    $estoque = (int)$_POST['estoque'];
-    $id_categoria = (int)$_POST['id_categoria'];
-    $marca = trim($_POST['marca']);
-    $codigo_produto = trim($_POST['codigo_produto']);
+    $nome = $_POST['nome'];
+    $descricao = $_POST['descricao'];
+    $preco = $_POST['preco'];
+    $estoque = $_POST['estoque'];
+    $id_categoria = $_POST['id_categoria'];
+    $marca = $_POST['marca'];
+    $codigo_produto = $_POST['codigo_produto'];
 
     if (empty($nome)) {
         $erro = "O nome do produto é obrigatório.";

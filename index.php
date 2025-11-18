@@ -168,7 +168,7 @@ function getProductBadge($vendas, $estoque) {
                     <article class="product-card">
                         <div class="product-image">
                             <a href="detalhes_produto.php?id=<?= $produto['id_produto'] ?>" class="product-image-link">
-                                <img src="assets/img/produtos/<?= htmlspecialchars($produto['imagem'] ?: 'placeholder.jpg') ?>" 
+                                <img src="<?= htmlspecialchars($produto['imagem'] ?: 'placeholder.jpg') ?>" 
                                     alt="<?= htmlspecialchars($produto['nome']) ?>" 
                                     class="product-image"
                                     loading="lazy">
@@ -291,7 +291,7 @@ function getProductBadge($vendas, $estoque) {
                 <article class="product-card">
                     <div class="product-image">
                         <a href="detalhes_produto.php?id=<?= $produto['id_produto'] ?>" class="product-image-link">
-                            <img src="assets/img/produtos/<?= htmlspecialchars($produto['imagem'] ?: 'placeholder.jpg') ?>" 
+                            <img src="<?= htmlspecialchars($produto['imagem'] ?: 'placeholder.jpg') ?>" 
                                 alt="<?= htmlspecialchars($produto['nome']) ?>" 
                                 class="product-image"
                                 loading="lazy">

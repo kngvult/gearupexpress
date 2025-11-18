@@ -208,7 +208,7 @@ include 'includes/header.php';
                     <div class="order-items-list">
                         <?php foreach ($itens_pedido as $item): ?>
                             <div class="order-item" style="display: flex; align-items: center; padding: 15px 0; border-bottom: 1px solid #f0f0f0;">
-                                <img src="../assets/img/produtos/<?= htmlspecialchars($item['imagem']) ?>" alt="<?= htmlspecialchars($item['nome_produto']) ?>" style="width: 60px; height: 60px; object-fit: cover; border-radius: 6px; margin-right: 15px;">
+                                <img src="<?= htmlspecialchars($produto['imagem'] ?: 'placeholder.jpg') ?>" alt="<?= htmlspecialchars($item['nome_produto']) ?>" style="width: 60px; height: 60px; object-fit: cover; border-radius: 6px; margin-right: 15px;">
                                 <div class="item-details" style="flex: 1;">
                                     <h5 style="margin: 0 0 5px 0; font-size: 16px; color: #333;"><?= htmlspecialchars($item['nome_produto']) ?></h5>
                                     <p style="margin: 0; color: #666;">Quantidade: <?= $item['quantidade'] ?></p>
