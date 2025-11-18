@@ -1,6 +1,6 @@
 <?php
 
-include 'includes/header.php';
+include 'includes/session_config.php';
 
 // Verificar se usuário está logado
 if (!isset($_SESSION['usuario']['id'])) {
@@ -16,8 +16,6 @@ $idUsuarioLogado = $_SESSION['usuario']['id'] ?? null;
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['id_produto'])) {
     $id_produto = $_POST['id_produto'];
     $acao = $_POST['acao'] ?? 'adicionar';
-
-    include 'includes/conexao.php';
     
     try {
         if ($acao === 'adicionar') {
@@ -68,6 +66,8 @@ try {
 function calcularParcelas($preco, $parcelas = 3) {
     return number_format($preco / $parcelas, 2, ',', '.');
 }
+
+include 'includes/header.php';
 ?>
 
 <main class="wishlist-page">

@@ -99,7 +99,7 @@ if ($usuarioLogado) {
                         $itemId = $usuarioLogado ? $item['id'] : $item['id_produto'];
                     ?>
                         <div class="cart-item">
-                            <img src="<?= htmlspecialchars($produto['imagem'] ?: 'placeholder.jpg') ?>" alt="<?= htmlspecialchars($item['nome']) ?>" class="cart-item-image">
+                            <img src="<?= htmlspecialchars($item['imagem'] ?: 'placeholder.jpg') ?>" alt="<?= htmlspecialchars($item['nome']) ?>" class="cart-item-image">
                             <div class="cart-item-details">
                                 <span class="cart-item-name"><?= htmlspecialchars($item['nome']) ?></span>
                                 <span class="cart-item-price">R$ <?= number_format($item['preco_unitario'], 2, ',', '.') ?></span>
