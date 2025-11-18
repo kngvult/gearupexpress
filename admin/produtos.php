@@ -138,7 +138,7 @@ $(document).ready(function() {
                             ?>
                                 <tr>
                                     <td class="text-center">
-                                        <img src="../assets/img/produtos/<?= htmlspecialchars($produto['imagem'] ?: 'placeholder.jpg') ?>" 
+                                        <img src="<?= htmlspecialchars($produto['imagem'] ?: 'placeholder.jpg') ?>" 
                                                 alt="<?= htmlspecialchars($produto['nome']) ?>" 
                                                 class="table-img"
                                                 style="width: 50px; height: 50px; object-fit: cover; border-radius: 4px;">
