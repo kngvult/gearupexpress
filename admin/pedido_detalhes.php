@@ -36,8 +36,14 @@ if (!isset($_GET['id']) || !is_numeric($_GET['id'])) {
             }
         }
         
-        // Atualiza o status do pedido
-        $stmtUpdate = $pdo->prepare("UPDATE public.pedidos SET status = ? WHERE id_pedido = ?");
+        // Atualiza o status do pedido (E define data_entrega se for 'entregue')
+        if ($novo_status === 'entregue') {
+            // Se for entregue, grava a data atual (NOW()) na coluna data_entrega
+            $stmtUpdate = $pdo->prepare("UPDATE public.pedidos SET status = ?, data_entrega = NOW() WHERE id_pedido = ?");
+        } else {
+            // Se for qualquer outro status, atualiza apenas o status
+            $stmtUpdate = $pdo->prepare("UPDATE public.pedidos SET status = ? WHERE id_pedido = ?");
+        }
         $stmtUpdate->execute([$novo_status, $id_pedido]);
         
         // Insere o log de atividade
